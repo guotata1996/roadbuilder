@@ -21,7 +21,7 @@ public class RoadRenderer : MonoBehaviour
 
     public Texture yellow, white, road, delete;
 
-    public void generate(Curve curve, List<string> laneConfig, float margin_0 = 0f, float margin_1 = 0f)
+    public void generate(Curve curve, List<string> laneConfig, float margin_0 = 0f, float margin_1 = 0f, float surfaceMargin_0 = 0f, float surfaceMargin_1 = 0f)
     {
         List<Separator> separators = new List<Separator>();
         float offset = 0f;
@@ -92,7 +92,7 @@ public class RoadRenderer : MonoBehaviour
             drawSeparator(curve, separators[i], margin_0, margin_1);
         }
 
-        drawRoadSurface(curve, offset);
+        drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1);
 
     }
 
@@ -130,7 +130,8 @@ public class RoadRenderer : MonoBehaviour
 		}
 	}
 
-	void drawRoadSurface(Curve curve, float width){
+    void drawRoadSurface(Curve curve, float width, float surfacemargin_0 = 0f, float surfacemargin_1 = 0f){
+        curve = curve.cut(surfacemargin_0 / curve.length, 1f - surfacemargin_1 / curve.length);
 		GameObject rendins = Instantiate (rend, transform);
         rendins.transform.parent = this.transform;
 		CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();

@@ -215,7 +215,7 @@ public class RoadManager : MonoBehaviour
         Node n0, n1;
         findNodeAt(r.curve.at(0f), out n0);
         findNodeAt(r.curve.at(1f), out n1);
-        roadConfigure.generate(r.curve, r.laneconfigure, n0.getEndMargin(r), n1.getEndMargin(r));
+        roadConfigure.generate(r.curve, r.laneconfigure, n0.getMargin(r).First, n1.getMargin(r).First, n0.getMargin(r).Second, n1.getMargin(r).Second);
     }
 
     public void deleteRoad(Road r){

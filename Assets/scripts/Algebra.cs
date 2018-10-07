@@ -262,7 +262,10 @@ public class Algebra {
     public static List<Vector2> parametricFunctionSolver(Vector2 a0, Vector2 a1, Vector2 b0, Vector2 b1)
     {
         float A1 = b1.x * a1.y - a1.x * b1.y;
-        Debug.Assert(A1 != 0);
+        if (A1 == 0){
+            //parallel
+            return new List<Vector2>();
+        }
         float A0 = - (a0.x * b1.y - a0.y * b1.x + b0.y * b1.x - b0.x * b1.y);
         List<float> func_1_params = functionSolver(A0, A1, 0f);
         var points = from func_1_param in func_1_params
@@ -339,7 +342,8 @@ public class Algebra {
     {
         return new Vector2(Mathf.RoundToInt(precise.x), Mathf.RoundToInt(precise.y));
     }
+
+    public static Vector2 angle2dir(float angle){
+        return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+    }
 }
-
-
-
