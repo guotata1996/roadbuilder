@@ -1,0 +1,30 @@
+Bezier & Bezier
+
+(0,0)(1-t)^2 + 2(50,120)t(1-t) + (100,0)t^2
+(0,100)(1-t)^2 + 2(50,-20)t(1-t) + (100,100)t^2
+
+(0, 240)t^2 + (100,240)t + (0,100)
+(0, -240)t^2 + (100,240)t + (0,0)
+
+P1 = a2t2 + a1t1 + a0
+P2 = b2t2 + b1t1 + b0
+
+a2_xt1^2 + a1_xt1 + a0_x = b2_xt2^2 + b1_xt2 + b0_x    
+a2_yt1^2 + a1_yt1 + a0_y = b2_yt2^2 + b1_yt2 + b0_y
+
+(1)**(b2_y) - (2)*(b2_x): 
+f(t1) = (b1_xb2_y - b1_yb2_x)t2. (*)
+Ct1^2+Dt1+E = Ft2 (F would never be zero if P1-P0 not// P2 - P0)
+
+if (b0_x == 0){
+	(2) got invalid if mul b0_x
+	So we put (*) into (2):
+	F^2(a2_yt1^2 + a1_yt1 + a0_y) = b2_y*(Ft2)^2 + b2_y*F*(Ft2) + F^2*b0_y
+}
+
+b0_y == 0: likewise:
+F^2(a2_xt1^2 + a1_xt1 + a0_x) = b2_x*(Ft2)^2 + b1_x*F*(Ft2) + F^2*b0_x
+
+
+
+

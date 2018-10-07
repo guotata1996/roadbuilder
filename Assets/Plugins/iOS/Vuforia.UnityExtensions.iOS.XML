@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Vuforia.UnityExtensions.iOS</name>
+    </assembly>
+    <members>
+        <member name="T:Vuforia.VuforiaNativeIosWrapper">
+            <summary>
+            This class encapsulates the access to native methods
+            by implementing the IVuforiaWrapper interface
+            </summary>
+        </member>
+    </members>
+</doc>

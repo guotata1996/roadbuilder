@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1992448081505236}
+  m_IsPrefabAsset: 1
+--- !u!1 &1992448081505236
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 224830802561051182}
+  - component: {fileID: 114865301055349830}
+  m_Layer: 5
+  m_Name: curveIndicator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &114865301055349830
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1992448081505236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19dbe38456584115bf79fcc8a069742, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  laneConfig:
+  - 
+  - 
+  - 
+  nodeIndicatorPrefab: {fileID: 1945630429582350, guid: 9fb5e73a4232d0b49af16635ce16bf33,
+    type: 2}
+  roadIndicatorPrefab: {fileID: 1482647038104372, guid: 54f796b79aedceb46b47ad66cd249c49,
+    type: 2}
+  roadManagerPrefab: {fileID: 1021552307363596, guid: 2828464fab8228a4f87feaa1a204050e,
+    type: 2}
+  controlPoint: []
+  pointer: 0
+  indicatorType: 0
+  preview: {fileID: 0}
+--- !u!224 &224830802561051182
+RectTransform:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1992448081505236}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}

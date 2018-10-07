@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b3a50eb267b2e894293e01fd349fe0dd
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - road: {fileID: 1482647038104372, guid: 54f796b79aedceb46b47ad66cd249c49, type: 2}
+  - intersectIndicator: {fileID: 1945630429582350, guid: 9fb5e73a4232d0b49af16635ce16bf33,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
