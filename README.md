@@ -7,9 +7,9 @@ Features:
 - sticky mouse pointer: easy to create T crossings
 - delete mode
 - automatically smoothen sharp corners with curve
+- smoothly broaden/narrowing roads
 
 Features to develop:
-- smoothly broaden/narrowing roads
 - more intelligent assisting tools
 - beautification of crossings
 - overpass
