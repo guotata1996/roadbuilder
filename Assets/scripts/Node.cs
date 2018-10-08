@@ -123,28 +123,21 @@ class Node : MonoBehaviour
         {
             for (int i = 0; i != connection.Count; ++i)
             {
-                if (i == connection.Count - 1)
+                int i_hat = (i == connection.Count - 1) ? 0 : i + 1;
+                var margins = smoothenCrossing(connection[i].First, connection[i_hat].First);
+                connection[i].Second.First = Mathf.Max(connection[i].Second.First, Mathf.Abs(margins.First));
+                connection[i_hat].Second.First = Mathf.Max(connection[i_hat].Second.First, Mathf.Abs(margins.Second));
+                if (margins.First < 0)
                 {
-                    var margins = smoothenCrossing(connection[i].First, connection[0].First);
-                    connection[i].Second.First = Mathf.Max(connection[i].Second.First, Mathf.Abs(margins.First));
-                    connection[0].Second.First = Mathf.Max(connection[0].Second.First, Mathf.Abs(margins.Second));
-                }
-                else
-                {
-                    var margins = smoothenCrossing(connection[i].First, connection[i + 1].First);
-                    connection[i].Second.First = Mathf.Max(connection[i].Second.First, Mathf.Abs(margins.First));
-                    connection[i + 1].Second.First = Mathf.Max(connection[i + 1].Second.First, Mathf.Abs(margins.Second));
-                    if (margins.First < 0)
+                    //>=180 degrees intersection
+                    connection[i].Second.Second = Mathf.Abs(margins.First);
+                    connection[i_hat].Second.Second = Mathf.Abs(margins.Second);
+                    if (connection.Count == 2)
                     {
-                        //180 degrees intersection
-                        connection[i].Second.Second = Mathf.Abs(margins.First);
-                        connection[i+1].Second.Second = Mathf.Abs(margins.Second);
-                        if (connection.Count == 2)
-                        {
-                            break;
-                        }
+                        break;
                     }
                 }
+
             }
         }
     }
@@ -181,7 +174,7 @@ class Node : MonoBehaviour
         if (Algebra.isclose(delta_angle, Mathf.PI)){
             //smoothen with Beizier Line
             if (r1.width == r2.width){
-                Debug.Assert(false);
+                //TODO Combine two frags
                 return new Pair<float, float>(0f, 0f);
             }
             Road wideRoad = r1.width > r2.width ? r1 : r2;
@@ -216,7 +209,6 @@ class Node : MonoBehaviour
 
             Vector2 Pwide_1 = wideRoad.curve.at_ending(startof(wideRoad.curve), halfsmoothenLength) + Algebra.angle2dir(Awide - Mathf.PI / 2) * 
                                       (wideRoad.width / 2 - narrowRoad.width / 2);
-            Debug.Log(Pwide_1 + " " + Pnarrow);
             Curve smoothener1_last = new Bezeir(Pwide_1, Pwide_1 - Algebra.angle2dir(Awide) * halfsmoothenLength / 2, 0.5f * (Pwide_1 + Pnarrow), 0f, 0f);
             Curve smoothener2_last = new Bezeir(0.5f * (Pwide_1 + Pnarrow), Pnarrow - Algebra.angle2dir(Anarrow) * halfsmoothenLength / 2, Pnarrow, 0f, 0f);
             GameObject smoothObj_last = Instantiate(indicatorInst.roadIndicatorPrefab, transform);
@@ -228,14 +220,46 @@ class Node : MonoBehaviour
         }
         else{
             //smoothen with Arc
-            this.r1 = r1;
-            this.r2 = r2;
-            Vector2 streetcorner = approxStreetCorner();
+
             if (delta_angle > Mathf.PI){
-                return new Pair<float, float>(0f, 0f);
+                Road widerRoad = r1.width > r2.width ? r1 : r2;
+                Road narrowerRoad = r1.width > r2.width ? r2 : r1;
+                // the width could be same
+                this.r1 = r2;
+                this.r2 = r1;
+                Vector2 oppositeStreetCorner = approxStreetCorner();
+                float smoothLength = Mathf.Min((oppositeStreetCorner - twodPosition).magnitude * this.crossingSmoothScale, 2 * Mathf.Min(r1.width, r2.width));
+
+                float wide_offset = (widerRoad == r1) ? c2_offset : c1_offset;
+                float narrow_offset = (widerRoad == r1) ? c1_offset : c2_offset;
+
+                float wide_curveIntersectAngle = widerRoad.curve.angle_ending(startof(widerRoad.curve), wide_offset + smoothLength);
+                float narrow_curveIntersectAngle = narrowerRoad.curve.angle_ending(startof(narrowerRoad.curve), narrow_offset + smoothLength);
+                Vector2 wide_curveIntersect = widerRoad.curve.at_ending(startof(widerRoad.curve), wide_offset + smoothLength) +
+                                                       Algebra.angle2dir(wide_curveIntersectAngle + Mathf.PI / 2) * widerRoad.width / 2;
+
+                int smoothener_count = Mathf.CeilToInt(widerRoad.width / narrowerRoad.width);
+                for (int i = 0; i != smoothener_count ; ++i){
+                    Vector2 wideP = wide_curveIntersect + Algebra.angle2dir(wide_curveIntersectAngle - Mathf.PI / 2) * 
+                                                                 ((i == smoothener_count - 1) ? widerRoad.width - narrowerRoad.width * 0.5f : (narrowerRoad.width * (i + 0.5f)));
+                    Vector2 narrowP = narrowerRoad.curve.at_ending(startof(narrowerRoad.curve), narrow_offset + smoothLength);
+                    Vector2 wideP_endPoint = wideP - Algebra.angle2dir(wide_curveIntersectAngle) * (smoothLength + wide_offset * 100);
+                    Vector2 narrowP_endPoint = narrowP - Algebra.angle2dir(narrow_curveIntersectAngle) * (smoothLength + wide_offset * 100);
+                    Vector2 bezier_midPoint = Geometry.curveIntersect(new Line(wideP, wideP_endPoint, 0f, 0f), new Line(narrowP, narrowP_endPoint, 0f, 0f))[0];
+
+                    Curve smoothener = new Bezeir(wideP, bezier_midPoint, narrowP, 0f, 0f);
+                    GameObject smoothObj = Instantiate(indicatorInst.roadIndicatorPrefab, transform);
+                    smoothInstances.Add(smoothObj);
+                    RoadRenderer smoothObjConfig = smoothObj.GetComponent<RoadRenderer>();
+                    smoothObjConfig.generate(smoothener, new List<string> { string.Format("surface_{0}", narrowerRoad.width) });
+                }
+                Debug.Log(-(c2_offset + smoothLength));
+                return new Pair<float, float>(-(c2_offset + smoothLength), -(c1_offset + smoothLength));
             }
             else{
-
+                this.r1 = r1;
+                this.r2 = r2;
+                Vector2 streetcorner = approxStreetCorner();
                 float smoothLength = Mathf.Min((streetcorner - twodPosition).magnitude * this.crossingSmoothScale, 2 * Mathf.Min(r1.width, r2.width));
 
                 float r1_curveIntersectAngle = r1.curve.angle_ending(startof(r1.curve), c1_offset);

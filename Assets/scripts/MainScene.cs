@@ -10,9 +10,9 @@ public class MainScene : MonoBehaviour {
         RoadDrawing drawing= GameObject.FindWithTag("Road/curveIndicator").GetComponent<RoadDrawing>();
 
         RoadManager manager = drawing.roadManager;
-        manager.addRoad(new Line(new Vector2(0f, 0f), new Vector2(50f, 0f), 0f, 0f), new List<string> { "lane", "dash_yellow", "lane" });
-        manager.addRoad(new Line(new Vector2(50f, 0f), new Vector2(100f, 0f), 0f, 0f), new List<string> { "lane" });
-        manager.addRoad(new Line(new Vector2(50f, 0f), new Vector2(50f, -50f), 0f, 0f), new List<string>{"lane"});
+        manager.addRoad(new Line(new Vector2(0f, 50f), new Vector2(50f, 0f), 0f, 0f), new List<string> { "lane", "dash_yellow", "lane" });
+        manager.addRoad(new Line(new Vector2(50f, 0f), new Vector2(100f, 50f), 0f, 0f), new List<string> { "lane", "dash_yellow", "lane" });
+        manager.addRoad(new Line(new Vector2(50f, 50f), new Vector2(50f, 0f), 0f, 0f), new List<string>{"lane", "dash_yellow", "lane" });
 	}
 	
 	// Update is called once per frame
