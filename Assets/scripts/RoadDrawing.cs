@@ -43,7 +43,7 @@ public class RoadDrawing : MonoBehaviour
 
     public void Awake()
     {
-        GameObject manager = Instantiate(roadManagerPrefab, transform);
+        GameObject manager = Instantiate(roadManagerPrefab, Vector3.zero, Quaternion.identity);
         roadManager = manager.GetComponent<RoadManager>();
         indicatorType = IndicatorType.none;
         reset();
@@ -61,6 +61,7 @@ public class RoadDrawing : MonoBehaviour
     public void Update()
     {
         laneConfig = GameObject.FindWithTag("UI/laneconfig").GetComponent<LaneConfigPanelBehavior>().laneconfigresult;
+        Debug.Log(pointer);
 
         if (controlPoint[pointer].x != Vector3.negativeInfinity.x && indicatorType != IndicatorType.none)
         {
@@ -72,9 +73,12 @@ public class RoadDrawing : MonoBehaviour
                 if (pointer == 1)
                 {
                     Destroy(roadIndicator);
-                    roadIndicator = Instantiate(roadIndicatorPrefab, transform);
-                    RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                    roadConfigure.generate(new Line(controlPoint[0], controlPoint[1], 0f, 0f), laneConfig);
+                    if ((controlPoint[0] - controlPoint[1]).magnitude > 1f)
+                    {
+                        roadIndicator = Instantiate(roadIndicatorPrefab, transform);
+                        RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
+                        roadConfigure.generate(new Line(controlPoint[0], controlPoint[1], 0f, 0f), laneConfig, indicator: true);
+                    }
                 }
 
                 if (pointer == 2)
@@ -88,9 +92,12 @@ public class RoadDrawing : MonoBehaviour
             {
                 if (pointer == 1){
                     Destroy(roadIndicator);
-                    roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
-                    RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                    roadConfigure.generate(new Line(controlPoint[0], controlPoint[1], 0f, 0f), laneConfig);                
+                    if ((controlPoint[0] - controlPoint[1]).magnitude > 1f)
+                    {
+                        roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
+                        RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
+                        roadConfigure.generate(new Line(controlPoint[0], controlPoint[1], 0f, 0f), laneConfig, indicator: true);
+                    }
                 }
 
                 if (pointer == 2){
@@ -99,7 +106,7 @@ public class RoadDrawing : MonoBehaviour
                         Destroy(roadIndicator);
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(new Bezeir(controlPoint[0], controlPoint[1], controlPoint[2], 0f, 0f), laneConfig);
+                        roadConfigure.generate(new Bezeir(controlPoint[0], controlPoint[1], controlPoint[2], 0f, 0f), laneConfig, indicator:true);
                     }
 
                 }
@@ -121,11 +128,14 @@ public class RoadDrawing : MonoBehaviour
                 if (pointer == 1){
                     /*ind[0] is start, ind[1] isorigin*/
                     Destroy(roadIndicator);
-                    roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
-                    RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                    roadConfigure.generate(new Line(controlPoint[1], controlPoint[0], 0f, 0f), laneConfig);
-                    if (!Algebra.isclose((controlPoint[1] - controlPoint[0]).magnitude, 0))
-                        roadConfigure.generate(new Arc(controlPoint[1], controlPoint[0], 1.999f * Mathf.PI, 0f, 0f), laneConfig);
+                    if ((controlPoint[0] - controlPoint[1]).magnitude > 1f)
+                    {
+                        roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
+                        RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
+                        roadConfigure.generate(new Line(controlPoint[1], controlPoint[0], 0f, 0f), laneConfig);
+                        if (!Algebra.isclose((controlPoint[1] - controlPoint[0]).magnitude, 0))
+                            roadConfigure.generate(new Arc(controlPoint[1], controlPoint[0], 1.999f * Mathf.PI, 0f, 0f), laneConfig, indicator: true);
+                    }
                 }
 
                 if (pointer == 2){
@@ -136,8 +146,8 @@ public class RoadDrawing : MonoBehaviour
                         Destroy(roadIndicator);
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(new Arc(controlPoint[1], controlPoint[0], Mathf.Deg2Rad * Vector2.SignedAngle(basedir, towardsdir), 0f, 0f), laneConfig);
-                        roadConfigure.generate(new Arc(controlPoint[1], controlPoint[1] + Vector2.right , 1.999f * Mathf.PI, 0f, 0f), laneConfig);
+                        roadConfigure.generate(new Arc(controlPoint[1], controlPoint[0], Mathf.Deg2Rad * Vector2.SignedAngle(basedir, towardsdir), 0f, 0f), laneConfig, indicator:true);
+                        roadConfigure.generate(new Arc(controlPoint[1], controlPoint[1] + Vector2.right , 1.999f * Mathf.PI, 0f, 0f), laneConfig, indicator:true);
                     }
                 }
 

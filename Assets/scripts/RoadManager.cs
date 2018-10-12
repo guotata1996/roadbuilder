@@ -113,10 +113,9 @@ public class RoadManager : MonoBehaviour
 
     private Road addPureRoad(Curve curve, List<string> laneConfigure)
     {
-        Debug.Log(curve + " added!");
         GameObject roadInstance = Instantiate(road, transform);
         RoadRenderer roadConfigure = roadInstance.GetComponent<RoadRenderer>();
-        roadConfigure.generate(curve, laneConfigure);
+        roadConfigure.generate(curve, laneConfigure, indicator:false);
         Road newRoad = new Road(curve, laneConfigure, roadInstance);
         allroads.Add(newRoad);
         createOrAddtoNode(newRoad);
@@ -175,7 +174,6 @@ public class RoadManager : MonoBehaviour
 
     public Vector2 approNodeToExistingRoad(Vector2 p, out Road match){
         List<Road> candidates = allroads.FindAll(r => (r.curve.AttouchPoint(p) - p).magnitude <= ApproxLimit);
-
         if (candidates.Count > 1){
             Road bestMatch = candidates.OrderBy(r => (r.curve.AttouchPoint(p) - p).magnitude).First();
             match = bestMatch;
@@ -215,7 +213,9 @@ public class RoadManager : MonoBehaviour
         Node n0, n1;
         findNodeAt(r.curve.at(0f), out n0);
         findNodeAt(r.curve.at(1f), out n1);
-        roadConfigure.generate(r.curve, r.laneconfigure, n0.getMargin(r).First, n1.getMargin(r).First, n0.getMargin(r).Second, n1.getMargin(r).Second);
+        roadConfigure.generate(r.curve, r.laneconfigure, 
+                               n0.getMargin(r).First, n1.getMargin(r).First, n0.getMargin(r).Second, n1.getMargin(r).Second,
+                               indicator:false);
     }
 
     public void deleteRoad(Road r){

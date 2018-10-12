@@ -19,9 +19,9 @@ public class RoadRenderer : MonoBehaviour
     public float dashLength = 4f;
     public float dashInterval = 6f;
 
-    public Texture yellow, white, road, delete;
-
-    public void generate(Curve curve, List<string> laneConfig, float margin_0 = 0f, float margin_1 = 0f, float surfaceMargin_0 = 0f, float surfaceMargin_1 = 0f)
+    public void generate(Curve curve, List<string> laneConfig, 
+                         float indicatorMargin_0 = 0f, float indicatorMargin_1 = 0f, float surfaceMargin_0 = 0f, float surfaceMargin_1 = 0f,
+                         bool indicator = false)
     {
         List<Separator> separators = new List<Separator>();
         float offset = 0f;
@@ -60,10 +60,10 @@ public class RoadRenderer : MonoBehaviour
                 switch (sepcolor)
                 {
                     case "yellow":
-                        sep.texture = yellow;
+                        sep.texture = Resources.Load<Texture>("Textures/yellow");
                         break;
                     case "white":
-                        sep.texture = white;
+                        sep.texture = Resources.Load<Texture>("Textures/white");
                         break;
                 }
 
@@ -89,15 +89,10 @@ public class RoadRenderer : MonoBehaviour
         for (int i = 0; i != separators.Count; i++)
         {
             separators[i].offset -= offset / 2;
-            drawSeparator(curve, separators[i], margin_0, margin_1);
+            drawSeparator(curve, separators[i], indicatorMargin_0, indicatorMargin_1);
         }
 
-        drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1);
-
-    }
-
-    public void remove()
-    {
+        drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1, indicator);
 
     }
 
@@ -110,7 +105,9 @@ public class RoadRenderer : MonoBehaviour
 			GameObject rendins = Instantiate (rend, transform);
             rendins.transform.parent = this.transform;
 			CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
-			decomp.CreateMesh (curve, separatorWidth, sep.texture, sep.offset + separatorWidth / 2, z_offset:0.01f);
+            Material normalMaterial = new Material(Shader.Find("Standard"));
+            normalMaterial.mainTexture = sep.texture;
+            decomp.CreateMesh (curve, separatorWidth, normalMaterial, offset: sep.offset + separatorWidth / 2, z_offset:0.01f);
 		}
 		else {
             List<Curve> dashed = curve.segmentation (dashLength + dashInterval);
@@ -122,7 +119,9 @@ public class RoadRenderer : MonoBehaviour
                 if (vacant_and_dashed.Count == 2) {
 					GameObject rendins = Instantiate (rend, transform);
 					CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
-					decomp.CreateMesh (vacant_and_dashed [1], separatorWidth, sep.texture, sep.offset + separatorWidth / 2, z_offset:0.01f);
+                    Material normalMaterial = new Material(Shader.Find("Standard"));
+                    normalMaterial.mainTexture = sep.texture;
+                    decomp.CreateMesh (vacant_and_dashed [1], separatorWidth, normalMaterial, offset:sep.offset + separatorWidth / 2, z_offset:0.01f);
 				}
 
 			}
@@ -130,18 +129,32 @@ public class RoadRenderer : MonoBehaviour
 		}
 	}
 
-    void drawRoadSurface(Curve curve, float width, float surfacemargin_0 = 0f, float surfacemargin_1 = 0f){
+    void drawRoadSurface(Curve curve, float width, float surfacemargin_0 = 0f, float surfacemargin_1 = 0f, bool indicator = false){
         curve = curve.cut(surfacemargin_0 / curve.length, 1f - surfacemargin_1 / curve.length);
 		GameObject rendins = Instantiate (rend, transform);
         rendins.transform.parent = this.transform;
 		CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
-		decomp.CreateMesh (curve, width, road);
-	}
+        if (indicator)
+        {
+            Material transMaterial = new Material(Shader.Find("Transparent/Diffuse"));
+            transMaterial.color = new Color(0.25f, 0.75f, 0.75f, 0.6f);
+            decomp.CreateMesh(curve, width, transMaterial);
+        }
+        else
+        {
+            Material normalMaterial = new Material(Shader.Find("Standard"));
+            normalMaterial.mainTexture = Resources.Load<Texture>("Textures/road");
+            decomp.CreateMesh(curve, width, normalMaterial);
+
+        }
+    }
 
     void drawRemovalMark(Curve curve, float width){
         GameObject rendins = Instantiate(rend, transform);
         rendins.transform.parent = this.transform;
         CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
-        decomp.CreateMesh(curve, width, delete, z_offset:0.02f);
+        Material normalMaterial = new Material(Shader.Find("Standard"));
+        normalMaterial.mainTexture = Resources.Load<Texture>("Textures/orange");
+        decomp.CreateMesh(curve, width, normalMaterial, z_offset:0.02f);
     }
 }

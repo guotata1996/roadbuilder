@@ -7,11 +7,10 @@ public class CurveRenderer : MonoBehaviour {
 
 	public float maxAngleDiff = 0.01f;
 
-	public void CreateMesh(Curve curve, float width, Texture curveTexture, float offset = 0f, float z_offset = 0f){
-		GetComponent<MeshRenderer> ().material.mainTexture = curveTexture;
-		GetComponent<MeshRenderer> ().material.mainTexture.wrapMode = TextureWrapMode.Repeat;
+    public void CreateMesh(Curve curve, float width, Material mainMaterial, float offset = 0f, float z_offset = 0f){
+        GetComponent<MeshRenderer> ().material = mainMaterial;
 
-		float curveAngle = curve.length;
+        float curveAngle = curve.length;
 		int segmentCount = Mathf.CeilToInt(curveAngle / maxAngleDiff);
 
 		Vector3 z_offset_vec = new Vector3 (0f, z_offset, 0f);
