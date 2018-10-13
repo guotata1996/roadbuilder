@@ -158,6 +158,23 @@ public class RoadManager : MonoBehaviour
         }
     }
 
+    internal Vector2 approxRoadParallelToAxis(Vector2 flexible, Vector2 fix)
+    {
+
+        if (Algebra.isclose((flexible - fix).magnitude, 0f))
+            return flexible;
+        float projectionOnX = Vector2.Dot(flexible - fix, Vector2.right);
+        float projectionOnY = Vector2.Dot(flexible - fix, Vector2.up);
+        if (Mathf.Abs(projectionOnX) / (flexible - fix).magnitude > Mathf.Cos(Mathf.PI / 36f)){
+            return fix + projectionOnX * Vector2.right;
+        }
+        if (Mathf.Abs(projectionOnY) / (flexible - fix).magnitude > Mathf.Cos(Mathf.PI / 36f)){
+            return fix + projectionOnY * Vector2.up;
+        }
+
+        return flexible;
+    }
+
     bool findNodeAt(Vector3 position, out Node rtn)
     {
         Vector3 approx = Algebra.approximate(position);
@@ -172,7 +189,7 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    public Vector2 approNodeToExistingRoad(Vector2 p, out Road match){
+    public Vector2 approxNodeToExistingRoad(Vector2 p, out Road match){
         List<Road> candidates = allroads.FindAll(r => (r.curve.AttouchPoint(p) - p).magnitude <= ApproxLimit);
         if (candidates.Count > 1){
             Road bestMatch = candidates.OrderBy(r => (r.curve.AttouchPoint(p) - p).magnitude).First();

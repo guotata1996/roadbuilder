@@ -30,14 +30,15 @@ public class RoadDrawing : MonoBehaviour
 
     public void fixControlPoint(Vector2 cp)
     {
-        cp = roadManager.approNodeToExistingRoad(cp, out targetRoad);
-        controlPoint[pointer] = cp;
+
+        //cp = roadManager.approxNodeToExistingRoad(cp, out targetRoad);
+        //controlPoint[pointer] = cp;
         pointer++;
     }
 
     public void setControlPoint(Vector2 cp)
     {
-        cp = roadManager.approNodeToExistingRoad(cp, out targetRoad);
+        cp = roadManager.approxNodeToExistingRoad(cp, out targetRoad);
         controlPoint[pointer] = cp;
     }
 
@@ -61,7 +62,6 @@ public class RoadDrawing : MonoBehaviour
     public void Update()
     {
         laneConfig = GameObject.FindWithTag("UI/laneconfig").GetComponent<LaneConfigPanelBehavior>().laneconfigresult;
-        Debug.Log(pointer);
 
         if (controlPoint[pointer].x != Vector3.negativeInfinity.x && indicatorType != IndicatorType.none)
         {
@@ -70,10 +70,12 @@ public class RoadDrawing : MonoBehaviour
 
             if (indicatorType == IndicatorType.line)
             {
+
                 if (pointer == 1)
                 {
                     Destroy(roadIndicator);
-                    if ((controlPoint[0] - controlPoint[1]).magnitude > 1f)
+                    controlPoint[1] = roadManager.approxRoadParallelToAxis(controlPoint[1], controlPoint[0]);
+                    if (!Algebra.isclose((controlPoint[0] - controlPoint[1]).magnitude, 0f))
                     {
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
@@ -92,7 +94,8 @@ public class RoadDrawing : MonoBehaviour
             {
                 if (pointer == 1){
                     Destroy(roadIndicator);
-                    if ((controlPoint[0] - controlPoint[1]).magnitude > 1f)
+                    controlPoint[1] = roadManager.approxRoadParallelToAxis(controlPoint[1], controlPoint[0]);
+                    if (!Algebra.isclose((controlPoint[0] - controlPoint[1]).magnitude, 0f))
                     {
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
@@ -101,6 +104,7 @@ public class RoadDrawing : MonoBehaviour
                 }
 
                 if (pointer == 2){
+                    controlPoint[2] = roadManager.approxRoadParallelToAxis(controlPoint[2], controlPoint[1]);
                     if (!Geometry.Parallel(controlPoint[1] - controlPoint[0], controlPoint[2] - controlPoint[1]))
                     {
                         Destroy(roadIndicator);
@@ -128,7 +132,8 @@ public class RoadDrawing : MonoBehaviour
                 if (pointer == 1){
                     /*ind[0] is start, ind[1] isorigin*/
                     Destroy(roadIndicator);
-                    if ((controlPoint[0] - controlPoint[1]).magnitude > 1f)
+                    controlPoint[1] = roadManager.approxRoadParallelToAxis(controlPoint[1], controlPoint[0]);
+                    if (!Algebra.isclose((controlPoint[0] - controlPoint[1]).magnitude, 0f))
                     {
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
