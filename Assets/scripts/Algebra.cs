@@ -9,6 +9,9 @@ public class Algebra {
      */
 
     static float _a0, _a1, _a2, _a3, _a4;
+
+    public static float InfLength = 99999f;
+
     public static List<float> functionSolver(float a0, float a1, float a2, float a3 = 0, float a4 =0)
     {
         List<float> ans = new List<float>();

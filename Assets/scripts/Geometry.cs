@@ -90,8 +90,7 @@ public static class Geometry {
         }
 
         commoncase.AddRange(specialcase);
-        commoncase = commoncase.Distinct(new Vector2Comparator()).ToList();
-
+        commoncase = commoncase.Distinct(new IntersectPointComparator()).ToList();
         return commoncase;
 
     }
@@ -205,14 +204,14 @@ public static class Geometry {
 
 }
 
-class Vector2Comparator : IEqualityComparer<Vector2>{
+class IntersectPointComparator : IEqualityComparer<Vector2>{
     public bool Equals(Vector2 x, Vector2 y)
 {
-    return Algebra.isclose((x - y).magnitude, 0f);
+    return (x - y).magnitude < 0.1f;
 }
 
     public int GetHashCode(Vector2 obj)
     {
-        return Algebra.approximate(obj).GetHashCode();
+        return 0;
     }
 }

@@ -253,7 +253,6 @@ class Node : MonoBehaviour
                     RoadRenderer smoothObjConfig = smoothObj.GetComponent<RoadRenderer>();
                     smoothObjConfig.generate(smoothener, new List<string> { string.Format("surface_{0}", narrowerRoad.width) });
                 }
-                Debug.Log(-(c2_offset + smoothLength));
                 return new Pair<float, float>(-(c2_offset + smoothLength), -(c1_offset + smoothLength));
             }
             else{

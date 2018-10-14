@@ -10,8 +10,12 @@ public class Road
     {
         curve = _curve;
         laneconfigure = new List<string>();
-        foreach(string l in _lane){
-            laneconfigure.Add(l);
+        if (_lane != null)
+        {
+            foreach (string l in _lane)
+            {
+                laneconfigure.Add(l);
+            }
         }
         roadObject = _roadObj;
     }
@@ -19,6 +23,12 @@ public class Road
     public Curve curve;
     public List<string> laneconfigure;
     public GameObject roadObject;
+    internal bool virtualRoad{
+        get{
+            return laneconfigure.Count == 0;
+        }
+    }
+
     public float width{
         get{
             var ans = 0f;
@@ -56,6 +66,7 @@ public class RoadManager : MonoBehaviour
     public void addRoad(Curve curve, List<string> laneConfigure)
     {
         List<Vector2> allNewIntersectPoints = new List<Vector2>();
+        Debug.Log("road to add: " + curve);
 
         foreach (Road oldroad in allroads.ToList())
         {
@@ -75,14 +86,16 @@ public class RoadManager : MonoBehaviour
             }
         }
 
-        allNewIntersectPoints = allNewIntersectPoints.Distinct(new Vector2Comparator()).ToList();
+        allNewIntersectPoints = allNewIntersectPoints.Distinct(new IntersectPointComparator()).ToList();
         List<float> intersectParamsWithBeginAndEnd1 = interSectPoints2Fragments(allNewIntersectPoints, curve);
         addAllFragments(intersectParamsWithBeginAndEnd1, curve, laneConfigure);
 
         /*TODO revise*/
+
         foreach(Road r in allroads.ToList()){
             updateMargin(r);
         }
+
     }
 
     private List<float> interSectPoints2Fragments(List<Vector2> intersectPoints, Curve originalCurve)
@@ -92,11 +105,17 @@ public class RoadManager : MonoBehaviour
         List<float> intersectParams1 = intersectParams.ToList();
 
         intersectParams1.Sort();
-        if (intersectParams1.Count == 0 || !Mathf.Approximately(0f, intersectParams1.First()))
+        string logmsg = "";
+        foreach (float p1 in intersectParams1){
+            logmsg = logmsg + p1;
+        }
+        //Debug.Log("intersectparams = " + logmsg);
+
+        if (intersectParams1.Count == 0 || !Algebra.isclose(0f, intersectParams1.First()))
         {
             intersectParams1.Insert(0, 0f);
         }
-        if (!Mathf.Approximately(1f, intersectParams1.Last()))
+        if (!Algebra.isclose(1f, intersectParams1.Last()))
         {
             intersectParams1.Add(1f);
         }
@@ -158,22 +177,24 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    internal Vector2 approxRoadParallelToAxis(Vector2 flexible, Vector2 fix)
+    /*
+    internal Vector2 approxRoadParallelToAxis(Vector2 flexible, Vector2 fix, List<Vector2> targetList)
     {
-
         if (Algebra.isclose((flexible - fix).magnitude, 0f))
             return flexible;
-        float projectionOnX = Vector2.Dot(flexible - fix, Vector2.right);
-        float projectionOnY = Vector2.Dot(flexible - fix, Vector2.up);
-        if (Mathf.Abs(projectionOnX) / (flexible - fix).magnitude > Mathf.Cos(Mathf.PI / 36f)){
-            return fix + projectionOnX * Vector2.right;
-        }
-        if (Mathf.Abs(projectionOnY) / (flexible - fix).magnitude > Mathf.Cos(Mathf.PI / 36f)){
-            return fix + projectionOnY * Vector2.up;
-        }
 
+        targetList.Add(Vector2.right);
+        targetList.Add(Vector2.up);
+        foreach (Vector2 direction in targetList){
+            float projectionOnDir = Vector2.Dot(flexible - fix, direction);
+            if (Mathf.Abs(projectionOnDir) / (flexible - fix).magnitude > Mathf.Cos(Mathf.PI / 36f))
+            {
+                return fix + projectionOnDir * direction;
+            }
+        }
         return flexible;
     }
+    */
 
     bool findNodeAt(Vector3 position, out Node rtn)
     {
@@ -189,14 +210,31 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    public Vector2 approxNodeToExistingRoad(Vector2 p, out Road match){
-        List<Road> candidates = allroads.FindAll(r => (r.curve.AttouchPoint(p) - p).magnitude <= ApproxLimit);
-        if (candidates.Count > 1){
-            Road bestMatch = candidates.OrderBy(r => (r.curve.AttouchPoint(p) - p).magnitude).First();
+
+    public Vector2 approxNodeToExistingRoad(Vector2 p, out Road match, List<Curve> additionalInterestedLines = null){
+        List<Road> allInterestedRoad;
+        if (additionalInterestedLines != null){
+            allInterestedRoad = new List<Road>();
+            allInterestedRoad.AddRange(allroads);
+            allInterestedRoad.AddRange(additionalInterestedLines.ConvertAll<Road>((Curve input) => new Road(input, null, null)));
+        }
+        else{
+            allInterestedRoad = allroads;
+        }
+
+        List<Road> candidates = allInterestedRoad.FindAll(r => (r.curve.AttouchPoint(p) - p).magnitude <= ApproxLimit);
+
+        List<Road> onlyRoadCandidates = candidates.FindAll((obj) => !obj.virtualRoad);
+
+        if (onlyRoadCandidates.Count > 0)
+        {
+            Road bestMatch = onlyRoadCandidates.OrderBy(r => (r.curve.AttouchPoint(p) - p).magnitude).First();
             match = bestMatch;
-            foreach(Road others in candidates){
+            foreach (Road others in candidates)
+            {
                 if (others != bestMatch)
                 {
+                    /*
                     Node n0;
                     findNodeAt(bestMatch.curve.at(0f), out n0);
                     if (n0.containsRoad(others))
@@ -206,14 +244,24 @@ public class RoadManager : MonoBehaviour
                     findNodeAt(bestMatch.curve.at(1f), out n1);
                     if (n1.containsRoad(others))
                         return bestMatch.curve.at_2d(1f);
-                }
+                        */
+                    List<Vector2> interPoints = Geometry.curveIntersect(bestMatch.curve, others.curve);
+                    foreach(Vector2 point in interPoints){
+                        if ((point - p).magnitude <= ApproxLimit){
+                            return point;
+                        }
+                    }
 
+                }
             }
+            return bestMatch.curve.AttouchPoint(p);
+
         }
 
-        if (candidates.Count == 1)
+
+        if (candidates.Count > 0)
         {
-            match = candidates[0];
+            match = null;
             return candidates[0].curve.AttouchPoint(p);
         }
 

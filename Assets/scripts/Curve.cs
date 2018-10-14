@@ -154,7 +154,7 @@ public class Arc : Curve
         center = _center;
         radius = (start - _center).magnitude;
         float t_0 = Mathf.Acos((start.x - _center.x) / radius); /*[0, Pi]*/
-        if (!Mathf.Approximately(Mathf.Sin(t_0), (start.y - center.y) / radius))
+        if (!Algebra.isclose(Mathf.Sin(t_0), (start.y - center.y) / radius))
         {
             t_0 = -t_0;/*[-Pi, 0]*/
         }
@@ -305,20 +305,18 @@ public class Arc : Curve
         {
             angle = -angle; //[-PI, PI]
         }
-        while (angle > Mathf.Max(t_start, t_end))
+        while (angle > Mathf.Max(t_start, t_end) && !Algebra.isclose(angle, Mathf.Max(t_start, t_end)))
             angle -= 2 * Mathf.PI;
 
-        while (angle < Mathf.Min(t_start, t_end))
+        while (angle < Mathf.Min(t_start, t_end) && !Algebra.isclose(angle, Mathf.Min(t_start, t_end)))
             angle += 2 * Mathf.PI;
-
         float p = (angle - t_start) / (t_end - t_start);
-
         return Algebra.approximateTo01(p);
     }
 
     public override string ToString()
     {
-        return string.Format("Arc: Length={0}, t_start={1}, t_end={2}", length, t_start, t_end);
+        return string.Format("Arc: Length={0}, t_start={1} (point={2}),\n t_end={3} (point={4})", length, t_start, at_ending(true), t_end, at_ending(false));
     }
 
     public override Vector2 AttouchPoint(Vector2 p)
