@@ -225,7 +225,7 @@ public class RoadDrawing : MonoBehaviour
                     interestedApproxLines.Clear();
                     Vector2 basedir = controlPoint[0] - controlPoint[1];
                     Vector2 towardsdir = controlPoint[2] - controlPoint[1];
-                    if (!Algebra.isclose(0, towardsdir.magnitude))
+                    if (!Algebra.isclose(0, towardsdir.magnitude) && !Algebra.isclose(controlPoint[1], controlPoint[0]) && !Geometry.Parallel(basedir, towardsdir))
                     {
                         Destroy(roadIndicator);
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);

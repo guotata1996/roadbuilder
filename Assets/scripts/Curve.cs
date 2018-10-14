@@ -295,10 +295,12 @@ public class Arc : Curve
 
     public override float? paramOf(Vector2 point)
     {
+
         if (!Algebra.isclose((point - center).magnitude, radius))
         {
             return null;
         }
+
         float angle = Mathf.Acos((point.x - center.x) / radius); //[0,PI]
         float sinvalue = (point.y - center.y) / radius;
         if (!Algebra.isclose(Mathf.Sin(angle), sinvalue))
@@ -316,7 +318,7 @@ public class Arc : Curve
 
     public override string ToString()
     {
-        return string.Format("Arc: Length={0}, t_start={1} (point={2}),\n t_end={3} (point={4})", length, t_start, at_ending(true), t_end, at_ending(false));
+        return string.Format("Arc: Length={0}, t_start={1} (point={2}), t_end={3} (point={4})", length, t_start, at_ending(true), t_end, at_ending(false));
     }
 
     public override Vector2 AttouchPoint(Vector2 p)
