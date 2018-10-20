@@ -177,25 +177,6 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    /*
-    internal Vector2 approxRoadParallelToAxis(Vector2 flexible, Vector2 fix, List<Vector2> targetList)
-    {
-        if (Algebra.isclose((flexible - fix).magnitude, 0f))
-            return flexible;
-
-        targetList.Add(Vector2.right);
-        targetList.Add(Vector2.up);
-        foreach (Vector2 direction in targetList){
-            float projectionOnDir = Vector2.Dot(flexible - fix, direction);
-            if (Mathf.Abs(projectionOnDir) / (flexible - fix).magnitude > Mathf.Cos(Mathf.PI / 36f))
-            {
-                return fix + projectionOnDir * direction;
-            }
-        }
-        return flexible;
-    }
-    */
-
     bool findNodeAt(Vector3 position, out Node rtn)
     {
         Vector3 approx = Algebra.approximate(position);
@@ -221,6 +202,7 @@ public class RoadManager : MonoBehaviour
         else{
             allInterestedRoad = allroads;
         }
+        Debug.Assert(additionalInterestedLines == null || additionalInterestedLines.All((arg1) => arg1 is Line));
 
         List<Road> candidates = allInterestedRoad.FindAll(r => (r.curve.AttouchPoint(p) - p).magnitude <= ApproxLimit);
 
@@ -234,17 +216,6 @@ public class RoadManager : MonoBehaviour
             {
                 if (others != bestMatch)
                 {
-                    /*
-                    Node n0;
-                    findNodeAt(bestMatch.curve.at(0f), out n0);
-                    if (n0.containsRoad(others))
-                        return bestMatch.curve.at_2d(0f);
-
-                    Node n1;
-                    findNodeAt(bestMatch.curve.at(1f), out n1);
-                    if (n1.containsRoad(others))
-                        return bestMatch.curve.at_2d(1f);
-                        */
                     List<Vector2> interPoints = Geometry.curveIntersect(bestMatch.curve, others.curve);
                     foreach(Vector2 point in interPoints){
                         if ((point - p).magnitude <= ApproxLimit){

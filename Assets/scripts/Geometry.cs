@@ -140,7 +140,31 @@ public static class Geometry {
 
     private static List<Vector2> intersect(Arc c1, Arc c2)
     {
-        List<Vector2> candidatePoints = Algebra.parametricFunctionSolver(c1.center, c1.radius, c2.center, c2.radius);
+        List<Vector2> candidatePoints;
+        if (sameMotherCurveUponIntersect(c1, c2))
+        {
+            candidatePoints = new List<Vector2>();
+            if (Algebra.isclose(c1.at_ending(true), c2.at_ending(true)))
+            {
+                candidatePoints.Add(c1.at_ending(true));
+            }
+            if (Algebra.isclose(c1.at_ending(true), c2.at_ending(false)))
+            {
+                candidatePoints.Add(c1.at_ending(true));
+            }
+            if (Algebra.isclose(c1.at_ending(false), c2.at_ending(true)))
+            {
+                candidatePoints.Add(c1.at_ending(false));
+            }
+            if (Algebra.isclose(c1.at_ending(false), c2.at_ending(false)))
+            {
+                candidatePoints.Add(c1.at_ending(false));
+            }
+        }
+        else
+        {
+            candidatePoints = Algebra.parametricFunctionSolver(c1.center, c1.radius, c2.center, c2.radius);
+        }
         return filter(candidatePoints, c1, c2);
     }
 
@@ -173,6 +197,7 @@ public static class Geometry {
     }
 
     public static bool sameMotherCurveUponIntersect(Curve c1, Curve c2){
+
         if (c1 is Line)
         {
             if (c2 is Line)
@@ -201,7 +226,6 @@ public static class Geometry {
         }
         return false;
     }
-
 }
 
 class IntersectPointComparator : IEqualityComparer<Vector2>{

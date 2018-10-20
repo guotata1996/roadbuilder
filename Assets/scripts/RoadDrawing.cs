@@ -70,6 +70,18 @@ public class RoadDrawing : MonoBehaviour
     public void Update()
     {
         laneConfig = GameObject.FindWithTag("UI/laneconfig").GetComponent<LaneConfigPanelBehavior>().laneconfigresult;
+        interestedApproxLines.Clear();
+
+
+        if (pointer >= 1)
+        {
+            interestedApproxLines.Add(new Line(controlPoint[pointer - 1] + Vector2.down * Algebra.InfLength, controlPoint[pointer - 1] + Vector2.up * Algebra.InfLength, 0f, 0f));
+            interestedApproxLines.Add(new Line(controlPoint[pointer - 1] + Vector2.left * Algebra.InfLength, controlPoint[pointer - 1] + Vector2.right * Algebra.InfLength, 0f, 0f));
+            if (targetRoad != null)
+            {
+                interestedApproxLines.Add(new Line(controlPoint[pointer - 1], targetRoad.curve.AttouchPoint(controlPoint[pointer - 1]), 0f, 0f));
+            }
+        }
 
         if (controlPoint[pointer].x != Vector3.negativeInfinity.x && indicatorType != IndicatorType.none)
         {
@@ -82,8 +94,6 @@ public class RoadDrawing : MonoBehaviour
                 if (pointer == 1)
                 {
                     Destroy(roadIndicator);
-                    interestedApproxLines.Add(new Line(controlPoint[0] + Vector2.down * Algebra.InfLength, controlPoint[0] + Vector2.up * Algebra.InfLength, 0f, 0f));
-                    interestedApproxLines.Add(new Line(controlPoint[0] + Vector2.left * Algebra.InfLength, controlPoint[0] + Vector2.right * Algebra.InfLength, 0f, 0f));
 
 
                     Road cp0_targetRoad;
@@ -155,10 +165,6 @@ public class RoadDrawing : MonoBehaviour
                 }
 
                 if (pointer == 2){
-                    interestedApproxLines.Clear();
-                    interestedApproxLines.Add(new Line(controlPoint[1] + Vector2.down * Algebra.InfLength, controlPoint[1] + Vector2.up * Algebra.InfLength, 0f, 0f));
-                    interestedApproxLines.Add(new Line(controlPoint[1] + Vector2.left * Algebra.InfLength, controlPoint[1] + Vector2.right * Algebra.InfLength, 0f, 0f));
-                    
 
                     if (!Geometry.Parallel(controlPoint[1] - controlPoint[0], controlPoint[2] - controlPoint[1]))
                     {
@@ -185,9 +191,7 @@ public class RoadDrawing : MonoBehaviour
 
             if (indicatorType == IndicatorType.arc){
                 if (pointer == 1){
-                    interestedApproxLines.Add(new Line(controlPoint[0] + Vector2.down * Algebra.InfLength, controlPoint[0] + Vector2.up * Algebra.InfLength, 0f, 0f));
-                    interestedApproxLines.Add(new Line(controlPoint[0] + Vector2.left * Algebra.InfLength, controlPoint[0] + Vector2.right * Algebra.InfLength, 0f, 0f));
-                    
+
                     Road cp0_targetRoad;
                     roadManager.approxNodeToExistingRoad(controlPoint[0], out cp0_targetRoad);
                     if (cp0_targetRoad != null)
@@ -222,7 +226,7 @@ public class RoadDrawing : MonoBehaviour
                 }
 
                 if (pointer == 2){
-                    interestedApproxLines.Clear();
+                    //interestedApproxLines.Clear();
                     Vector2 basedir = controlPoint[0] - controlPoint[1];
                     Vector2 towardsdir = controlPoint[2] - controlPoint[1];
                     if (!Algebra.isclose(0, towardsdir.magnitude) && !Algebra.isclose(controlPoint[1], controlPoint[0]) && !Geometry.Parallel(basedir, towardsdir))
@@ -275,6 +279,7 @@ public class RoadDrawing : MonoBehaviour
                 }
             }
         }
+
     }
 
 }
