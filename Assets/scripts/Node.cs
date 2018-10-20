@@ -225,26 +225,26 @@ class Node : MonoBehaviour
                 Road widerRoad = r1.width > r2.width ? r1 : r2;
                 Road narrowerRoad = r1.width > r2.width ? r2 : r1;
                 // the width could be same
-                this.r1 = r2;
-                this.r2 = r1;
-                Vector2 oppositeStreetCorner = approxStreetCorner();
-                float smoothLength = Mathf.Min((oppositeStreetCorner - twodPosition).magnitude * this.crossingSmoothScale, 2 * Mathf.Min(r1.width, r2.width));
+                this.r1 = r1;
+                this.r2 = r2;
+                Vector2 streetCorner = approxStreetCorner();
 
-                float wide_offset = (widerRoad == r1) ? c2_offset : c1_offset;
-                float narrow_offset = (widerRoad == r1) ? c1_offset : c2_offset;
+                float smoothLength = (streetCorner - twodPosition).magnitude * this.crossingSmoothScale + Mathf.Max(Mathf.Max(-c1_offset, 0), Mathf.Max(-c2_offset, 0));
 
-                float wide_curveIntersectAngle = widerRoad.curve.angle_ending(startof(widerRoad.curve), wide_offset + smoothLength);
-                float narrow_curveIntersectAngle = narrowerRoad.curve.angle_ending(startof(narrowerRoad.curve), narrow_offset + smoothLength);
-                Vector2 wide_curveIntersect = widerRoad.curve.at_ending(startof(widerRoad.curve), wide_offset + smoothLength) +
+                float wide_curveIntersectAngle = widerRoad.curve.angle_ending(startof(widerRoad.curve), smoothLength);
+                float narrow_curveIntersectAngle = narrowerRoad.curve.angle_ending(startof(narrowerRoad.curve), smoothLength);
+
+                Vector2 wide_curveIntersect = widerRoad.curve.at_ending(startof(widerRoad.curve), smoothLength) +
                                                        Algebra.angle2dir(wide_curveIntersectAngle + Mathf.PI / 2) * widerRoad.width / 2;
 
                 int smoothener_count = Mathf.CeilToInt(widerRoad.width / narrowerRoad.width);
-                for (int i = 0; i != smoothener_count ; ++i){
-                    Vector2 wideP = wide_curveIntersect + Algebra.angle2dir(wide_curveIntersectAngle - Mathf.PI / 2) * 
+                for (int i = 0; i != smoothener_count; ++i)
+                {
+                    Vector2 wideP = wide_curveIntersect + Algebra.angle2dir(wide_curveIntersectAngle - Mathf.PI / 2) *
                                                                  ((i == smoothener_count - 1) ? widerRoad.width - narrowerRoad.width * 0.5f : (narrowerRoad.width * (i + 0.5f)));
-                    Vector2 narrowP = narrowerRoad.curve.at_ending(startof(narrowerRoad.curve), narrow_offset + smoothLength);
-                    Vector2 wideP_endPoint = wideP - Algebra.angle2dir(wide_curveIntersectAngle) * (smoothLength + wide_offset * 100);
-                    Vector2 narrowP_endPoint = narrowP - Algebra.angle2dir(narrow_curveIntersectAngle) * (smoothLength + wide_offset * 100);
+                    Vector2 narrowP = narrowerRoad.curve.at_ending(startof(narrowerRoad.curve), smoothLength);
+                    Vector2 wideP_endPoint = wideP - Algebra.angle2dir(wide_curveIntersectAngle) * Algebra.mapLength;
+                    Vector2 narrowP_endPoint = narrowP - Algebra.angle2dir(narrow_curveIntersectAngle) * Algebra.mapLength;
                     Vector2 bezier_midPoint = Geometry.curveIntersect(new Line(wideP, wideP_endPoint, 0f, 0f), new Line(narrowP, narrowP_endPoint, 0f, 0f))[0];
 
                     Curve smoothener = new Bezeir(wideP, bezier_midPoint, narrowP, 0f, 0f);
@@ -253,7 +253,7 @@ class Node : MonoBehaviour
                     RoadRenderer smoothObjConfig = smoothObj.GetComponent<RoadRenderer>();
                     smoothObjConfig.generate(smoothener, new List<string> { string.Format("surface_{0}", narrowerRoad.width) });
                 }
-                return new Pair<float, float>(-(c2_offset + smoothLength), -(c1_offset + smoothLength));
+                return new Pair<float, float>(-smoothLength, -smoothLength);
             }
             else{
                 this.r1 = r1;

@@ -349,4 +349,6 @@ public class Algebra {
     public static Vector2 angle2dir(float angle){
         return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
     }
+
+    public static float mapLength = 1000f;
 }
