@@ -130,7 +130,6 @@ public class ChooseLaneConfig : MonoBehaviour{
 
     IEnumerator ExpandToTarget(GameObject paper, float target){
         float mid_position = target / 2;
-        float finalLength = Mathf.Abs(target);
         while(Mathf.Abs(paper.GetComponent<RectTransform>().anchoredPosition.x - mid_position) > 1f){
             paper.transform.Translate(buttonUnrollSpeed * (mid_position - paper.GetComponent<RectTransform>().anchoredPosition.x), 0f, 0f);
             paper.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(

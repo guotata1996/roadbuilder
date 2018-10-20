@@ -29,7 +29,7 @@ public class RoadDrawing : MonoBehaviour
 
     public GameObject preview;
 
-    List<Curve> interestedApproxLines;
+    List<Line> interestedApproxLines;
 
     public void fixControlPoint(Vector2 cp)
     {
@@ -50,7 +50,7 @@ public class RoadDrawing : MonoBehaviour
         roadManager = manager.GetComponent<RoadManager>();
         indicatorType = IndicatorType.none;
         controlPoint = new Vector2[4];
-        interestedApproxLines = new List<Curve>();
+        interestedApproxLines = new List<Line>();
 
         reset();
     }
@@ -100,15 +100,20 @@ public class RoadDrawing : MonoBehaviour
                     roadManager.approxNodeToExistingRoad(controlPoint[0], out cp0_targetRoad);
                     if (cp0_targetRoad != null){
                         //perpendicular
-
                         interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));
                         interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));
                         //extension
-                        if (Algebra.isclose(cp0_targetRoad.curve.at_ending(true), controlPoint[0])){
-                            interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d(0f) + Mathf.PI) * Algebra.InfLength, 0f, 0f));
+                        if (Algebra.isclose(cp0_targetRoad.curve.at_ending_2d(true), controlPoint[0])){
+                            //TODO add all direction extension
+                            Node crossingRoad;
+                            roadManager.findNodeAt(cp0_targetRoad.curve.at_ending(true), out crossingRoad);
+                            Debug.Assert(crossingRoad != null);
+                            //Debug.Log("count: " + crossingRoad.directionalLines(Algebra.InfLength, reverse: true).Count);
+                            //interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d(0f) + Mathf.PI) * Algebra.InfLength, 0f, 0f));
+                            interestedApproxLines.AddRange(crossingRoad.directionalLines(Algebra.InfLength, reverse:true));
                         }
                         else{
-                            if (Algebra.isclose(cp0_targetRoad.curve.at_ending(false),controlPoint[0])){
+                            if (Algebra.isclose(cp0_targetRoad.curve.at_ending_2d(false),controlPoint[0])){
                                 interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d(1f)) * Algebra.InfLength, 0f, 0f));
                             }
                         }
@@ -143,13 +148,13 @@ public class RoadDrawing : MonoBehaviour
                     {
                         interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));
                         interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));
-                        if (Algebra.isclose(cp0_targetRoad.curve.at_ending(true), controlPoint[0]))
+                        if (Algebra.isclose(cp0_targetRoad.curve.at_ending_2d(true), controlPoint[0]))
                         {
                             interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d(0f) + Mathf.PI) * Algebra.InfLength, 0f, 0f));
                         }
                         else
                         {
-                            if (Algebra.isclose(cp0_targetRoad.curve.at_ending(false), controlPoint[0]))
+                            if (Algebra.isclose(cp0_targetRoad.curve.at_ending_2d(false), controlPoint[0]))
                             {
                                 interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d(1f)) * Algebra.InfLength, 0f, 0f));
                             }
@@ -196,7 +201,7 @@ public class RoadDrawing : MonoBehaviour
                     roadManager.approxNodeToExistingRoad(controlPoint[0], out cp0_targetRoad);
                     if (cp0_targetRoad != null)
                     {
-                        if (Algebra.isclose(cp0_targetRoad.curve.at_ending(true), controlPoint[0]))
+                        if (Algebra.isclose(cp0_targetRoad.curve.at_ending_2d(true), controlPoint[0]))
                         {
                             interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d(0f) + Mathf.PI) * Algebra.InfLength, 0f, 0f));
                             interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d(0f) + Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));
@@ -204,7 +209,7 @@ public class RoadDrawing : MonoBehaviour
                         }
                         else
                         {
-                            if (Algebra.isclose(cp0_targetRoad.curve.at_ending(false), controlPoint[0]))
+                            if (Algebra.isclose(cp0_targetRoad.curve.at_ending_2d(false), controlPoint[0]))
                             {
                                 interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d(1f)) * Algebra.InfLength, 0f, 0f));
                                 interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir(cp0_targetRoad.curve.angle_2d(1f) + Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));

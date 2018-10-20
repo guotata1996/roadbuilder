@@ -105,11 +105,6 @@ public class RoadManager : MonoBehaviour
         List<float> intersectParams1 = intersectParams.ToList();
 
         intersectParams1.Sort();
-        string logmsg = "";
-        foreach (float p1 in intersectParams1){
-            logmsg = logmsg + p1;
-        }
-        //Debug.Log("intersectparams = " + logmsg);
 
         if (intersectParams1.Count == 0 || !Algebra.isclose(0f, intersectParams1.First()))
         {
@@ -148,10 +143,10 @@ public class RoadManager : MonoBehaviour
     {
         allroads.Remove(road);
         Node startNode, endNode;
-        bool startNodeV = findNodeAt(road.curve.at(0f), out startNode);
+        findNodeAt(road.curve.at(0f), out startNode);
         startNode.removeRoad(road);
 
-        bool endNodeV = findNodeAt(road.curve.at(1f), out endNode);
+        findNodeAt(road.curve.at(1f), out endNode);
 
         endNode.removeRoad(road);
 
@@ -177,7 +172,7 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    bool findNodeAt(Vector3 position, out Node rtn)
+    public bool findNodeAt(Vector3 position, out Node rtn)
     {
         Vector3 approx = Algebra.approximate(position);
 
@@ -192,12 +187,12 @@ public class RoadManager : MonoBehaviour
     }
 
 
-    public Vector2 approxNodeToExistingRoad(Vector2 p, out Road match, List<Curve> additionalInterestedLines = null){
+    public Vector2 approxNodeToExistingRoad(Vector2 p, out Road match, List<Line> additionalInterestedLines = null){
         List<Road> allInterestedRoad;
         if (additionalInterestedLines != null){
             allInterestedRoad = new List<Road>();
             allInterestedRoad.AddRange(allroads);
-            allInterestedRoad.AddRange(additionalInterestedLines.ConvertAll<Road>((Curve input) => new Road(input, null, null)));
+            allInterestedRoad.AddRange(additionalInterestedLines.ConvertAll<Road>((Line input) => new Road(input, null, null)));
         }
         else{
             allInterestedRoad = allroads;

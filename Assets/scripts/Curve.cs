@@ -35,7 +35,8 @@ public abstract class Curve
         }
     }
 
-    public Vector2 at_ending(bool start, float offset = 0f)
+
+    public Vector2 at_ending_2d(bool start, float offset = 0f)
     {
         offset = offset / length;
         if (start)
@@ -47,12 +48,20 @@ public abstract class Curve
 
     }
 
+    public Vector3 at_ending(bool start, float offset = 0f){
+        offset = offset / length;
+        if (start)
+            return at(offset);
+        else{
+            return at(1f - offset);
+        }
+    }
+
     public abstract float angle_2d(float t);
 
-    public Vector2 direction_ending_2d(bool start)
+    public Vector2 direction_ending_2d(bool start,float offset = 0f)
     {
-        float angle = angle_ending(start);
-        return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+        return Algebra.angle2dir(angle_ending(start, offset));
     }
 
     public Vector2 direction_2d(float t)
