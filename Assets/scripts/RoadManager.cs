@@ -187,17 +187,17 @@ public class RoadManager : MonoBehaviour
     }
 
 
-    public Vector2 approxNodeToExistingRoad(Vector2 p, out Road match, List<Line> additionalInterestedLines = null){
+    public Vector2 approxNodeToExistingRoad(Vector2 p, out Road match, List<Curve> additionalInterestedLines = null){
         List<Road> allInterestedRoad;
         if (additionalInterestedLines != null){
             allInterestedRoad = new List<Road>();
             allInterestedRoad.AddRange(allroads);
-            allInterestedRoad.AddRange(additionalInterestedLines.ConvertAll<Road>((Line input) => new Road(input, null, null)));
+            allInterestedRoad.AddRange(additionalInterestedLines.ConvertAll<Road>((Curve input) => new Road(input, null, null)));
         }
         else{
             allInterestedRoad = allroads;
         }
-        Debug.Assert(additionalInterestedLines == null || additionalInterestedLines.All((arg1) => arg1 is Line));
+        //Debug.Assert(additionalInterestedLines == null || additionalInterestedLines.All((arg1) => arg1 is Line));
 
         List<Road> candidates = allInterestedRoad.FindAll(r => (r.curve.AttouchPoint(p) - p).magnitude <= ApproxLimit);
 

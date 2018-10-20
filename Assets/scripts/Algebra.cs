@@ -285,6 +285,10 @@ public class Algebra {
         return isclose((a - b).magnitude, 0f);
     }
 
+    public static bool isRoadNodeClose(Vector2 a, Vector2 b){
+        return Mathf.Abs((a - b).magnitude) < 0.1f;
+    }
+
     public delegate float Del(float x);
 
     /*sove function: f(x) = targetValue, f' = gradient*/

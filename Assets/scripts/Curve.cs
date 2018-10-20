@@ -327,7 +327,7 @@ public class Arc : Curve
 
     public override string ToString()
     {
-        return string.Format("Arc: Length={0}, t_start={1} (point={2}), t_end={3} (point={4})", length, t_start, at_ending(true), t_end, at_ending(false));
+        return string.Format("Arc: Length={0}, t_start={1} (point={2}), t_end={3} (point={4})", length, t_start, at_ending_2d(true), t_end, at_ending_2d(false));
     }
 
     public override Vector2 AttouchPoint(Vector2 p)
@@ -361,19 +361,19 @@ public class Arc : Curve
         Debug.Assert(b is Arc);
         if (Algebra.isclose(t_start, b.t_start))
         {
-            return new Arc(center, at_ending(false), (t_start - t_end) + (b.t_end - b.t_start), z_start + z_offset, b.z_offset - z_offset);
+            return new Arc(center, at_ending_2d(false), (t_start - t_end) + (b.t_end - b.t_start), z_start + z_offset, b.z_offset - z_offset);
         }
         if (Algebra.isclose(t_start, b.t_end))
         {
-            return new Arc(center, at_ending(false), (t_start - t_end) + (b.t_start - b.t_end), z_start + z_offset, -b.z_offset - z_offset);
+            return new Arc(center, at_ending_2d(false), (t_start - t_end) + (b.t_start - b.t_end), z_start + z_offset, -b.z_offset - z_offset);
         }
         if (Algebra.isclose(t_end, b.t_start))
         {
-            return new Arc(center, at_ending(true), (t_end - t_start) + (b.t_end - b.t_start), z_start, z_offset + b.z_offset);
+            return new Arc(center, at_ending_2d(true), (t_end - t_start) + (b.t_end - b.t_start), z_start, z_offset + b.z_offset);
         }
         if (Algebra.isclose(t_end, b.t_end))
         {
-            return new Arc(center, at_ending(true), (t_end - t_start) + (b.t_start - b.t_end), z_start, z_offset - b.z_offset);
+            return new Arc(center, at_ending_2d(true), (t_end - t_start) + (b.t_start - b.t_end), z_start, z_offset - b.z_offset);
         }
         Debug.Assert(false);
         return null;
@@ -525,21 +525,21 @@ public class Line : Curve
     public override Curve concat(Curve b)
     {
         Debug.Assert(b is Line);
-        if (Algebra.isclose(at_ending(true), b.at_ending(true)))
+        if (Algebra.isclose(at_ending_2d(true), b.at_ending_2d(true)))
         {
-            return new Line(at_ending(false), b.at_ending(false), at(1f).y, b.at(1f).y - at(1f).y);
+            return new Line(at_ending_2d(false), b.at_ending_2d(false), at(1f).y, b.at(1f).y - at(1f).y);
         }
-        if (Algebra.isclose(at_ending(true), b.at_ending(false)))
+        if (Algebra.isclose(at_ending_2d(true), b.at_ending_2d(false)))
         {
-            return new Line(at_ending(false), b.at_ending(true), at(0f).y, b.at(1f).y - at(0f).y);
+            return new Line(at_ending_2d(false), b.at_ending_2d(true), at(0f).y, b.at(1f).y - at(0f).y);
         }
-        if (Algebra.isclose(at_ending(false), b.at_ending(true)))
+        if (Algebra.isclose(at_ending_2d(false), b.at_ending_2d(true)))
         {
-            return new Line(at_ending(true), b.at_ending(false), at(1f).y, b.at(0f).y - at(1f).y);
+            return new Line(at_ending_2d(true), b.at_ending_2d(false), at(1f).y, b.at(0f).y - at(1f).y);
         }
-        if (Algebra.isclose(at_ending(false), b.at_ending(false)))
+        if (Algebra.isclose(at_ending_2d(false), b.at_ending_2d(false)))
         {
-            return new Line(at_ending(true), b.at_ending(true), at(0f).y, b.at(0f).y - at(0f).y);
+            return new Line(at_ending_2d(true), b.at_ending_2d(true), at(0f).y, b.at(0f).y - at(0f).y);
         }
         Debug.Assert(false);
         return null;

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
+
 public class Pair<T, U>
 {
     public Pair()
@@ -25,9 +27,9 @@ public class Node : MonoBehaviour
     public Vector3 position;
 
     public GameObject roadCornerIndicator;
-
+    
     RoadDrawing indicatorInst;
-
+    
     public float crossingSmoothScale;
 
     public float laneChangeSmoothScale;
@@ -95,8 +97,8 @@ public class Node : MonoBehaviour
     }
 
     //returns one directional line for each of the road connecting to this node.
-    public List<Line> directionalLines(float length, bool reverse = false){
-        List<Line> rtn = new List<Line>();
+    public List<Curve> directionalLines(float length, bool reverse = false){
+        List<Curve> rtn = new List<Curve>();
         foreach(Pair<Road, Pair<float, float>> connect in connection){
             Vector2 direction = connect.First.curve.direction_ending_2d(startof(connect.First.curve));
             if (reverse){
@@ -127,6 +129,7 @@ public class Node : MonoBehaviour
         connection = connection.OrderBy(r =>
                                         startof(r.First.curve) ?
                                         r.First.curve.angle_ending(true) : r.First.curve.angle_ending(false)).ToList();
+
         foreach (var rmPair in connection){
             rmPair.Second = new Pair<float, float>(0f, 0f);
         }
@@ -153,6 +156,7 @@ public class Node : MonoBehaviour
             }
         }
     }
+
 
     /*
     float minCrossingRadius(Road r1, Road r2){
@@ -232,7 +236,7 @@ public class Node : MonoBehaviour
         else{
             //smoothen with Arc
 
-            if (delta_angle > Mathf.PI){
+            if (delta_angle > Mathf.PI && !Algebra.isclose(delta_angle, 0f) && !Algebra.isclose(delta_angle, Mathf.PI * 2)){
                 Road widerRoad = r1.width > r2.width ? r1 : r2;
                 Road narrowerRoad = r1.width > r2.width ? r2 : r1;
                 // the width could be same
@@ -330,6 +334,16 @@ public class Node : MonoBehaviour
         }
 
 
+    }
+
+    internal List<Vector2> getNeighborDirections(Vector2 direction)
+    {
+        if (connection.Count <= 2){
+            return connection.ConvertAll((input) => input.First.curve.direction_ending_2d(startof(input.First.curve)));
+        }
+        List<float> anglesFromDirection =
+            connection.ConvertAll((input) => Vector2.Angle(direction, input.First.curve.direction_ending_2d(startof(input.First.curve))));
+        return new List<Vector2>() { Algebra.angle2dir(anglesFromDirection.Max()), Algebra.angle2dir(anglesFromDirection.Min())};
     }
 
     /*

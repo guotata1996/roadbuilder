@@ -406,6 +406,17 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114865301055349830, guid: a92acaae07d2e4d0495260f644792940,
+        type: 2}
+      propertyPath: degreeTextPrefab
+      value: 
+      objectReference: {fileID: 1318358020397572, guid: d01233ff7d0fd49afb50941bbb9c4cbe,
+        type: 2}
+    - target: {fileID: 114865301055349830, guid: a92acaae07d2e4d0495260f644792940,
+        type: 2}
+      propertyPath: textDistance
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a92acaae07d2e4d0495260f644792940, type: 2}
   m_IsPrefabAsset: 0
