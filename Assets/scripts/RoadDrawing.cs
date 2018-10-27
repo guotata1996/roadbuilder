@@ -21,7 +21,7 @@ public class RoadDrawing : MonoBehaviour
 
     public GameObject degreeTextPrefab;
 
-    List<GameObject> degreeTextInstance;
+    List<GameObject> degreeTextInstance, neighborIndicatorInstance;
 
     public float textDistance;
 
@@ -58,6 +58,7 @@ public class RoadDrawing : MonoBehaviour
         controlPoint = new Vector2[4];
         interestedApproxLines = new List<Curve>();
         degreeTextInstance = new List<GameObject>();
+        neighborIndicatorInstance = new List<GameObject>();
         reset();
     }
 
@@ -96,6 +97,7 @@ public class RoadDrawing : MonoBehaviour
         {
             Destroy(nodeIndicator);
             nodeIndicator = Instantiate(nodeIndicatorPrefab, new Vector3(controlPoint[pointer].x, 0f, controlPoint[pointer].y), Quaternion.identity);
+            nodeIndicator.transform.SetParent(transform);
 
             if (indicatorType == IndicatorType.line)
             {
@@ -181,7 +183,7 @@ public class RoadDrawing : MonoBehaviour
 
                     if (!Algebra.isclose(controlPoint[0], controlPoint[1]))
                     {
-                        roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
+                        roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
                         roadConfigure.generate(new Line(controlPoint[0], controlPoint[1], 0f, 0f), laneConfig, indicator: true);
                     }
@@ -195,7 +197,7 @@ public class RoadDrawing : MonoBehaviour
                         Destroy(roadIndicator);
                         addAngleDrawing(controlPoint[2], controlPoint[1]);
 
-                        roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
+                        roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
                         roadConfigure.generate(new Bezeir(controlPoint[0], controlPoint[1], controlPoint[2], 0f, 0f), laneConfig, indicator:true);
                     }
@@ -252,7 +254,7 @@ public class RoadDrawing : MonoBehaviour
                     Destroy(roadIndicator);
                     if (!Algebra.isclose((controlPoint[0] - controlPoint[1]).magnitude, 0f))
                     {
-                        roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
+                        roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
                         roadConfigure.generate(new Line(controlPoint[1], controlPoint[0], 0f, 0f), laneConfig);
                         if (!Algebra.isclose((controlPoint[1] - controlPoint[0]).magnitude, 0))
@@ -267,7 +269,7 @@ public class RoadDrawing : MonoBehaviour
                     if (!Algebra.isclose(0, towardsdir.magnitude) && !Algebra.isclose(controlPoint[1], controlPoint[0]) && !Geometry.Parallel(basedir, towardsdir))
                     {
                         Destroy(roadIndicator);
-                        roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
+                        roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
                         roadConfigure.generate(new Arc(controlPoint[1], controlPoint[0], Mathf.Deg2Rad * Vector2.SignedAngle(basedir, towardsdir), 0f, 0f), laneConfig, indicator:true);
                         roadConfigure.generate(new Arc(controlPoint[1], controlPoint[1] + Vector2.right , 1.999f * Mathf.PI, 0f, 0f), laneConfig, indicator:true);
@@ -296,7 +298,7 @@ public class RoadDrawing : MonoBehaviour
 
                     if (targetRoad != null)
                     {
-                        roadIndicator = Instantiate(roadIndicatorPrefab, transform.position, transform.rotation);
+                        roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
                         roadConfigure.generate(targetRoad.curve, new List<string> { "removal_" + targetRoad.width });
                     }
@@ -340,12 +342,18 @@ public class RoadDrawing : MonoBehaviour
         }
         foreach(Vector2 dir in neighborDirs){
             //Debug.Log("angle: " + Vector2.Angle(anotherPosition - positionMaybeOnRoad, dir));
-            Vector2 text2dPosition = positionMaybeOnRoad + (anotherPosition.normalized + dir.normalized).normalized * textDistance;
-            Debug.Log(text2dPosition);
+            Vector2 text2dPosition = positionMaybeOnRoad + ((anotherPosition - positionMaybeOnRoad).normalized + dir.normalized).normalized * textDistance;
+            //Debug.Log(text2dPosition);
             GameObject textObj = Instantiate(degreeTextPrefab, new Vector3(text2dPosition.x, 0f, text2dPosition.y), Quaternion.Euler(90f, 0f, 0f));
             textObj.transform.SetParent(transform);
             textObj.GetComponent<TextMesh>().text = Mathf.RoundToInt(Mathf.Abs(Vector2.Angle(anotherPosition - positionMaybeOnRoad, dir))).ToString();
             degreeTextInstance.Add(textObj);
+
+            GameObject indicatorObj = Instantiate(roadIndicatorPrefab, transform);
+            RoadRenderer indicatorConfigure = indicatorObj.GetComponent<RoadRenderer>();
+            indicatorConfigure.generate(new Line(positionMaybeOnRoad, positionMaybeOnRoad + dir * textDistance * 2, 0f, 0f), new List<string> { "dash_blueindi"});
+            neighborIndicatorInstance.Add(indicatorObj);
+
         }
 
     }
@@ -354,6 +362,11 @@ public class RoadDrawing : MonoBehaviour
         foreach(GameObject text in degreeTextInstance){
             Destroy(text);
         }
+
+        foreach(GameObject neighborIndicator in neighborIndicatorInstance){
+            Destroy(neighborIndicator);
+        }
+
     }
 
 }

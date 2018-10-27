@@ -7,14 +7,14 @@ public class MainScene : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-
+        /*
         RoadDrawing drawing= GameObject.FindWithTag("Road/curveIndicator").GetComponent<RoadDrawing>();
 
         RoadManager manager = drawing.roadManager;
         manager.addRoad(new Line(new Vector2(50f, 0f), new Vector2(100f, 0f), 0f, 0f), new List<string> { "lane", "dash_yellow", "lane" });
         manager.addRoad(new Arc(new Vector2(50f, 0f), Mathf.PI / 2, new Vector2(0f, 50f), 0f, 0f), new List<string> { "lane", "dash_yellow", "lane" });
 
-        /*
+
         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         cube.transform.position = new Vector3(0f, 0f, 0f);
         cube.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
@@ -22,11 +22,19 @@ public class MainScene : MonoBehaviour {
         cube.GetComponent<MeshRenderer>().material = Resources.Load<Material>("indicator");
         Debug.Log(cube.GetComponent<MeshRenderer>().material.mainTexture);
         */
+        study();
+    }
 
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    // Update is called once per frame
+    void Update () {
 		
 	}
+    void study(){
+        int a = 3, b = 7;
+        Debug.Log(eqqq(a, b));
+    }
+    static bool eqqq<T>(T first, T second) where T : System.IComparable
+    {
+        return first.CompareTo(second) > 0 ;
+    }
 }

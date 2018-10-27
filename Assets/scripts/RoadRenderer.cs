@@ -19,6 +19,9 @@ public class RoadRenderer : MonoBehaviour
     public float dashLength = 4f;
     public float dashInterval = 6f;
 
+    public float dashIndicatorLength = 1f;
+    public float dashIndicatorWidth = 2f;
+
     public void generate(Curve curve, List<string> laneConfig, 
                          float indicatorMargin_0 = 0f, float indicatorMargin_1 = 0f, float surfaceMargin_0 = 0f, float surfaceMargin_1 = 0f,
                          bool indicator = false)
@@ -64,6 +67,9 @@ public class RoadRenderer : MonoBehaviour
                         break;
                     case "white":
                         sep.texture = Resources.Load<Texture>("Textures/white");
+                        break;
+                    case "blueindi":
+                        sep.texture = Resources.Load<Texture>("Textures/blue");
                         break;
                 }
 

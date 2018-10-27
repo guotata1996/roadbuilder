@@ -338,11 +338,23 @@ public class Node : MonoBehaviour
 
     internal List<Vector2> getNeighborDirections(Vector2 direction)
     {
+
         if (connection.Count <= 2){
             return connection.ConvertAll((input) => input.First.curve.direction_ending_2d(startof(input.First.curve)));
         }
+
         List<float> anglesFromDirection =
-            connection.ConvertAll((input) => Vector2.Angle(direction, input.First.curve.direction_ending_2d(startof(input.First.curve))));
+            connection.ConvertAll((input) => Algebra.signedAngleToPositive(Vector2.SignedAngle(direction, input.First.curve.direction_ending_2d(startof(input.First.curve)))));
+
+        return connection.FindAll((Pair<Road, Pair<float, float>> arg1) =>
+                                  Algebra.signedAngleToPositive(Vector2.SignedAngle(direction, arg1.First.curve.direction_ending_2d(startof(arg1.First.curve)))) 
+                                  == anglesFromDirection.Max() 
+                                 ||
+                                  Algebra.signedAngleToPositive(Vector2.SignedAngle(direction, arg1.First.curve.direction_ending_2d(startof(arg1.First.curve))))
+                                  == anglesFromDirection.Min()).
+                         ConvertAll((input) => input.First.curve.direction_ending_2d(startof(input.First.curve)));
+                       
+
         return new List<Vector2>() { Algebra.angle2dir(anglesFromDirection.Max()), Algebra.angle2dir(anglesFromDirection.Min())};
     }
 
