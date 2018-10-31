@@ -2,12 +2,43 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-class Separator{
+//object that is rendered in a continuous manner
+class ContinuousRenderedObject{
 	public Texture texture;
-	public bool dashed;
-	public float offset;
+    public float dashLength, dashInterval;
+    /*could be either line (flat) or rectangle(3D).*/
+    public Polygon cross_section;
+    
+
 }
 
+//objects rendered in discontinues manner
+class DiscreteRenderedObject{
+    public GameObject obj;
+    public float interval;
+    public void Draw(Curve c, float offsetFromCenter){
+
+    }
+}
+
+class Separator
+{
+    public Texture texture;
+    public bool dashed;
+    public float offset;
+}
+
+/*should support:
+lane 
+interval
+surface_{width}
+removal_{width}
+
+yellow/white/blueindi_dash/solid
+
+should also support:
+barrier
+*/
 public class RoadRenderer : MonoBehaviour
 {
 
@@ -163,4 +194,5 @@ public class RoadRenderer : MonoBehaviour
         normalMaterial.mainTexture = Resources.Load<Texture>("Textures/orange");
         decomp.CreateMesh(curve, width, normalMaterial, z_offset:0.02f);
     }
+
 }

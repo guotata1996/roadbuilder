@@ -2,39 +2,33 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MainScene : MonoBehaviour {
-	public GameObject RoadManager;
+public class MainScene : MonoBehaviour
+{
+    public GameObject rend;
 
-	// Use this for initialization
-	void Start () {
-        /*
-        RoadDrawing drawing= GameObject.FindWithTag("Road/curveIndicator").GetComponent<RoadDrawing>();
-
-        RoadManager manager = drawing.roadManager;
-        manager.addRoad(new Line(new Vector2(50f, 0f), new Vector2(100f, 0f), 0f, 0f), new List<string> { "lane", "dash_yellow", "lane" });
-        manager.addRoad(new Arc(new Vector2(50f, 0f), Mathf.PI / 2, new Vector2(0f, 50f), 0f, 0f), new List<string> { "lane", "dash_yellow", "lane" });
-
-
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        cube.transform.position = new Vector3(0f, 0f, 0f);
-        cube.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
-        cube.transform.localScale = new Vector3(1f, 10f, 1f);
-        cube.GetComponent<MeshRenderer>().material = Resources.Load<Material>("indicator");
-        Debug.Log(cube.GetComponent<MeshRenderer>().material.mainTexture);
-        */
-        study();
-    }
-
-    // Update is called once per frame
-    void Update () {
-		
-	}
-    void study(){
-        int a = 3, b = 7;
-        Debug.Log(eqqq(a, b));
-    }
-    static bool eqqq<T>(T first, T second) where T : System.IComparable
+    // Use this for initialization
+    void Start()
     {
-        return first.CompareTo(second) > 0 ;
+        Line x1 = new Line(new Vector2(1, 0), new Vector2(1, 1), 0f, 0f);
+        Line x2 = new Line(new Vector2(1, 1), new Vector2(0, 1), 0f, 0f);
+        Line x3 = new Line(new Vector2(0, 1), new Vector2(0, 2), 0f, 0f);
+        Line x4 = new Line(new Vector2(0, 2), new Vector2(1, 2), 0f, 0f);
+        Line x5 = new Line(new Vector2(1, 2), new Vector2(1, 3), 0f, 0f);
+        Line x6 = new Line(new Vector2(1, 3), new Vector2(-1, 3), 0f, 0f);
+        Line x7 = new Line(new Vector2(-1, 3), new Vector2(-1, 0), 0f, 0f);
+        Line x8 = new Line(new Vector2(-1, 0), new Vector2(1, 0), 0f, 0f);
+
+        //Line x5 = new Line(new Vector2(1, 8), new Vector2(1, 0), 0f, 0f);
+        Polygon p = new Polygon(new List<Curve> {x1, x2, x3, x4, x5, x6, x7, x8});
+
+        GameObject rendins = Instantiate(rend, transform);
+        rendins.transform.parent = this.transform;
+        CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
+        Material normalMaterial = new Material(Shader.Find("Standard"));
+        normalMaterial.mainTexture = Resources.Load<Texture>("Textures/road");
+        decomp.CreateMesh(new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 5f), new Vector2(2f, 5f), 0f, 0f), 0f, normalMaterial, p);
+
+
+
     }
 }

@@ -358,4 +358,8 @@ public class Algebra {
     {
         return angle >= 0 ? angle : angle + 360f;
     }
+
+    public static float twodCross(Vector2 a, Vector2 b){
+        return a.x * b.y - a.y * b.x;
+    }
 }
