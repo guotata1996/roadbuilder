@@ -26,9 +26,8 @@ public class CurveRenderer : MonoBehaviour
         Vector3[] all_vertices = new Vector3[fragments.Count * mesh.vertices.Length + crossVerticeCount * 2];
         int[] all_triangles = new int[fragments.Count * mesh.triangles.Length + crossTriangles.Length * 2];
         Vector2[] all_uvs = new Vector2[fragments.Count * mesh.uv.Length + crossVerticeCount * 2];
-        //Debug.Log(fragments.Count * mesh.vertices.Length);
 
-        var watch = System.Diagnostics.Stopwatch.StartNew();
+        //var watch = System.Diagnostics.Stopwatch.StartNew();
         for (int i = 0; i != fragments.Count; ++i)
         {
             Mesh mesh1 = CreateMesh(curve, mainMaterial, new Vector2(offset, 0f) + fragments[i].at_ending_2d(true), new Vector2(offset, 0f) + fragments[i].at_ending_2d(false));
@@ -42,9 +41,9 @@ public class CurveRenderer : MonoBehaviour
                 all_uvs[i * mesh.uv.Length + j] = mesh1.uv[j];
             }
         }
-        watch.Stop();
+        //watch.Stop();
 
-        print("create" + fragments.Count + "*" + mesh.vertices.Length + " mesh costs " + watch.ElapsedMilliseconds + "ms");
+        //print("create" + fragments.Count + "*" + mesh.vertices.Length + " mesh costs " + watch.ElapsedMilliseconds + "ms");
 
 
         /*Add mesh at start*/
