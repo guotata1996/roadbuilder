@@ -97,16 +97,16 @@ public abstract class Curve
         return (global_t - t_start) / (t_end - t_start);
     }
 
-    public List<Curve> split(float cutpoint)
+    public List<Curve> split(float cutpoint, bool byLength = false)
     {
         if (cutpoint >= 0.5f)
         {
-            return segmentation(this.length * cutpoint, keep_length: false);
+            return segmentation(this.length * cutpoint, keep_length: byLength);
         }
         else
         {
             this.reverse();
-            List<Curve> reversedSegment = segmentation(this.length * (1 - cutpoint), keep_length: false);
+            List<Curve> reversedSegment = segmentation(this.length * (1 - cutpoint), keep_length: byLength);
             foreach (Curve seg in reversedSegment)
             {
                 seg.reverse();
@@ -157,7 +157,7 @@ public class Arc : Curve
     /*If angle>0, clockwise
      *angle is in radius 
      */
-    public Arc(Vector2 _center, Vector2 start, float angle, float _z_start, float _z_offset)
+    public Arc(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_offset = 0f)
     {
         Debug.Assert(angle < 2 * Mathf.PI);
         center = _center;
@@ -175,7 +175,7 @@ public class Arc : Curve
     }
 
     /*start-end: clockwise*/
-    public Arc(Vector2 _start, float angle, Vector2 _end, float _z_start, float _z_end)
+    public Arc(Vector2 _start, float angle, Vector2 _end, float _z_start = 0f, float _z_end = 0f)
     {
         center = (_start + _end) / 2f + new Vector2((_end - _start).y, -(_end - _start).x).normalized * 0.5f * (_start - _end).magnitude / Mathf.Tan(angle / 2);
         radius = 0.5f * (_start - _end).magnitude / Mathf.Sin(angle / 2);
@@ -385,7 +385,7 @@ public class Line : Curve
 {
     public Vector2 start, end;
 
-    public Line(Vector2 _start, Vector2 _end, float _z_start, float _z_offset)
+    public Line(Vector2 _start, Vector2 _end, float _z_start = 0f, float _z_offset = 0f)
     {
         start = _start;
         end = _end;
@@ -549,7 +549,7 @@ public class Line : Curve
 public class Bezeir : Curve
 {
     public Vector2 P0, P1, P2;
-    public Bezeir(Vector2 _P0, Vector2 _P1, Vector2 _P2, float _z_start, float _z_offset)
+    public Bezeir(Vector2 _P0, Vector2 _P1, Vector2 _P2, float _z_start = 0f, float _z_offset = 0f)
     {
         Debug.Assert(!Geometry.Parallel(_P1 - _P0, _P2 - _P1));
         P0 = _P0;

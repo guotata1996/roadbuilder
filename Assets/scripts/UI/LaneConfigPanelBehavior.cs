@@ -89,6 +89,8 @@ public class LaneConfigPanelBehavior : MonoBehaviour
             itemInstances.Count : itemInstances.Count - 1;
 
         laneconfigresult.Clear();
+        //TODO: add UI
+        laneconfigresult.Add("fence");
         for (int i = 0; i != notnonecount; ++i)
         {
             if (i > 0 && itemInstances[i - 1].GetComponent<ChooseLaneConfig>().choice != "lane"){
@@ -96,6 +98,7 @@ public class LaneConfigPanelBehavior : MonoBehaviour
             }
             laneconfigresult.Add(itemInstances[i].GetComponent<ChooseLaneConfig>().choice);
         }
+        laneconfigresult.Add("fence");
 
         updatePanelDisplay();
 

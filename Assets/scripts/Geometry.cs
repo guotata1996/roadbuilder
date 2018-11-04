@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public static class Geometry {
     public static bool Parallel(Vector2 line1, Vector2 line2)
@@ -95,6 +96,34 @@ public static class Geometry {
 
     }
 
+    internal static bool TriangleContains(Vector2 A, Vector2 B, Vector2 C, Vector2 P)
+    {
+        Vector3 v0 = C - A;
+        Vector3 v1 = B - A;
+        Vector3 v2 = P - A;
+
+        double dot00 = Vector2.Dot(v0, v0);
+        double dot01 = Vector2.Dot(v0, v1);
+        double dot02 = Vector2.Dot(v0, v2);
+        double dot11 = Vector2.Dot(v1, v1);
+        double dot12 = Vector2.Dot(v1, v2);
+
+        double inverDeno = 1 / (dot00 * dot11 - dot01 * dot01);
+
+        double u = (dot11 * dot02 - dot01 * dot12) * inverDeno;
+        if (u < 0 && !Algebra.isclose(u, 0)|| u > 1 && !Algebra.isclose(u, 1)) // if u out of range, return directly
+        {
+            return false;
+        }
+
+        double v = (dot00 * dot12 - dot01 * dot02) * inverDeno;
+        if (v < 0 && !Algebra.isclose(v, 0)|| v > 1 && !Algebra.isclose(v, 1)) // if v out of range, return directly
+        {
+            return false;
+        }
+
+        return u + v <= 1 || Algebra.isclose(u+v, 1);
+    }
 
     private static List<Vector2> intersect(Bezeir b1, Bezeir b2)
     {

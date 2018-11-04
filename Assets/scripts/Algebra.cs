@@ -281,6 +281,11 @@ public class Algebra {
         return Mathf.Abs(a - b) < 1e-3;
     }
 
+    public static bool isclose(double a, double b)
+    {
+        return Math.Abs(a - b) < 1e-3;
+    }
+
     public static bool isclose(Vector2 a, Vector2 b){
         return isclose((a - b).magnitude, 0f);
     }

@@ -6,8 +6,7 @@ using UnityEngine;
 public class CurveRenderer : MonoBehaviour
 {
 
-    public float maxAngleDiff = 0.2f;
-
+    float maxAngleDiff = 0.1f;
 
     public void CreateMesh(Curve curve, float width, Material mainMaterial, float offset = 0f, float z_offset = 0f)
     {
@@ -29,6 +28,7 @@ public class CurveRenderer : MonoBehaviour
         Vector2[] all_uvs = new Vector2[fragments.Count * mesh.uv.Length + crossVerticeCount * 2];
         //Debug.Log(fragments.Count * mesh.vertices.Length);
 
+        var watch = System.Diagnostics.Stopwatch.StartNew();
         for (int i = 0; i != fragments.Count; ++i)
         {
             Mesh mesh1 = CreateMesh(curve, mainMaterial, new Vector2(offset, 0f) + fragments[i].at_ending_2d(true), new Vector2(offset, 0f) + fragments[i].at_ending_2d(false));
@@ -42,9 +42,13 @@ public class CurveRenderer : MonoBehaviour
                 all_uvs[i * mesh.uv.Length + j] = mesh1.uv[j];
             }
         }
+        watch.Stop();
+
+        print("create" + fragments.Count + "*" + mesh.vertices.Length + " mesh costs " + watch.ElapsedMilliseconds + "ms");
+
 
         /*Add mesh at start*/
-       
+
         for (int j = 0; j != crossVerticeCount; ++j)
         {
             all_vertices[fragments.Count * mesh.vertices.Length + j] = curve.at_ending(true) +
@@ -132,7 +136,7 @@ public class CurveRenderer : MonoBehaviour
             Vector3 projection = pieceNorm - projectionPlane * Vector3.Dot(pieceNorm, projectionPlane);
             Vector2 twod_projection = new Vector2(Vector2.Dot(projection, curve.rightNormal(curveParam)), Vector2.Dot(projection, Vector3.up));
 
-            if (Algebra.twodCross(offset2 - offset1, twod_projection) < 0)
+            if (Algebra.twodCross(offset2 - offset1, twod_projection) <= 0)
             {
                 triangles[3 * i] = i;
                 triangles[3 * i + 1] = i + 1;
@@ -158,7 +162,6 @@ public class CurveRenderer : MonoBehaviour
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uvs;
-
 
         return mesh;
 

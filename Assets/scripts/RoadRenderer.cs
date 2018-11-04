@@ -3,22 +3,31 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //object that is rendered in a continuous manner
-class ContinuousRenderedObject{
+class Linear3DObject{
 	public Texture texture;
     public float dashLength, dashInterval;
-    /*could be either line (flat) or rectangle(3D).*/
     public Polygon cross_section;
-    
-
+    public float offset;
+    public Linear3DObject(string name){
+        //TODO: read config dynamically
+        //TODO: non-symmetry case
+        //name is only fence
+        texture = Resources.Load<Texture>("Textures/blue");
+        Vector2 P0 = new Vector2(0.1f, 0f);
+        Vector2 P1 = new Vector2(0.1f, 1.0f);
+        Vector2 P2 = new Vector2(0f, 1.0f);
+        Vector2 P3 = new Vector2(-0.1f, 1.0f);
+        Vector2 P4 = new Vector2(-0.1f, 0f);
+        cross_section = new Polygon(new List<Curve> { new Line(P0, P1), new Arc(P2, P1, Mathf.PI), new Line(P3, P4), new Line(P4, P0)});
+        dashLength = 0.2f;
+        dashInterval = 2f;
+    }
 }
 
 //objects rendered in discontinues manner
-class DiscreteRenderedObject{
+class NonLinear3DObject{
     public GameObject obj;
     public float interval;
-    public void Draw(Curve c, float offsetFromCenter){
-
-    }
 }
 
 class Separator
@@ -46,6 +55,7 @@ public class RoadRenderer : MonoBehaviour
     public static float laneWidth = 2.8f;
     public static float separatorWidth = 0.2f;
     public static float separatorInterval = 0.2f;
+    public static float fenceWidth = 0.2f;
 
     public float dashLength = 4f;
     public float dashInterval = 6f;
@@ -58,6 +68,7 @@ public class RoadRenderer : MonoBehaviour
                          bool indicator = false)
     {
         List<Separator> separators = new List<Separator>();
+        List<Linear3DObject> linear3DObjects = new List<Linear3DObject>();
         float offset = 0f;
 
         foreach (string l in laneConfig)
@@ -65,7 +76,6 @@ public class RoadRenderer : MonoBehaviour
             string[] configs = l.Split('_');
             if (configs[0] == "lane" || configs[0] == "interval" || configs[0] == "surface" || configs[0] == "removal")
             {
-
                 switch (configs[0])
                 {
                     case "lane":
@@ -85,40 +95,51 @@ public class RoadRenderer : MonoBehaviour
             }
             else
             {
-                string septype, sepcolor;
-                septype = configs[0];
-                sepcolor = configs[1];
-
-                Separator sep = new Separator();
-
-                switch (sepcolor)
+                if (configs[0] == "fence")
                 {
-                    case "yellow":
-                        sep.texture = Resources.Load<Texture>("Textures/yellow");
-                        break;
-                    case "white":
-                        sep.texture = Resources.Load<Texture>("Textures/white");
-                        break;
-                    case "blueindi":
-                        sep.texture = Resources.Load<Texture>("Textures/blue");
-                        break;
-                }
+                    Linear3DObject fence = new Linear3DObject("fence");
+                    fence.offset = offset;
+                    linear3DObjects.Add(fence);
 
-                switch (septype)
+                    offset += fenceWidth;
+                }
+                else
                 {
-                    case "dash":
-                        sep.dashed = true;
-                        break;
-                    case "solid":
-                        sep.dashed = false;
-                        break;
+                    string septype, sepcolor;
+                    septype = configs[0];
+                    sepcolor = configs[1];
+
+                    Separator sep = new Separator();
+
+                    switch (sepcolor)
+                    {
+                        case "yellow":
+                            sep.texture = Resources.Load<Texture>("Textures/yellow");
+                            break;
+                        case "white":
+                            sep.texture = Resources.Load<Texture>("Textures/white");
+                            break;
+                        case "blueindi":
+                            sep.texture = Resources.Load<Texture>("Textures/blue");
+                            break;
+                    }
+
+                    switch (septype)
+                    {
+                        case "dash":
+                            sep.dashed = true;
+                            break;
+                        case "solid":
+                            sep.dashed = false;
+                            break;
+                    }
+
+                    sep.offset = offset;
+
+                    separators.Add(sep);
+
+                    offset += separatorWidth;
                 }
-
-                sep.offset = offset;
-
-                separators.Add(sep);
-
-                offset += separatorWidth;
             }
         }
 
@@ -128,13 +149,17 @@ public class RoadRenderer : MonoBehaviour
             separators[i].offset -= offset / 2;
             drawSeparator(curve, separators[i], indicatorMargin_0, indicatorMargin_1);
         }
+        for (int i = 0; i != linear3DObjects.Count; i++){
+            linear3DObjects[i].offset -= offset / 2;
+            drawLinear3DObject(curve, linear3DObjects[i], surfaceMargin_0, surfaceMargin_1);
+        }
 
         drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1, indicator);
-
+        Debug.Log(offset);
     }
 
 	void drawSeparator(Curve curve, Separator sep, float margin_0 = 0f, float margin_1 = 0f){
-        if (curve.length > 0)
+        if (curve.length > 0 && (margin_0 > 0 || margin_1 > 0))
         {
             curve = curve.cut(margin_0 / curve.length, 1f - margin_1 / curve.length);
         }
@@ -149,9 +174,7 @@ public class RoadRenderer : MonoBehaviour
 		else {
             List<Curve> dashed = curve.segmentation (dashLength + dashInterval);
 			foreach (Curve singledash in dashed) {
-                List<Curve> vacant_and_dashed = singledash.segmentation (dashInterval);
-                Debug.Assert (vacant_and_dashed.Count <= 2);
-
+                List<Curve> vacant_and_dashed = singledash.split(dashInterval / (dashLength + dashInterval), byLength:true);
 
                 if (vacant_and_dashed.Count == 2) {
 					GameObject rendins = Instantiate (rend, transform);
@@ -166,8 +189,44 @@ public class RoadRenderer : MonoBehaviour
 		}
 	}
 
+    void drawLinear3DObject(Curve curve, Linear3DObject obj, float margin_0 = 0f, float margin_1 = 0f){
+        if (curve.length > 0 && (margin_0 > 0 || margin_1 > 0)){
+            curve = curve.cut(margin_0 / curve.length, 1f - margin_1 / curve.length);
+        }
+        if (obj.dashInterval == 0f)
+        {
+            GameObject rendins = Instantiate(rend, transform);
+            rendins.transform.parent = this.transform;
+            CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
+            Material normalMaterial = new Material(Shader.Find("Standard"));
+            normalMaterial.mainTexture = obj.texture;
+            decomp.CreateMesh(curve, obj.offset + fenceWidth / 2, normalMaterial, obj.cross_section);
+        }
+        else
+        {
+            Debug.Assert(obj.dashLength > 0f);
+            List<Curve> dashed = curve.segmentation(obj.dashLength + obj.dashInterval);
+            foreach (Curve singledash in dashed)
+            {
+                List<Curve> vacant_and_dashed = singledash.split(obj.dashInterval / (obj.dashLength + obj.dashInterval), byLength: true);
+                if (vacant_and_dashed.Count == 2)
+                {
+                    GameObject rendins = Instantiate(rend, transform);
+                    rendins.transform.parent = this.transform;
+                    CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
+                    Material normalMaterial = new Material(Shader.Find("Standard"));
+                    normalMaterial.mainTexture = obj.texture;
+                    decomp.CreateMesh(vacant_and_dashed[1], obj.offset + fenceWidth / 2, normalMaterial, obj.cross_section);
+                }
+            }
+        }
+    }
+
     void drawRoadSurface(Curve curve, float width, float surfacemargin_0 = 0f, float surfacemargin_1 = 0f, bool indicator = false){
-        curve = curve.cut(surfacemargin_0 / curve.length, 1f - surfacemargin_1 / curve.length);
+        if (curve.length > 0 && (surfacemargin_0 > 0 || surfacemargin_1 > 0))
+        {
+            curve = curve.cut(surfacemargin_0 / curve.length, 1f - surfacemargin_1 / curve.length);
+        }
 		GameObject rendins = Instantiate (rend, transform);
         rendins.transform.parent = this.transform;
 		CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
@@ -182,7 +241,6 @@ public class RoadRenderer : MonoBehaviour
             Material normalMaterial = new Material(Shader.Find("Standard"));
             normalMaterial.mainTexture = Resources.Load<Texture>("Textures/road");
             decomp.CreateMesh(curve, width, normalMaterial);
-
         }
     }
 

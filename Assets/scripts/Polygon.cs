@@ -20,13 +20,21 @@ public class Polygon
     
     List<Curve> components; //should be in counterclockwise order
 
-    float resolution = 1.0f;
+    float minresolution = 0.05f;
+    int maxSegmentPerCurve = 15;
 
     public List<Curve> toFragments(){
         List<Curve> rtn = new List<Curve>();
         foreach(Curve curve in components){
-            List<Curve> segs = curve.segmentation(maxlen: resolution);
-            rtn.AddRange(segs);
+            if (curve is Line)
+            {
+                rtn.Add(curve);
+            }
+            else
+            {
+                List<Curve> segs = curve.segmentation(maxlen: Mathf.Max(minresolution, curve.length / maxSegmentPerCurve));
+                rtn.AddRange(segs);
+            }
         }
         return rtn;
     }
@@ -53,12 +61,24 @@ public class Polygon
 
 
     int findEar(List<Vector2> vertices){
-        for (int i = 0; i != vertices.Count; ++i){
+        for (int i = 0; i != vertices.Count; ++i)
+        {
             Vector2 previous = vertices[(i + vertices.Count - 1) % vertices.Count];
             Vector2 me = vertices[i];
             Vector2 following = vertices[(i + 1) % vertices.Count];
-            if (Algebra.twodCross(following - me, previous - me) > 0.01){
-                return i;
+            if (Algebra.twodCross(following - me, previous - me) > 0)
+            {
+                bool not_affect_others = true;
+                for (int index = (i + 2) % vertices.Count; index != (i + vertices.Count - 1) % vertices.Count; index = (index + 1) % vertices.Count){
+                    if(Geometry.TriangleContains(previous, me, following, vertices[index])){
+                        not_affect_others = false;
+                        break;
+                    }
+                }
+                if (not_affect_others)
+                {
+                    return i;
+                }
             }
         }
         Debug.Assert(false);
