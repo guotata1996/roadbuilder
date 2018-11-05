@@ -1,2 +1,12 @@
 macbuild
 iosbuild/
+
+Library/
+
+Temp/
+
+obj/
+
+\.vs/
+
+*.csproj
