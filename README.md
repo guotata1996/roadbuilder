@@ -2,19 +2,17 @@
 Build road just like in a simcity game.
 
 Features:
-- 3 curve types: straight/arc/bezeir
-- freely configure your lanes
-- sticky mouse pointer: easy to create T crossings
-- delete mode
-- automatically smoothen sharp corners with curve
-- smoothly broaden/narrowing roads
+- Create/Delete roads of 3 curve types: straight/arc/bezeir
+- configure your lanes with maximum freedom
+- automatically create round and smooth intersections
+- intelligent assisting tool (sticky mouse pointer, extension of current road, easy-to-do 90 degree intersection, show angle in degree, etc.)
+
+Features under development:
+- 3D rendering of lifted road
+- overpass
 
 Features to develop:
-- more intelligent assisting tools
-- beautification of crossings
-- overpass
-- traffic...?
+- traffic
 
-## Demo Video
+## Demo Video(To be updated)
 [![Road Builder](http://img.youtube.com/vi/BeTUmWmYbmk/0.jpg)](https://www.youtube.com/watch?v=BeTUmWmYbmk "Road Builder")
-
