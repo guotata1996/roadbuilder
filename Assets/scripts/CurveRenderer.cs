@@ -17,77 +17,68 @@ public class CurveRenderer : MonoBehaviour
 
     public void CreateMesh(Curve curve, float offset, Material mainMaterial, Polygon cross)
     {
-        List<Curve> fragments = cross.toFragments();
-        Mesh mesh = CreateMesh(curve, mainMaterial, new Vector2(offset, 0f) + fragments[0].at_ending_2d(true), new Vector2(offset, 0f) + fragments[0].at_ending_2d(false));
+        List<Vector2> fragments = cross.toFragments().ConvertAll((Curve input) => input.at_ending_2d(true));
+
+        float curveAngle = curve.length;
+        int segmentCount = Mathf.CeilToInt(curveAngle / maxAngleDiff);
+        int base_vcount = (segmentCount + 1) * fragments.Count;
+        int base_tcount = segmentCount * 2 * 3 * fragments.Count;
+
         int[] crossTriangles = cross.createMeshTriangle();
+        int cross_vcount = fragments.Count;
+        int cross_tcount = crossTriangles.Length;
         Vector2[] crossUVs = cross.createUV();
-        int crossVerticeCount = fragments.Count;
 
-        Vector3[] all_vertices = new Vector3[fragments.Count * mesh.vertices.Length + crossVerticeCount * 2];
-        int[] all_triangles = new int[fragments.Count * mesh.triangles.Length + crossTriangles.Length * 2];
-        Vector2[] all_uvs = new Vector2[fragments.Count * mesh.uv.Length + crossVerticeCount * 2];
+        Vector3[] all_vertices = new Vector3[base_vcount];
+        int[] all_triangles = new int[base_tcount + cross_tcount * 2];
+        Vector2[] all_uvs = new Vector2[base_vcount];
 
-        //var watch = System.Diagnostics.Stopwatch.StartNew();
-        for (int i = 0; i != fragments.Count; ++i)
-        {
-            Mesh mesh1 = CreateMesh(curve, mainMaterial, new Vector2(offset, 0f) + fragments[i].at_ending_2d(true), new Vector2(offset, 0f) + fragments[i].at_ending_2d(false));
-            for (int j = 0; j != mesh.vertices.Length; ++j){
-                all_vertices[i * mesh.vertices.Length + j] = mesh1.vertices[j];
-            }
-            for (int j = 0; j != mesh.triangles.Length; ++j){
-                all_triangles[i * mesh.triangles.Length + j] = mesh1.triangles[j] + i * mesh.vertices.Length;
-            }
-            for (int j = 0; j != mesh.uv.Length; ++j){
-                all_uvs[i * mesh.uv.Length + j] = mesh1.uv[j];
+        for (int i = 0; i != segmentCount + 1; ++i){
+            Vector3 roadPoint = curve.at(1.0f / segmentCount * i);
+            float direction = curve.angle_2d(1.0f / segmentCount * i) - Mathf.PI / 2;
+            List<Vector3> localFragments = fragments.ConvertAll((input) => roadPoint +
+                                                                Algebra.toVector3(Algebra.twodRotate(Vector2.right * (offset + input.x), direction)) +
+                                                                Vector3.up * input.y);
+            for (int j = i * cross_vcount,local_j = 0; j != i * cross_vcount + cross_vcount; ++j, ++local_j){
+                all_vertices[j] = localFragments[local_j];
+                all_uvs[j] = crossUVs[local_j]; //TODO: modify
             }
         }
-        //watch.Stop();
 
-        //print("create" + fragments.Count + "*" + mesh.vertices.Length + " mesh costs " + watch.ElapsedMilliseconds + "ms");
+        for (int i = 0, triangle = 0; i != segmentCount; ++i){
+            for (int j = 0; j != cross_vcount; ++j, triangle += 6)
+            {
+                all_triangles[triangle] = i * cross_vcount + j;
+                all_triangles[triangle + 1] = i * cross_vcount + (j + 1) % cross_vcount;
+                all_triangles[triangle + 2] = (i + 1) * cross_vcount + j;
 
+                all_triangles[triangle + 3] = i * cross_vcount + (j + 1) % cross_vcount;
+                all_triangles[triangle + 4] = (i + 1) * cross_vcount + (j + 1) % cross_vcount;
+                all_triangles[triangle + 5] = (i + 1) * cross_vcount + j;
+            }
+
+        }
 
         /*Add mesh at start*/
-
-        for (int j = 0; j != crossVerticeCount; ++j)
-        {
-            all_vertices[fragments.Count * mesh.vertices.Length + j] = curve.at_ending(true) +
-                                                                            curve.rightNormal(0f) * (offset + fragments[j].at_ending_2d(true).x)
-                                                                            + Vector3.up * fragments[j].at_ending_2d(true).y;
-        }
         for (int j = 0; j != crossTriangles.Length; ++j){
-            all_triangles[fragments.Count * mesh.triangles.Length + j] = crossTriangles[j] + fragments.Count * mesh.vertices.Length;
-            //Debug.Log("triangle " + (fragments.Count * mesh.triangles.Length + j) + " set to " + (all_vertices[crossTriangles[j] + fragments.Count * mesh.vertices.Length]));
-        }
-        for (int j = 0; j != crossVerticeCount; ++j){
-            all_uvs[fragments.Count * mesh.uv.Length + j] = crossUVs[j];
+            all_triangles[base_tcount + j] = crossTriangles[j];
         }
 
         /*Add mesh at end*/
-        for (int j = 0; j != crossVerticeCount; ++j)
-        {
-            all_vertices[fragments.Count * mesh.vertices.Length + crossVerticeCount + j] = curve.at_ending(false) +
-                                                                                                curve.rightNormal(1f) * (offset + fragments[j].at_ending_2d(true).x)
-                                                                            + Vector3.up * fragments[j].at_ending_2d(true).y;
-        }
-
         for (int j = 0; j != crossTriangles.Length; ++j){
             if (j % 3 == 1)
             {
-                all_triangles[fragments.Count * mesh.triangles.Length + crossTriangles.Length + j] = crossTriangles[j + 1];
+                all_triangles[base_tcount + crossTriangles.Length + j] = crossTriangles[j + 1];
             }
             else{
                 if (j % 3 == 2){
-                    all_triangles[fragments.Count * mesh.triangles.Length + crossTriangles.Length + j] = crossTriangles[j - 1];
+                    all_triangles[base_tcount + crossTriangles.Length + j] = crossTriangles[j - 1];
                 }
                 else{
-                    all_triangles[fragments.Count * mesh.triangles.Length + crossTriangles.Length + j] = crossTriangles[j];
+                    all_triangles[base_tcount + crossTriangles.Length + j] = crossTriangles[j];
                 }
             }
-            all_triangles[fragments.Count * mesh.triangles.Length + crossTriangles.Length + j] += fragments.Count * mesh.vertices.Length + crossVerticeCount;
-        }
-        for (int j = 0; j != crossVerticeCount; ++j)
-        {
-            all_uvs[fragments.Count * mesh.uv.Length + crossVerticeCount + j] = crossUVs[j];
+            all_triangles[base_tcount + crossTriangles.Length + j] += (base_vcount - cross_vcount);
         }
 
 

@@ -367,4 +367,12 @@ public class Algebra {
     public static float twodCross(Vector2 a, Vector2 b){
         return a.x * b.y - a.y * b.x;
     }
+
+    public static Vector2 twodRotate(Vector2 a, float angle){
+        return new Vector2(Mathf.Cos(angle) * a.x - Mathf.Sin(angle) * a.y, Mathf.Sin(angle) * a.x + Mathf.Cos(angle) * a.y);
+    }
+
+    public static Vector3 toVector3(Vector2 a){
+        return new Vector3(a.x, 0f, a.y);
+    }
 }

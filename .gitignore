@@ -10,3 +10,13 @@ obj/
 \.vs/
 
 *.csproj
+
+ProjectSettings/
+
+Packages/
+
+macbuild\.app/
+
+DrawLineExample\.sln
+
+\.DS_Store
