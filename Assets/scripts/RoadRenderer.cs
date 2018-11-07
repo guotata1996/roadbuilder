@@ -11,16 +11,54 @@ class Linear3DObject{
     public Linear3DObject(string name){
         //TODO: read config dynamically
         //TODO: non-symmetry case
-        //name is only fence
-        texture = Resources.Load<Texture>("Textures/blue");
-        Vector2 P0 = new Vector2(0.1f, 0f);
-        Vector2 P1 = new Vector2(0.1f, 1.0f);
-        Vector2 P2 = new Vector2(0f, 1.0f);
-        Vector2 P3 = new Vector2(-0.1f, 1.0f);
-        Vector2 P4 = new Vector2(-0.1f, 0f);
-        cross_section = new Polygon(new List<Curve> { new Line(P0, P1), new Arc(P2, P1, Mathf.PI), new Line(P3, P4), new Line(P4, P0)});
-        dashLength = 0.2f;
-        dashInterval = 2f;
+        switch (name)
+        {
+            case "fence":
+                texture = Resources.Load<Texture>("Textures/blue");
+                Vector2 P0 = new Vector2(0.1f, 0f);
+                Vector2 P1 = new Vector2(0.1f, 1.0f);
+                Vector2 P2 = new Vector2(0f, 1.0f);
+                Vector2 P3 = new Vector2(-0.1f, 1.0f);
+                Vector2 P4 = new Vector2(-0.1f, 0f);
+                cross_section = new Polygon(new List<Curve> { new Line(P0, P1), new Arc(P2, P1, Mathf.PI), new Line(P3, P4), new Line(P4, P0) });
+                dashLength = 0.2f;
+                dashInterval = 2f;
+                break;
+            case "squarecolumn":
+                texture = Resources.Load<Texture>("Texture/road");
+                cross_section = new Polygon(new List<Curve>{
+                    new Line(new Vector2(0.5f, 0f), new Vector2(-0.5f, 0f)),
+                    new Line(new Vector2(-0.5f, 0f), new Vector2(-0.5f, -1f)),
+                    new Line(new Vector2(-0.5f, -1f), new Vector2(0.5f, -1f)),
+                    new Line(new Vector2(0.5f, -1f), new Vector2(0.5f, 0f))
+                },
+                                            new List<float>{
+                    0f, 
+                    0f,
+                    -1.0f,
+                    -1.0f
+                }
+                );
+
+                dashLength = 1f;
+                dashInterval = 8f;
+                break;
+            case "crossbeam":
+                texture = Resources.Load<Texture>("Texture/road");
+                cross_section = new Polygon(new List<Curve>{
+                    new Line(new Vector2(2f, 0f), new Vector2(-2f, 0f)),
+                    new Line(new Vector2(-2f, 0f), new Vector2(-2f, -1f)),
+                    new Line(new Vector2(-2f, -1f), new Vector2(-1f, -1.3f)),
+                    new Line(new Vector2(-1f, -1.3f), new Vector2(1f, -1.3f)),
+                    new Line(new Vector2(1f, -1.3f), new Vector2(2f, -1f)),
+                    new Line(new Vector2(2f, -1f), new Vector2(2f, 0f))
+                });
+                dashLength = 1f;
+                dashInterval = 8f;
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -108,7 +146,7 @@ public class RoadRenderer : MonoBehaviour
                     string septype, sepcolor;
                     septype = configs[0];
                     sepcolor = configs[1];
-
+                    
                     Separator sep = new Separator();
 
                     switch (sepcolor)
@@ -151,11 +189,16 @@ public class RoadRenderer : MonoBehaviour
         }
         for (int i = 0; i != linear3DObjects.Count; i++){
             linear3DObjects[i].offset -= offset / 2;
-            drawLinear3DObject(curve, linear3DObjects[i], surfaceMargin_0, surfaceMargin_1);
+            drawLinear3DObject(curve, linear3DObjects[i], indicatorMargin_0, indicatorMargin_1);
         }
 
         drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1, indicator);
-        Debug.Log(offset);
+
+        if (curve.z_start > 0 || curve.z_offset > 0){
+            drawLinear3DObject(curve, new Linear3DObject("squarecolumn"), indicatorMargin_0, indicatorMargin_1);
+            drawLinear3DObject(curve, new Linear3DObject("crossbeam"), indicatorMargin_0, indicatorMargin_1);
+        }
+
     }
 
 	void drawSeparator(Curve curve, Separator sep, float margin_0 = 0f, float margin_1 = 0f){

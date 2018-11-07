@@ -66,7 +66,6 @@ public class RoadManager : MonoBehaviour
     public void addRoad(Curve curve, List<string> laneConfigure)
     {
         List<Vector2> allNewIntersectPoints = new List<Vector2>();
-        Debug.Log("road to add: " + curve);
 
         foreach (Road oldroad in allroads.ToList())
         {

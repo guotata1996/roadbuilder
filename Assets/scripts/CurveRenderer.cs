@@ -17,7 +17,7 @@ public class CurveRenderer : MonoBehaviour
 
     public void CreateMesh(Curve curve, float offset, Material mainMaterial, Polygon cross)
     {
-        List<Vector2> fragments = cross.toFragments().ConvertAll((Curve input) => input.at_ending_2d(true));
+        List<Vector2> fragments = cross.toFragments();
 
         float curveAngle = curve.length;
         int segmentCount = Mathf.CeilToInt(curveAngle / maxAngleDiff);
@@ -39,6 +39,12 @@ public class CurveRenderer : MonoBehaviour
             List<Vector3> localFragments = fragments.ConvertAll((input) => roadPoint +
                                                                 Algebra.toVector3(Algebra.twodRotate(Vector2.right * (offset + input.x), direction)) +
                                                                 Vector3.up * input.y);
+            /*stretch Z*/
+            List<float> cross_y_offset = cross.getVResizeOffset(roadPoint.y);
+            for (int j = 0; j != localFragments.Count; ++j){
+                localFragments[j] += Vector3.up * cross_y_offset[j];
+            }
+
             for (int j = i * cross_vcount,local_j = 0; j != i * cross_vcount + cross_vcount; ++j, ++local_j){
                 all_vertices[j] = localFragments[local_j];
                 all_uvs[j] = crossUVs[local_j]; //TODO: modify
@@ -83,6 +89,7 @@ public class CurveRenderer : MonoBehaviour
 
 
         MeshFilter meshFilter = GetComponent<MeshFilter>();
+        GetComponent<MeshRenderer>().material = mainMaterial;
         Mesh total_mesh = new Mesh();
         total_mesh.vertices = all_vertices;
         total_mesh.triangles = all_triangles;

@@ -157,7 +157,7 @@ public class Arc : Curve
     /*If angle>0, clockwise
      *angle is in radius 
      */
-    public Arc(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_offset = 0f)
+    public Arc(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_end = 0f)
     {
         Debug.Assert(angle < 2 * Mathf.PI);
         center = _center;
@@ -171,7 +171,7 @@ public class Arc : Curve
         t_end = t_start + angle;
 
         z_start = _z_start;
-        z_offset = _z_offset;
+        z_offset = _z_end - _z_start;
     }
 
     /*start-end: clockwise*/
@@ -194,7 +194,7 @@ public class Arc : Curve
         }
 
         z_start = _z_start;
-        z_offset = _z_end;
+        z_offset = _z_end - _z_start;
     }
 
     private Arc()
@@ -385,12 +385,12 @@ public class Line : Curve
 {
     public Vector2 start, end;
 
-    public Line(Vector2 _start, Vector2 _end, float _z_start = 0f, float _z_offset = 0f)
+    public Line(Vector2 _start, Vector2 _end, float _z_start = 0f, float _z_end = 0f)
     {
         start = _start;
         end = _end;
         z_start = _z_start;
-        z_offset = _z_offset;
+        z_offset = _z_end - _z_start;
         t_start = 0f;
         t_end = 1f;
     }
@@ -467,7 +467,7 @@ public class Line : Curve
             float end_frac = Mathf.Min((i + 1) * maxlen / this.length, 1f);
             start_frac = toGlobalParam(start_frac);
             end_frac = toGlobalParam(end_frac);
-            Line l2 = new Line(start_frac * (end - start) + start, end_frac * (end - start) + start, z_start + start_frac * z_offset, z_offset * (end_frac - start_frac));
+            Line l2 = new Line(start_frac * (end - start) + start, end_frac * (end - start) + start, z_start + start_frac * z_offset, z_start + end_frac * z_offset);
             result.Add(l2);
         }
         return result;
@@ -497,7 +497,7 @@ public class Line : Curve
 
     public override string ToString()
     {
-        return string.Format("Line: Start = {0} ; End = {1}, t_start = {2}, t_end = {3}", start, end, t_start, t_end);
+        return string.Format("Line: Start = {0} ; End = {1}, zStart = {2}, zOffset = {3}", start, end, z_start, z_offset);
     }
 
     public override Vector2 AttouchPoint(Vector2 p)
@@ -549,14 +549,14 @@ public class Line : Curve
 public class Bezeir : Curve
 {
     public Vector2 P0, P1, P2;
-    public Bezeir(Vector2 _P0, Vector2 _P1, Vector2 _P2, float _z_start = 0f, float _z_offset = 0f)
+    public Bezeir(Vector2 _P0, Vector2 _P1, Vector2 _P2, float _z_start = 0f, float _z_end = 0f)
     {
         Debug.Assert(!Geometry.Parallel(_P1 - _P0, _P2 - _P1));
         P0 = _P0;
         P1 = _P1;
         P2 = _P2;
         z_start = _z_start;
-        z_offset = _z_offset;
+        z_offset = _z_end - _z_start;
         t_start = 0f;
         t_end = 1f;
     }
