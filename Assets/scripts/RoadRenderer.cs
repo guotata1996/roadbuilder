@@ -8,7 +8,7 @@ class Linear3DObject{
     public float dashLength, dashInterval;
     public Polygon cross_section;
     public float offset;
-    public Linear3DObject(string name){
+    public Linear3DObject(string name, float param = 0f){
         //TODO: read config dynamically
         //TODO: non-symmetry case
         switch (name)
@@ -44,17 +44,30 @@ class Linear3DObject{
                 dashInterval = 8f;
                 break;
             case "crossbeam":
+                Debug.Assert(param > 0);
                 texture = Resources.Load<Texture>("Texture/road");
                 cross_section = new Polygon(new List<Curve>{
-                    new Line(new Vector2(2f, 0f), new Vector2(-2f, 0f)),
-                    new Line(new Vector2(-2f, 0f), new Vector2(-2f, -1f)),
-                    new Line(new Vector2(-2f, -1f), new Vector2(-1f, -1.3f)),
+                    new Line(new Vector2(param/2, 0f), new Vector2(-param/2, 0f)),
+                    new Line(new Vector2(-param/2, 0f), new Vector2(-param/2, -1f)),
+                    new Line(new Vector2(-param/2, -1f), new Vector2(-1f, -1.3f)),
                     new Line(new Vector2(-1f, -1.3f), new Vector2(1f, -1.3f)),
-                    new Line(new Vector2(1f, -1.3f), new Vector2(2f, -1f)),
-                    new Line(new Vector2(2f, -1f), new Vector2(2f, 0f))
+                    new Line(new Vector2(1f, -1.3f), new Vector2(param/2, -1f)),
+                    new Line(new Vector2(param/2, -1f), new Vector2(param/2, 0f))
                 });
                 dashLength = 1f;
                 dashInterval = 8f;
+                break;
+            case "bridgepanel":
+                Debug.Assert(param > 0);
+                texture = Resources.Load<Texture>("Texture/road");
+                cross_section = new Polygon(new List<Curve>
+                {
+                    new Line(new Vector2(param/2, 0f), new Vector2(-param/2, 0f)),
+                    new Line(new Vector2(-param/2, 0f), new Vector2(-param/2, -0.2f)),
+                    new Line(new Vector2(-param/2, -0.2f), new Vector2(param/2, -0.2f)),
+                    new Line(new Vector2(param/2, -0.2f), new Vector2(param/2, 0f))
+                });
+                dashInterval = 0f;
                 break;
             default:
                 break;
@@ -192,11 +205,14 @@ public class RoadRenderer : MonoBehaviour
             drawLinear3DObject(curve, linear3DObjects[i], indicatorMargin_0, indicatorMargin_1);
         }
 
-        drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1, indicator);
 
         if (curve.z_start > 0 || curve.z_offset > 0){
             drawLinear3DObject(curve, new Linear3DObject("squarecolumn"), indicatorMargin_0, indicatorMargin_1);
-            drawLinear3DObject(curve, new Linear3DObject("crossbeam"), indicatorMargin_0, indicatorMargin_1);
+            drawLinear3DObject(curve, new Linear3DObject("crossbeam", offset), indicatorMargin_0, indicatorMargin_1);
+            drawLinear3DObject(curve, new Linear3DObject("bridgepanel", offset), indicatorMargin_0, indicatorMargin_1);
+        }
+        else{
+            drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1, indicator);
         }
 
     }
