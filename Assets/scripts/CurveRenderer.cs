@@ -86,7 +86,7 @@ public class CurveRenderer : MonoBehaviour
             }
             all_triangles[base_tcount + crossTriangles.Length + j] += (base_vcount - cross_vcount);
         }
-
+        
 
         MeshFilter meshFilter = GetComponent<MeshFilter>();
         GetComponent<MeshRenderer>().material = mainMaterial;

@@ -224,7 +224,7 @@ public class RoadDrawing : MonoBehaviour
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
                         roadConfigure.generate(new Bezeir(controlPoint[0].First, controlPoint[1].First, controlPoint[2].First, 
-                                                          controlPoint[0].Second, controlPoint[1].Second), laneConfig, indicator:true);
+                                                          controlPoint[0].Second, controlPoint[2].Second), laneConfig, indicator:true);
                     }
 
                 }

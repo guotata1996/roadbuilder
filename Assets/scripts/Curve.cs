@@ -658,7 +658,7 @@ public class Bezeir : Curve
                 thisEnd = Mathf.Min(1f, maxlen / this.length * (multipler + 1));
             }
 
-            Bezeir fragment = new Bezeir(this.P0, this.P1, this.P2, this.z_start, this.z_offset);
+            Bezeir fragment = new Bezeir(this.P0, this.P1, this.P2, this.z_start, this.z_start + this.z_offset);
             fragment.t_start = toGlobalParam(lastEnd);
             fragment.t_end = toGlobalParam(thisEnd);
             result.Add(fragment);
@@ -688,7 +688,7 @@ public class Bezeir : Curve
 
     public override string ToString()
     {
-        return string.Format("Beizier: Length={0}, t_start={1}, t_end={2}，P0 = {3}, P1 = {4}, P2 = {5}", length, t_start, t_end, P0, P1, P2);
+        return string.Format("Beizier: t_start={0}, t_end={1}，P0 = {2}, P2 = {3}, ZS = {4}, ZO={5}", t_start, t_end, P0, P2, z_start, z_offset);
     }
 
     public Vector2 targetP;

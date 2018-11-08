@@ -233,6 +233,7 @@ public class RoadRenderer : MonoBehaviour
 	}
 
     void drawLinear3DObject(Curve curve, Linear3DObject obj, float margin_0 = 0f, float margin_1 = 0f){
+
         if (curve.length > 0 && (margin_0 > 0 || margin_1 > 0)){
             curve = curve.cut(margin_0 / curve.length, 1f - margin_1 / curve.length);
         }
