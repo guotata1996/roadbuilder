@@ -111,7 +111,7 @@ public class RoadDrawing : MonoBehaviour
         {
             interestedApproxLines.Add(new Line(controlPoint[pointer - 1].First + Vector2.down * Algebra.InfLength, controlPoint[pointer - 1].First + Vector2.up * Algebra.InfLength, 0f, 0f));
             interestedApproxLines.Add(new Line(controlPoint[pointer - 1].First + Vector2.left * Algebra.InfLength, controlPoint[pointer - 1].First + Vector2.right * Algebra.InfLength, 0f, 0f));
-            if (targetRoad != null)
+            if (targetRoad != null && !Algebra.isclose(controlPoint[pointer - 1].First, targetRoad.curve.AttouchPoint(controlPoint[pointer - 1].First)))
             {
                 interestedApproxLines.Add(new Line(controlPoint[pointer - 1].First, targetRoad.curve.AttouchPoint(controlPoint[pointer - 1].First), 0f, 0f));
             }
@@ -370,9 +370,9 @@ public class RoadDrawing : MonoBehaviour
             neighborDirs = new List<Vector2>() { tar.curve.direction_2d((float)param), -tar.curve.direction_2d((float)param) };
         }
         foreach(Vector2 dir in neighborDirs){
-            //Debug.Log("angle: " + Vector2.Angle(anotherPosition - positionMaybeOnRoad, dir));
+            Debug.Assert(!Algebra.isclose(dir, Vector2.zero));
+
             Vector2 text2dPosition = positionMaybeOnRoad + ((anotherPosition - positionMaybeOnRoad).normalized + dir.normalized).normalized * textDistance;
-            //Debug.Log(text2dPosition);
             GameObject textObj = Instantiate(degreeTextPrefab, new Vector3(text2dPosition.x, 0f, text2dPosition.y), Quaternion.Euler(90f, 0f, 0f));
             textObj.transform.SetParent(transform);
             textObj.GetComponent<TextMesh>().text = Mathf.RoundToInt(Mathf.Abs(Vector2.Angle(anotherPosition - positionMaybeOnRoad, dir))).ToString();
@@ -380,7 +380,7 @@ public class RoadDrawing : MonoBehaviour
 
             GameObject indicatorObj = Instantiate(roadIndicatorPrefab, transform);
             RoadRenderer indicatorConfigure = indicatorObj.GetComponent<RoadRenderer>();
-            indicatorConfigure.generate(new Line(positionMaybeOnRoad, positionMaybeOnRoad + dir * textDistance * 2, 0f, 0f), new List<string> { "dash_blueindi"});
+            indicatorConfigure.generate(new Line(positionMaybeOnRoad, positionMaybeOnRoad + dir * textDistance * 2, 0f, 0f), new List<string> { "solid_blueindi"});
             neighborIndicatorInstance.Add(indicatorObj);
 
         }

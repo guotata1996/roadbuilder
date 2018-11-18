@@ -126,7 +126,6 @@ public class Polygon
         float TM = vertices.Max(c => c.y);
         Debug.Assert(LM != RM);
         Debug.Assert(TM != BM);
-
         return vertices.ConvertAll((input) => new Vector2((input.x - LM) / (RM - LM), (input.y - BM) / (TM - BM))).ToArray();
     }
 }

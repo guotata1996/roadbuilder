@@ -4,7 +4,7 @@ using UnityEngine;
 
 //object that is rendered in a continuous manner
 class Linear3DObject{
-	public Texture texture;
+	public Material linearMaterial, crossMaterial;
     public float dashLength, dashInterval;
     public Polygon cross_section;
     public float offset;
@@ -14,7 +14,8 @@ class Linear3DObject{
         switch (name)
         {
             case "fence":
-                texture = Resources.Load<Texture>("Textures/blue");
+                crossMaterial = Resources.Load<Material>("Materials/roadBarrier1");
+                linearMaterial = Resources.Load<Material>("Materials/roadBarrier2");
                 Vector2 P0 = new Vector2(0.1f, 0f);
                 Vector2 P1 = new Vector2(0.1f, 1.0f);
                 Vector2 P2 = new Vector2(0f, 1.0f);
@@ -25,7 +26,7 @@ class Linear3DObject{
                 dashInterval = 2f;
                 break;
             case "squarecolumn":
-                texture = Resources.Load<Texture>("Texture/road");
+                linearMaterial = crossMaterial = Resources.Load<Material>("Materials/concrete");
                 cross_section = new Polygon(new List<Curve>{
                     new Line(new Vector2(0.5f, 0f), new Vector2(-0.5f, 0f)),
                     new Line(new Vector2(-0.5f, 0f), new Vector2(-0.5f, -1f)),
@@ -45,7 +46,7 @@ class Linear3DObject{
                 break;
             case "crossbeam":
                 Debug.Assert(param > 0);
-                texture = Resources.Load<Texture>("Texture/road");
+                linearMaterial = crossMaterial = Resources.Load<Material>("Materials/concrete");
                 cross_section = new Polygon(new List<Curve>{
                     new Line(new Vector2(param/2, 0f), new Vector2(-param/2, 0f)),
                     new Line(new Vector2(-param/2, 0f), new Vector2(-param/2, -1f)),
@@ -59,7 +60,8 @@ class Linear3DObject{
                 break;
             case "bridgepanel":
                 Debug.Assert(param > 0);
-                texture = Resources.Load<Texture>("Texture/road");
+                linearMaterial = Resources.Load<Material>("Materials/roadsurface");
+                crossMaterial = Resources.Load<Material>("Materials/concrete");
                 cross_section = new Polygon(new List<Curve>
                 {
                     new Line(new Vector2(param/2, 0f), new Vector2(-param/2, 0f)),
@@ -258,9 +260,7 @@ public class RoadRenderer : MonoBehaviour
             GameObject rendins = Instantiate(rend, transform);
             rendins.transform.parent = this.transform;
             CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
-            Material normalMaterial = new Material(Shader.Find("Standard"));
-            normalMaterial.mainTexture = obj.texture;
-            decomp.CreateMesh(curve, obj.offset + fenceWidth / 2, normalMaterial, obj.cross_section);
+            decomp.CreateMesh(curve, obj.offset + fenceWidth / 2, obj.linearMaterial, obj.crossMaterial, obj.cross_section);
         }
         else
         {
@@ -274,9 +274,7 @@ public class RoadRenderer : MonoBehaviour
                     GameObject rendins = Instantiate(rend, transform);
                     rendins.transform.parent = this.transform;
                     CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
-                    Material normalMaterial = new Material(Shader.Find("Standard"));
-                    normalMaterial.mainTexture = obj.texture;
-                    decomp.CreateMesh(vacant_and_dashed[1], obj.offset + fenceWidth / 2, normalMaterial, obj.cross_section);
+                    decomp.CreateMesh(vacant_and_dashed[1], obj.offset + fenceWidth / 2, obj.linearMaterial, obj.crossMaterial, obj.cross_section);
                 }
             }
         }
@@ -298,8 +296,7 @@ public class RoadRenderer : MonoBehaviour
         }
         else
         {
-            Material normalMaterial = new Material(Shader.Find("Standard"));
-            normalMaterial.mainTexture = Resources.Load<Texture>("Textures/road");
+            Material normalMaterial = Resources.Load<Material>("Materials/roadsurface");
             decomp.CreateMesh(curve, width, normalMaterial);
         }
     }

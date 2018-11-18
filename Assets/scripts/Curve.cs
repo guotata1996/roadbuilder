@@ -160,6 +160,7 @@ public class Arc : Curve
     public Arc(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_end = 0f)
     {
         Debug.Assert(angle < 2 * Mathf.PI);
+
         center = _center;
         radius = (start - _center).magnitude;
         float t_0 = Mathf.Acos((start.x - _center.x) / radius); /*[0, Pi]*/
@@ -172,7 +173,11 @@ public class Arc : Curve
 
         z_start = _z_start;
         z_offset = _z_end - _z_start;
+
+        Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
+
+    protected Arc() { }
 
     /*start-end: clockwise*/
     public Arc(Vector2 _start, float angle, Vector2 _end, float _z_start = 0f, float _z_end = 0f)
@@ -195,10 +200,8 @@ public class Arc : Curve
 
         z_start = _z_start;
         z_offset = _z_end - _z_start;
-    }
 
-    private Arc()
-    {
+        Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
 
     private Arc deepCopy()
@@ -393,6 +396,8 @@ public class Line : Curve
         z_offset = _z_end - _z_start;
         t_start = 0f;
         t_end = 1f;
+
+        Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
 
     public override Vector3 at(float t)
@@ -459,6 +464,7 @@ public class Line : Curve
 
     public override List<Curve> segmentation(float maxlen, bool keep_length = true)
     {
+        Debug.Assert(maxlen != 0f);
         int segCount = Mathf.CeilToInt(this.length / maxlen);
         List<Curve> result = new List<Curve>();
         for (int i = 0; i != segCount; ++i)
@@ -467,8 +473,11 @@ public class Line : Curve
             float end_frac = Mathf.Min((i + 1) * maxlen / this.length, 1f);
             start_frac = toGlobalParam(start_frac);
             end_frac = toGlobalParam(end_frac);
-            Line l2 = new Line(start_frac * (end - start) + start, end_frac * (end - start) + start, z_start + start_frac * z_offset, z_start + end_frac * z_offset);
-            result.Add(l2);
+            if (!Algebra.isclose(start_frac * (end - start) + start, end_frac * (end - start) + start))
+            {
+                Line l2 = new Line(start_frac * (end - start) + start, end_frac * (end - start) + start, z_start + start_frac * z_offset, z_start + end_frac * z_offset);
+                result.Add(l2);
+            }
         }
         return result;
     }
@@ -559,6 +568,8 @@ public class Bezeir : Curve
         z_offset = _z_end - _z_start;
         t_start = 0f;
         t_end = 1f;
+
+        Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
 
     public override Vector3 at(float t)

@@ -260,6 +260,7 @@ public class Node : MonoBehaviour
                     Vector2 narrowP = narrowerRoad.curve.at_ending_2d(startof(narrowerRoad.curve), smoothLength);
                     Vector2 wideP_endPoint = wideP - Algebra.angle2dir(wide_curveIntersectAngle) * Algebra.InfLength;
                     Vector2 narrowP_endPoint = narrowP - Algebra.angle2dir(narrow_curveIntersectAngle) * Algebra.InfLength;
+                    Debug.Log(wideP_endPoint + " - " + narrowP_endPoint + " - " + wideP + " - " + narrowP);
                     Vector2 bezier_midPoint = Geometry.curveIntersect(new Line(wideP, wideP_endPoint, 0f, 0f), new Line(narrowP, narrowP_endPoint, 0f, 0f))[0];
 
                     Curve smoothener = new Bezeir(wideP, bezier_midPoint, narrowP, 0f, 0f);

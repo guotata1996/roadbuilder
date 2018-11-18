@@ -26,7 +26,7 @@ public class MainScene : MonoBehaviour
         CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
         Material normalMaterial = new Material(Shader.Find("Standard"));
         normalMaterial.mainTexture = Resources.Load<Texture>("Textures/road");
-        decomp.CreateMesh(new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 10f), new Vector2(5f, 10f), 0f, 0f), 0f, normalMaterial, p);
+        decomp.CreateMesh(new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 10f), new Vector2(5f, 10f), 0f, 0f), 0f, normalMaterial, normalMaterial, p);
 
 
 
