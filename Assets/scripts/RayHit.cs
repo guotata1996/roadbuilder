@@ -28,23 +28,28 @@ public class RayHit : MonoBehaviour {
             hitpoint3 = hit.point;
             hitpoint = new Vector2(hitpoint3.x, hitpoint3.z);
         }
+        var scrollWheel = Input.GetAxis("Mouse ScrollWheel");
+
         if (!Input.GetKey(KeyCode.LeftAlt))
         {
-            if (Input.GetKey(KeyCode.S))
+            if (Input.GetKey(KeyCode.S) || scrollWheel > 0)
             {
-                targetPosition.x = hitpoint3.x * zoomStep + targetPosition.x * (1 - zoomStep);
-                targetPosition.y = -hitpoint3.y * 0.5f * zoomStep + targetPosition.y * (1 + 0.5f * zoomStep);
-                targetPosition.z = hitpoint3.z * zoomStep + targetPosition.z * (1 - zoomStep);
+                float speedMultipler = Mathf.Max(1f, scrollWheel * 5f);
+                targetPosition.x = hitpoint3.x * zoomStep * speedMultipler + targetPosition.x * (1 - zoomStep * speedMultipler);
+                targetPosition.y = -hitpoint3.y * 0.5f * zoomStep * speedMultipler + targetPosition.y * (1 + 0.5f * zoomStep * speedMultipler);
+                targetPosition.z = hitpoint3.z * zoomStep * speedMultipler + targetPosition.z * (1 - zoomStep * speedMultipler);
 
                 Vector3 original = transform.rotation.eulerAngles;
                 transform.rotation = Quaternion.Euler(new Vector3(Mathf.Max(MaximumPitch, original.x), original.y, original.z));
 
             }
-            if (Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.W) || scrollWheel < 0)
             {
-                targetPosition.x = hitpoint3.x * zoomStep + targetPosition.x * (1 - zoomStep);
-                targetPosition.y = hitpoint3.y * 0.5f * zoomStep + targetPosition.y * (1 - 0.5f * zoomStep);
-                targetPosition.z = hitpoint3.z * zoomStep + targetPosition.z * (1 - zoomStep);
+                float speedMultipler = Mathf.Max(1f, -scrollWheel * 5f);
+
+                targetPosition.x = hitpoint3.x * zoomStep * speedMultipler + targetPosition.x * (1 - zoomStep * speedMultipler);
+                targetPosition.y = hitpoint3.y * 0.5f * zoomStep * speedMultipler + targetPosition.y * (1 - 0.5f * zoomStep * speedMultipler);
+                targetPosition.z = hitpoint3.z * zoomStep * speedMultipler + targetPosition.z * (1 - zoomStep * speedMultipler);
 
                 Vector3 original = transform.rotation.eulerAngles;
                 transform.rotation = Quaternion.Euler(new Vector3(Mathf.Min(MinimumPitch, original.x), original.y, original.z));
@@ -56,15 +61,17 @@ public class RayHit : MonoBehaviour {
         }
         else
         {
-            if (Input.GetKey(KeyCode.S))
+            if (Input.GetKey(KeyCode.S) || scrollWheel > 0)
             {
+                float speedMultipler = Mathf.Max(1f, scrollWheel * 5f);
                 Vector3 original = transform.rotation.eulerAngles;
-                transform.rotation = Quaternion.Euler(new Vector3(Mathf.Max(MaximumPitch, original.x - 0.4f), original.y, original.z));
+                transform.rotation = Quaternion.Euler(new Vector3(Mathf.Max(MaximumPitch, original.x - 0.4f * speedMultipler), original.y, original.z));
             }
-            if (Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.W) || scrollWheel < 0)
             {
+                float speedMultipler = Mathf.Max(1f, -scrollWheel * 5f);
                 Vector3 original = transform.rotation.eulerAngles;
-                transform.rotation = Quaternion.Euler(new Vector3(Mathf.Min(MinimumPitch, original.x + 0.4f), original.y, original.z));
+                transform.rotation = Quaternion.Euler(new Vector3(Mathf.Min(MinimumPitch, original.x + 0.4f * speedMultipler), original.y, original.z));
             }
         }
         if (Input.GetKey(KeyCode.A))
