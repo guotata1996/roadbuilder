@@ -65,13 +65,13 @@ public class RoadManager : MonoBehaviour
 
     public void addRoad(Curve curve, List<string> laneConfigure)
     {
-        List<Vector2> allNewIntersectPoints = new List<Vector2>();
+        List<Vector3> allNewIntersectPoints = new List<Vector3>();
 
         foreach (Road oldroad in allroads.ToList())
         {
-            List<Vector2> intersectPoints = Geometry.curveIntersect(curve, oldroad.curve);
+            List<Vector3> intersectPoints = Geometry.curveIntersect(curve, oldroad.curve);
 
-            foreach (Vector2 point in intersectPoints){
+            foreach (Vector3 point in intersectPoints){
                 Debug.Log("Interset points btw curve " + curve + " \nand "+ oldroad.curve + " is " + point);
             }
             if (intersectPoints.Count > 0)
@@ -97,10 +97,10 @@ public class RoadManager : MonoBehaviour
 
     }
 
-    private List<float> interSectPoints2Fragments(List<Vector2> intersectPoints, Curve originalCurve)
+    private List<float> interSectPoints2Fragments(List<Vector3> intersectPoints, Curve originalCurve)
     {
         var intersectParams = from intersectNode in intersectPoints
-            select (float)originalCurve.paramOf(intersectNode);
+            select (float)originalCurve.paramOf(Algebra.toVector2(intersectNode));
         List<float> intersectParams1 = intersectParams.ToList();
 
         intersectParams1.Sort();
@@ -132,6 +132,7 @@ public class RoadManager : MonoBehaviour
         Road newRoad = new Road(curve, laneConfigure, roadInstance);
         allroads.Add(newRoad);
         createOrAddtoNode(newRoad);
+        Debug.Log(curve + " added");
         return newRoad;
     }
 
@@ -185,8 +186,8 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-
-    public Vector2 approxNodeToExistingRoad(Vector2 p, out Road match, List<Curve> additionalInterestedLines = null){
+    /*TODO treat additional/existing differenly by height*/
+    public Vector3 approxNodeToExistingRoad(Vector3 p, out Road match, List<Curve> additionalInterestedLines = null){
         List<Road> allInterestedRoad;
         if (additionalInterestedLines != null){
             allInterestedRoad = new List<Road>();
@@ -210,13 +211,12 @@ public class RoadManager : MonoBehaviour
             {
                 if (others != bestMatch)
                 {
-                    List<Vector2> interPoints = Geometry.curveIntersect(bestMatch.curve, others.curve);
-                    foreach(Vector2 point in interPoints){
+                    List<Vector3> interPoints = Geometry.curveIntersect(bestMatch.curve, others.curve);
+                    foreach(Vector3 point in interPoints){
                         if ((point - p).magnitude <= ApproxLimit){
                             return point;
                         }
                     }
-
                 }
             }
             return bestMatch.curve.AttouchPoint(p);

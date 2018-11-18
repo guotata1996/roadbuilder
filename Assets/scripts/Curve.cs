@@ -129,14 +129,32 @@ public abstract class Curve
 
     public abstract float? paramOf(Vector2 point);
 
+    public float? paramOf(Vector3 point){
+        return paramOf(new Vector2(point.x, point.z));
+    }
+
     public bool contains_2d(Vector2 point)
     {
         return (paramOf(point) != null && 0 <= (float)paramOf(point) && (float)paramOf(point) <= 1f);
     }
 
+    public bool contains(Vector3 point){
+        Vector2 twod_point = new Vector2(point.x, point.z);
+        if (paramOf(twod_point) != null && 0 <= (float)paramOf(twod_point) && (float)paramOf(twod_point) <= 1f){
+            return Algebra.isclose(this.at((float)paramOf(twod_point)), point);
+        }
+        else{
+            return false;
+        }
+    }
+
     public abstract override string ToString();
 
-    public abstract Vector2 AttouchPoint(Vector2 p);
+    public Vector3 AttouchPoint(Vector2 p){
+        return this.AttouchPoint(new Vector3(p.x, 0f, p.y));
+    }
+
+    public abstract Vector3 AttouchPoint(Vector3 p);
 
     public abstract Curve concat(Curve another);
 
@@ -159,7 +177,28 @@ public class Arc : Curve
      */
     public Arc(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_end = 0f)
     {
-        Debug.Assert(angle < 2 * Mathf.PI);
+        center = _center;
+        radius = (start - _center).magnitude;
+        float t_0 = Mathf.Acos((start.x - _center.x) / radius); /*[0, Pi]*/
+        if (!Algebra.isclose(Mathf.Sin(t_0), (start.y - center.y) / radius))
+        {
+            t_0 = -t_0;/*[-Pi, 0]*/
+        }
+        Debug.Assert(Mathf.Abs(t_0) <= Mathf.PI);
+
+        t_start = t_0;
+        t_end = t_start + angle;
+
+        z_start = _z_start;
+        z_offset = _z_end - _z_start;
+
+        Debug.Assert(!Algebra.isclose(this.length, 0f));
+    }
+
+    public Arc(Vector3 center3, Vector3 start3, float angle){
+
+        Vector2 _center = Algebra.toVector2(center3);
+        Vector2 start = Algebra.toVector2(start3);
 
         center = _center;
         radius = (start - _center).magnitude;
@@ -168,13 +207,15 @@ public class Arc : Curve
         {
             t_0 = -t_0;/*[-Pi, 0]*/
         }
+        Debug.Assert(Mathf.Abs(t_0) <= Mathf.PI);
         t_start = t_0;
         t_end = t_start + angle;
 
-        z_start = _z_start;
-        z_offset = _z_end - _z_start;
+        z_start = center3.y;
+        z_offset = 0f;
 
         Debug.Assert(!Algebra.isclose(this.length, 0f));
+
     }
 
     protected Arc() { }
@@ -186,6 +227,7 @@ public class Arc : Curve
         radius = 0.5f * (_start - _end).magnitude / Mathf.Sin(angle / 2);
         t_start = new Line(center, _start, 0f, 0f).angle_ending(true);
         t_end = new Line(center, _end, 0f, 0f).angle_ending(true);
+        /*
         if (t_end - t_start > Mathf.PI)
         {
             t_end -= Mathf.PI * 2;
@@ -197,7 +239,11 @@ public class Arc : Curve
                 t_start -= Mathf.PI;
             }
         }
-
+        */
+        if (t_start < t_end){
+            t_end -= Mathf.PI * 2;
+        }
+        Debug.Assert(!counterClockwise);
         z_start = _z_start;
         z_offset = _z_end - _z_start;
 
@@ -218,7 +264,7 @@ public class Arc : Curve
 
     public override Vector3 at(float t)
     {
-        float parametric_t = t_start + (t_end - t_start) * t;
+        float parametric_t = toGlobalParam(t);
         float _x = center.x + radius * Mathf.Cos(parametric_t);
         float _z = center.y + radius * Mathf.Sin(parametric_t);
         float _y = z_start + z_offset * t;
@@ -227,7 +273,7 @@ public class Arc : Curve
 
     public override Vector2 at_2d(float t)
     {
-        float parametric_t = t_start + (t_end - t_start) * t;
+        float parametric_t = toGlobalParam(t);
         float _x = center.x + radius * Mathf.Cos(parametric_t);
         float _y = center.y + radius * Mathf.Sin(parametric_t);
         return new Vector2(_x, _y);
@@ -235,7 +281,7 @@ public class Arc : Curve
 
     public override Vector3 upNormal(float t)
     {
-        float parametric_t = t_start + (t_end - t_start) * t;
+        float parametric_t = toGlobalParam(t);
         float tanGradient = z_offset / this.length;
         return new Vector3(Mathf.Sin(parametric_t) * tanGradient, 1, -Mathf.Cos(parametric_t) * tanGradient).normalized;
     }
@@ -252,7 +298,8 @@ public class Arc : Curve
     {
         get
         {
-            return Mathf.Sin(t_end - t_start) > 0;
+            //return Mathf.Sin(t_end - t_start) > 0;
+            return t_end > t_start;
         }
     }
 
@@ -263,19 +310,22 @@ public class Arc : Curve
 
         ans_candidate = counterClockwise ? t + Mathf.PI / 2 : t - Mathf.PI / 2;
 
-        if (ans_candidate < 0)
+        while (ans_candidate < 0)
         {
             ans_candidate += Mathf.PI * 2;
         }
         if (ans_candidate >= 2 * Mathf.PI)
             ans_candidate -= Mathf.PI * 2;
         Debug.Assert(0 <= ans_candidate && ans_candidate < 2 * Mathf.PI);
+        if (ans_candidate < 0 || ans_candidate >= 2 * Mathf.PI){
+            //Debug.Log(t + "'s ans = " + ans_candidate + "(tstart=) " + t_start + " (tend=) " + t_end);
+        }
         return ans_candidate;
     }
 
     public override Vector3 rightNormal(float t)
     {
-        float parametric_t = t_start + (t_end - t_start) * t;
+        float parametric_t = toGlobalParam(t);
         if (t_end > t_start)
             return new Vector3(Mathf.Cos(parametric_t), 0f, Mathf.Sin(parametric_t));
         else
@@ -333,7 +383,7 @@ public class Arc : Curve
         return string.Format("Arc: Length={0}, t_start={1} (point={2}), t_end={3} (point={4})", length, t_start, at_ending_2d(true), t_end, at_ending_2d(false));
     }
 
-    public override Vector2 AttouchPoint(Vector2 p)
+    public override Vector3 AttouchPoint(Vector3 p)
     {
         float angle;
         if (p.x == center.x)
@@ -342,7 +392,7 @@ public class Arc : Curve
         }
         else
         {
-            angle = Mathf.Atan((center.y - p.y) / (center.x - p.x));
+            angle = Mathf.Atan((center.y - p.z) / (center.x - p.x));
         }
 
         List<float> candidateAngle = new List<float>() { angle };
@@ -354,9 +404,11 @@ public class Arc : Curve
         var validAngle = candidateAngle.Where(a => (a - t_start) * (a - t_end) < 0).ToList();
         validAngle.Add(t_start);
         validAngle.Add(t_end);
-        var sortedValid = validAngle.OrderBy(a => Mathf.Pow(center.x + Mathf.Cos(a) * radius - p.x, 2) + Mathf.Pow(center.y + Mathf.Sin(a) * radius - p.y, 2));
+        var sortedValid = validAngle.OrderBy(a => Mathf.Pow(center.x + Mathf.Cos(a) * radius - p.x, 2) + Mathf.Pow(center.y + Mathf.Sin(a) * radius - p.z, 2));
         float ans = sortedValid.First();
-        return new Vector2(center.x + Mathf.Cos(ans) * radius, center.y + Mathf.Sin(ans) * radius);
+        float localparam = toLocalParam(ans);
+        //return new Vector2(center.x + Mathf.Cos(ans) * radius, center.y + Mathf.Sin(ans) * radius);
+        return this.at(localparam);
     }
 
     public override Curve concat(Curve b)
@@ -394,6 +446,17 @@ public class Line : Curve
         end = _end;
         z_start = _z_start;
         z_offset = _z_end - _z_start;
+        t_start = 0f;
+        t_end = 1f;
+
+        Debug.Assert(!Algebra.isclose(this.length, 0f));
+    }
+
+    public Line(Vector3 _start, Vector3 _end){
+        start = Algebra.toVector2(_start);
+        end = Algebra.toVector2(_end);
+        z_start = _start.y;
+        z_offset = _end.y - _start.y;
         t_start = 0f;
         t_end = 1f;
 
@@ -509,24 +572,26 @@ public class Line : Curve
         return string.Format("Line: Start = {0} ; End = {1}, zStart = {2}, zOffset = {3}", start, end, z_start, z_offset);
     }
 
-    public override Vector2 AttouchPoint(Vector2 p)
+
+    public override Vector3 AttouchPoint(Vector3 p)
     {
-        float candidate_t = -((end.x - start.x) * (start.x - p.x) + (end.y - start.y) * (start.y - p.y))
+        Vector2 twod_p = new Vector2(p.x, p.z);
+        float candidate_t = -((end.x - start.x) * (start.x - p.x) + (end.y - start.y) * (start.y - p.z))
             / (Mathf.Pow(end.x - start.x, 2) + Mathf.Pow(end.y - start.y, 2));
         candidate_t = toLocalParam(candidate_t);
         if (0 < candidate_t && candidate_t < 1)
         {
-            return this.at_2d(candidate_t);
+            return this.at(candidate_t);
         }
         else
         {
-            if ((p - this.at_2d(0)).magnitude < (p - this.at_2d(1)).magnitude)
+            if ((twod_p - this.at_2d(0)).magnitude < (twod_p - this.at_2d(1)).magnitude)
             {
-                return this.at_2d(0);
+                return this.at(0);
             }
             else
             {
-                return this.at_2d(1);
+                return this.at(1);
             }
         }
     }
@@ -566,6 +631,19 @@ public class Bezeir : Curve
         P2 = _P2;
         z_start = _z_start;
         z_offset = _z_end - _z_start;
+        t_start = 0f;
+        t_end = 1f;
+
+        Debug.Assert(!Algebra.isclose(this.length, 0f));
+    }
+
+    public Bezeir(Vector3 _P0, Vector3 _P1, Vector3 _P2){
+        Debug.Assert(!Geometry.Parallel(_P1 - _P0, _P2 - _P1));
+        P0 = Algebra.toVector2(_P0);
+        P1 = Algebra.toVector2(_P1);
+        P2 = Algebra.toVector2(_P2);
+        z_start = _P0.y;
+        z_offset = _P2.y - _P0.y;
         t_start = 0f;
         t_end = 1f;
 
@@ -704,10 +782,10 @@ public class Bezeir : Curve
 
     public Vector2 targetP;
 
-    public override Vector2 AttouchPoint(Vector2 p)
+    public override Vector3 AttouchPoint(Vector3 p)
     {
 
-        targetP = p;
+        targetP = new Vector2(p.x, p.z);
         float t1 = Algebra.newTown(this.DeriveOfDistance, this.DeriveOfDeriveOfDistance, 0f, t_start);
         float t2 = Algebra.newTown(this.DeriveOfDistance, this.DeriveOfDeriveOfDistance, 0f, t_end);
         t1 = toLocalParam(t1);
@@ -720,8 +798,8 @@ public class Bezeir : Curve
         candidateParams.Add(0f);
         candidateParams.Add(1f);
 
-        var sortedParams = candidateParams.OrderBy((param) => (this.at_2d(param) - p).magnitude);
-        return this.at_2d(sortedParams.First());
+        var sortedParams = candidateParams.OrderBy((param) => (this.at_2d(param) - targetP).magnitude);
+        return this.at(sortedParams.First());
     }
 
     public float[] DistanceParams()

@@ -151,7 +151,7 @@ public class RoadRenderer : MonoBehaviour
                 if (configs[0] == "fence")
                 {
                     Linear3DObject fence = new Linear3DObject("fence");
-                    fence.offset = offset;
+                    fence.offset = offset + fenceWidth/2;
                     linear3DObjects.Add(fence);
 
                     offset += fenceWidth;
@@ -207,11 +207,10 @@ public class RoadRenderer : MonoBehaviour
             drawLinear3DObject(curve, linear3DObjects[i], indicatorMargin_0, indicatorMargin_1);
         }
 
-
         if (curve.z_start > 0 || curve.z_offset > 0){
             drawLinear3DObject(curve, new Linear3DObject("squarecolumn"), indicatorMargin_0, indicatorMargin_1);
             drawLinear3DObject(curve, new Linear3DObject("crossbeam", offset), indicatorMargin_0, indicatorMargin_1);
-            drawLinear3DObject(curve, new Linear3DObject("bridgepanel", offset), indicatorMargin_0, indicatorMargin_1);
+            drawLinear3DObject(curve, new Linear3DObject("bridgepanel", offset), surfaceMargin_0, surfaceMargin_1);
         }
         else{
             drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1, indicator);
@@ -260,7 +259,7 @@ public class RoadRenderer : MonoBehaviour
             GameObject rendins = Instantiate(rend, transform);
             rendins.transform.parent = this.transform;
             CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
-            decomp.CreateMesh(curve, obj.offset + fenceWidth / 2, obj.linearMaterial, obj.crossMaterial, obj.cross_section);
+            decomp.CreateMesh(curve, obj.offset, obj.linearMaterial, obj.crossMaterial, obj.cross_section);
         }
         else
         {
@@ -274,7 +273,7 @@ public class RoadRenderer : MonoBehaviour
                     GameObject rendins = Instantiate(rend, transform);
                     rendins.transform.parent = this.transform;
                     CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
-                    decomp.CreateMesh(vacant_and_dashed[1], obj.offset + fenceWidth / 2, obj.linearMaterial, obj.crossMaterial, obj.cross_section);
+                    decomp.CreateMesh(vacant_and_dashed[1], obj.offset, obj.linearMaterial, obj.crossMaterial, obj.cross_section);
                 }
             }
         }

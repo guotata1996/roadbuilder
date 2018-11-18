@@ -13,10 +13,15 @@ public static class Geometry {
         //return Algebra.isclose(line1.x * line2.y, line1.y * line2.x);
     }
 
-    public static List<Vector2> curveIntersect(Curve c1, Curve c2)
+    public static bool Parallel(Vector3 line1, Vector3 line2)
     {
-        List<Vector2> specialcase = new List<Vector2>();
-        List<Vector2> commoncase = new List<Vector2>();
+        return Parallel(new Vector2(line1.x, line1.z), new Vector2(line2.x, line2.z));
+    }
+
+    public static List<Vector3> curveIntersect(Curve c1, Curve c2)
+    {
+        List<Vector3> specialcase = new List<Vector3>();
+        List<Vector3> commoncase = new List<Vector3>();
 
         if (c1 is Bezeir)
         {
@@ -77,17 +82,17 @@ public static class Geometry {
             }
         }
 
-        if (c1.contains_2d(c2.at_2d(0))){
-            specialcase.Add(c2.at_2d(0));
+        if (c1.contains(c2.at(0))){
+            specialcase.Add(c2.at(0));
         }
-        if (c1.contains_2d(c2.at_2d(1))){
-            specialcase.Add(c2.at_2d(1));
+        if (c1.contains(c2.at(1))){
+            specialcase.Add(c2.at(1));
         }
-        if (c2.contains_2d(c1.at_2d(0))){
-            specialcase.Add(c1.at_2d(0));
+        if (c2.contains(c1.at(0))){
+            specialcase.Add(c1.at(0));
         }
-        if (c2.contains_2d(c1.at_2d(1))){
-            specialcase.Add(c1.at_2d(1));
+        if (c2.contains(c1.at(1))){
+            specialcase.Add(c1.at(1));
         }
 
         commoncase.AddRange(specialcase);
@@ -125,7 +130,7 @@ public static class Geometry {
         return u + v <= 1 || Algebra.isclose(u+v, 1);
     }
 
-    private static List<Vector2> intersect(Bezeir b1, Bezeir b2)
+    private static List<Vector3> intersect(Bezeir b1, Bezeir b2)
     {
         Vector2 A2 = b1.P0 - 2 * b1.P1 + b1.P2;
         Vector2 A1 = -2 * b1.P0 + 2 * b1.P1;
@@ -137,7 +142,7 @@ public static class Geometry {
         return filter(Algebra.parametricFunctionSolver(A0, A1, A2, B0, B1, B2), b1, b2);
     }
 
-    private static List<Vector2> intersect(Bezeir b1, Arc b2)
+    private static List<Vector3> intersect(Bezeir b1, Arc b2)
     {
         Vector2 A2 = b1.P0 - 2 * b1.P1 + b1.P2;
         Vector2 A1 = -2 * b1.P0 + 2 * b1.P1;
@@ -146,12 +151,12 @@ public static class Geometry {
         return filter(candidatePoints, b1, b2);
     }
 
-    private static List<Vector2> intersect(Arc b1, Bezeir b2)
+    private static List<Vector3> intersect(Arc b1, Bezeir b2)
     {
         return intersect(b2, b1);
     }
 
-    private static List<Vector2> intersect(Bezeir b1, Line b2)
+    private static List<Vector3> intersect(Bezeir b1, Line b2)
     {
         Vector2 A2 = b1.P0 - 2 * b1.P1 + b1.P2;
         Vector2 A1 = -2 * b1.P0 + 2 * b1.P1;
@@ -161,13 +166,13 @@ public static class Geometry {
         return filter(candidatePoints, b1, b2);
     }
 
-    private static List<Vector2> intersect(Line b1, Bezeir b2)
+    private static List<Vector3> intersect(Line b1, Bezeir b2)
     {
 
         return intersect(b2, b1);
     }
 
-    private static List<Vector2> intersect(Arc c1, Arc c2)
+    private static List<Vector3> intersect(Arc c1, Arc c2)
     {
         List<Vector2> candidatePoints;
         if (sameMotherCurveUponIntersect(c1, c2))
@@ -175,19 +180,19 @@ public static class Geometry {
             candidatePoints = new List<Vector2>();
             if (Algebra.isclose(c1.at_ending(true), c2.at_ending(true)))
             {
-                candidatePoints.Add(c1.at_ending(true));
+                candidatePoints.Add(c1.at_ending_2d(true));
             }
             if (Algebra.isclose(c1.at_ending(true), c2.at_ending(false)))
             {
-                candidatePoints.Add(c1.at_ending(true));
+                candidatePoints.Add(c1.at_ending_2d(true));
             }
             if (Algebra.isclose(c1.at_ending(false), c2.at_ending(true)))
             {
-                candidatePoints.Add(c1.at_ending(false));
+                candidatePoints.Add(c1.at_ending_2d(false));
             }
             if (Algebra.isclose(c1.at_ending(false), c2.at_ending(false)))
             {
-                candidatePoints.Add(c1.at_ending(false));
+                candidatePoints.Add(c1.at_ending_2d(false));
             }
         }
         else
@@ -197,30 +202,31 @@ public static class Geometry {
         return filter(candidatePoints, c1, c2);
     }
 
-    private static List<Vector2> intersect(Line b1, Arc b2)
+    private static List<Vector3> intersect(Line b1, Arc b2)
     {
         List<Vector2> candidatePoints = Algebra.parametricFunctionSolver(b1.start, (b1.end - b1.start).normalized, b2.center, b2.radius);
 
         return filter(candidatePoints, b1, b2);
     }
 
-    private static List<Vector2> intersect(Arc b1, Line b2)
+    private static List<Vector3> intersect(Arc b1, Line b2)
     {
         return intersect(b2, b1);
     }
 
-    private static List<Vector2> intersect(Line b1, Line b2)
+    private static List<Vector3> intersect(Line b1, Line b2)
     {
         List<Vector2> candiatePoints = Algebra.parametricFunctionSolver(b1.start, (b1.end - b1.start).normalized, b2.start, (b2.end - b2.start).normalized);
         return filter(candiatePoints, b1, b2);
     }
 
-    private static List<Vector2> filter(List<Vector2> points, Curve c1, Curve c2)
+    private static List<Vector3> filter(List<Vector2> points, Curve c1, Curve c2)
     {
-        var valids = 
-        from point in points
-        where c1.contains_2d(point) && c2.contains_2d(point)
-        select point;
+        var valids =
+                from point in points
+                where c2.contains_2d(point) && c1.contains(c2.at((float)c2.paramOf(point)))
+                //select new Vector3(point.x, c2.at((float)c2.paramOf(point)).y, point.y);
+                select Algebra.toVector3(point);
 
         return valids.ToList();
     }
@@ -257,13 +263,13 @@ public static class Geometry {
     }
 }
 
-class IntersectPointComparator : IEqualityComparer<Vector2>{
-    public bool Equals(Vector2 x, Vector2 y)
+class IntersectPointComparator : IEqualityComparer<Vector3>{
+    public bool Equals(Vector3 x, Vector3 y)
 {
     return (x - y).magnitude < 0.1f;
 }
 
-    public int GetHashCode(Vector2 obj)
+    public int GetHashCode(Vector3 obj)
     {
         return 0;
     }

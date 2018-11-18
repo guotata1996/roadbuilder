@@ -10,7 +10,7 @@ public class Algebra {
 
     static float _a0, _a1, _a2, _a3, _a4;
 
-    public static float InfLength = 99999f;
+    public static float InfLength = 999f;
 
     public static List<float> functionSolver(float a0, float a1, float a2, float a3 = 0, float a4 =0)
     {
@@ -290,7 +290,22 @@ public class Algebra {
         return isclose((a - b).magnitude, 0f);
     }
 
+    public static bool isclose(Vector3 a, Vector3 b)
+    {
+        return isclose((a - b).magnitude, 0f);
+    }
+
+    public static bool isProjectionClose(Vector3 a, Vector3 b)
+    {
+        return isclose((new Vector2(a.x, a.z) - new Vector2(b.x, b.z)).magnitude, 0f);
+    }
+
     public static bool isRoadNodeClose(Vector2 a, Vector2 b){
+        return Mathf.Abs((a - b).magnitude) < 0.1f;
+    }
+
+    public static bool isRoadNodeClose(Vector3 a, Vector3 b)
+    {
         return Mathf.Abs((a - b).magnitude) < 0.1f;
     }
 
@@ -359,6 +374,10 @@ public class Algebra {
         return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
     }
 
+    public static Vector3 angle2dir_3d(float angle){
+        return new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+    }
+
     public static float signedAngleToPositive(float angle)
     {
         return angle >= 0 ? angle : angle + 360f;
@@ -374,5 +393,10 @@ public class Algebra {
 
     public static Vector3 toVector3(Vector2 a){
         return new Vector3(a.x, 0f, a.y);
+    }
+
+    public static Vector2 toVector2(Vector3 a)
+    {
+        return new Vector2(a.x, a.z);
     }
 }
