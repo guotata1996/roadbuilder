@@ -199,8 +199,7 @@ public class Node : MonoBehaviour
             float Awide = wideRoad.curve.angle_ending(startof(wideRoad.curve), halfsmoothenLength);
             float Anarrow = narrowRoad.curve.angle_ending(startof(narrowRoad.curve), halfsmoothenLength);
 
-            float hwide = wideRoad.curve.at_ending(startof(wideRoad.curve), halfsmoothenLength).y;
-            float hnarrow = narrowRoad.curve.at_ending(startof(narrowRoad.curve), halfsmoothenLength).y;
+            float H = wideRoad.curve.at_ending(startof(wideRoad.curve)).y;
 
             Vector2 Pwide_0 = wideRoad.curve.at_ending_2d(startof(wideRoad.curve), halfsmoothenLength) + Algebra.angle2dir(Awide + Mathf.PI / 2) * wideRoad.width / 2;
             Vector2 Pnarrow = narrowRoad.curve.at_ending_2d(startof(narrowRoad.curve), halfsmoothenLength);                                 
@@ -211,13 +210,13 @@ public class Node : MonoBehaviour
                 Curve smoothener2;
                 if (Geometry.Parallel(Pwide - Pnarrow, Algebra.angle2dir(Awide)))
                 {
-                    smoothener1 = new Line(Pwide, 0.5f * (Pwide + Pnarrow), hwide, 0.5f * (hwide + hnarrow));
-                    smoothener2 = new Line(0.5f * (Pwide + Pnarrow), Pnarrow, 0.5f * (hwide + hnarrow), hnarrow);
+                    smoothener1 = new Line(Pwide, 0.5f * (Pwide + Pnarrow), H, 0f);
+                    smoothener2 = new Line(0.5f * (Pwide + Pnarrow), Pnarrow, H, 0f);
                 }
                 else
                 {
-                    smoothener1 = new Bezeir(Pwide, Pwide - Algebra.angle2dir(Awide) * halfsmoothenLength / 2, 0.5f * (Pwide + Pnarrow), hwide, 0.5f * (hwide + hnarrow));
-                    smoothener2 = new Bezeir(0.5f * (Pwide + Pnarrow), Pnarrow - Algebra.angle2dir(Anarrow) * halfsmoothenLength / 2, Pnarrow, 0.5f * (hwide + hnarrow), hnarrow);
+                    smoothener1 = new Bezeir(Pwide, Pwide - Algebra.angle2dir(Awide) * halfsmoothenLength / 2, 0.5f * (Pwide + Pnarrow), H, H);
+                    smoothener2 = new Bezeir(0.5f * (Pwide + Pnarrow), Pnarrow - Algebra.angle2dir(Anarrow) * halfsmoothenLength / 2, Pnarrow, H, H);
                 }
                 GameObject smoothObj = Instantiate(indicatorInst.roadIndicatorPrefab, transform);
                 smoothInstances.Add(smoothObj);
@@ -228,8 +227,8 @@ public class Node : MonoBehaviour
 
             Vector2 Pwide_1 = wideRoad.curve.at_ending_2d(startof(wideRoad.curve), halfsmoothenLength) + Algebra.angle2dir(Awide - Mathf.PI / 2) * 
                                       (wideRoad.width / 2 - narrowRoad.width / 2);
-            Curve smoothener1_last = new Bezeir(Pwide_1, Pwide_1 - Algebra.angle2dir(Awide) * halfsmoothenLength / 2, 0.5f * (Pwide_1 + Pnarrow), hwide, 0.5f * (hwide + hnarrow));
-            Curve smoothener2_last = new Bezeir(0.5f * (Pwide_1 + Pnarrow), Pnarrow - Algebra.angle2dir(Anarrow) * halfsmoothenLength / 2, Pnarrow, 0.5f * (hwide + hnarrow), hnarrow);
+            Curve smoothener1_last = new Bezeir(Pwide_1, Pwide_1 - Algebra.angle2dir(Awide) * halfsmoothenLength / 2, 0.5f * (Pwide_1 + Pnarrow), H, H);
+            Curve smoothener2_last = new Bezeir(0.5f * (Pwide_1 + Pnarrow), Pnarrow - Algebra.angle2dir(Anarrow) * halfsmoothenLength / 2, Pnarrow, H, H);
             GameObject smoothObj_last = Instantiate(indicatorInst.roadIndicatorPrefab, transform);
             smoothInstances.Add(smoothObj_last);
             RoadRenderer smoothObjConfig_last = smoothObj_last.GetComponent<RoadRenderer>();
@@ -255,8 +254,7 @@ public class Node : MonoBehaviour
                 Vector2 wide_curveIntersect = widerRoad.curve.at_ending_2d(startof(widerRoad.curve), smoothLength) +
                                                        Algebra.angle2dir(wide_curveIntersectAngle + Mathf.PI / 2) * widerRoad.width / 2;
 
-                float h1 = r1.curve.at_ending(startof(r1.curve), smoothLength).y;
-                float h2 = r2.curve.at_ending(startof(r2.curve), smoothLength).y;
+                float H = r1.curve.at_ending(startof(r1.curve)).y;
 
                 int smoothener_count = Mathf.CeilToInt(widerRoad.width / narrowerRoad.width);
                 for (int i = 0; i != smoothener_count; ++i)
@@ -269,7 +267,7 @@ public class Node : MonoBehaviour
                     Debug.Log(wideP_endPoint + " - " + narrowP_endPoint + " - " + wideP + " - " + narrowP);
                     Vector3 bezier_midPoint = Geometry.curveIntersect(new Line(wideP, wideP_endPoint, 0f, 0f), new Line(narrowP, narrowP_endPoint, 0f, 0f))[0];
 
-                    Curve smoothener = new Bezeir(wideP, Algebra.toVector2(bezier_midPoint), narrowP, h1, h2);
+                    Curve smoothener = new Bezeir(wideP, Algebra.toVector2(bezier_midPoint), narrowP, H, H);
                     GameObject smoothObj = Instantiate(indicatorInst.roadIndicatorPrefab, transform);
                     smoothInstances.Add(smoothObj);
                     RoadRenderer smoothObjConfig = smoothObj.GetComponent<RoadRenderer>();
@@ -289,8 +287,7 @@ public class Node : MonoBehaviour
                                               new Vector2(Mathf.Cos(r1_curveIntersectAngle + Mathf.PI / 2), Mathf.Sin(r1_curveIntersectAngle + Mathf.PI / 2)) * r1.width / 2;
                 Vector2 r2_curveIntersect = r2.curve.at_ending_2d(startof(r2.curve), c2_offset + smoothLength) +
                                               new Vector2(Mathf.Cos(r2_curveIntersectAngle - Mathf.PI / 2), Mathf.Sin(r2_curveIntersectAngle - Mathf.PI / 2)) * r2.width / 2;
-                float h1 = r1.curve.at_ending(startof(r1.curve), c1_offset + smoothLength).y;
-                float h2 = r2.curve.at_ending(startof(r2.curve), c2_offset + smoothLength).y;
+                float H = r1.curve.at_ending(startof(r1.curve)).y;
 
                 float roadcornerHalfAngle = 0.5f * (r1_curveIntersectAngle < r2_curveIntersectAngle ? r2_curveIntersectAngle - r1_curveIntersectAngle :
                                              r2_curveIntersectAngle + 2 * Mathf.PI - r1_curveIntersectAngle);
@@ -311,7 +308,7 @@ public class Node : MonoBehaviour
                     GameObject smoothObj = Instantiate(indicatorInst.roadIndicatorPrefab, transform);
                     smoothInstances.Add(smoothObj);
                     RoadRenderer smoothObjConfig = smoothObj.GetComponent<RoadRenderer>();
-                    smoothObjConfig.generate(new Arc(r1_curveIntersect_pluswidth, Mathf.PI - 2 * roadcornerHalfAngle, r2_curveIntersect_pluswidth, h1, h2),
+                    smoothObjConfig.generate(new Arc(r1_curveIntersect_pluswidth, Mathf.PI - 2 * roadcornerHalfAngle, r2_curveIntersect_pluswidth, H, H),
                                              new List<string> { string.Format("surface_{0}", smoothwidth) });
                 }
                 else
@@ -323,16 +320,16 @@ public class Node : MonoBehaviour
                         smoothWidth1 = r1.width;
                         smoothWidth2 = smoothOuterRadius - smoothInnerRadius;
                         float angle1 = Mathf.Acos((smoothInnerRadius + r1.width) / smoothOuterRadius);
-                        curve1 = new Arc(smoothArcCenter, r1_curveIntersect + (r1_curveIntersect - smoothArcCenter).normalized * smoothWidth1 / 2, -angle1, h1, h2);
-                        curve2 = new Arc(smoothArcCenter, r2_curveIntersect + (r2_curveIntersect - smoothArcCenter).normalized * smoothWidth2 / 2, (Mathf.PI - 2 * roadcornerHalfAngle - angle1), h1, h2);
+                        curve1 = new Arc(smoothArcCenter, r1_curveIntersect + (r1_curveIntersect - smoothArcCenter).normalized * smoothWidth1 / 2, -angle1, H, H);
+                        curve2 = new Arc(smoothArcCenter, r2_curveIntersect + (r2_curveIntersect - smoothArcCenter).normalized * smoothWidth2 / 2, (Mathf.PI - 2 * roadcornerHalfAngle - angle1), H, H);
                     }
                     else
                     {
                         smoothWidth1 = smoothOuterRadius - smoothInnerRadius;
                         smoothWidth2 = r2.width;
                         float angle2 = Mathf.Acos((smoothInnerRadius + r2.width) / smoothOuterRadius);
-                        curve1 = new Arc(smoothArcCenter, r1_curveIntersect + (r1_curveIntersect - smoothArcCenter).normalized * smoothWidth1 / 2, angle2, h1, h2);
-                        curve2 = new Arc(smoothArcCenter, r2_curveIntersect + (r2_curveIntersect - smoothArcCenter).normalized * smoothWidth2 / 2, -(Mathf.PI - 2 * roadcornerHalfAngle - angle2), h1, h2);
+                        curve1 = new Arc(smoothArcCenter, r1_curveIntersect + (r1_curveIntersect - smoothArcCenter).normalized * smoothWidth1 / 2, angle2, H, H);
+                        curve2 = new Arc(smoothArcCenter, r2_curveIntersect + (r2_curveIntersect - smoothArcCenter).normalized * smoothWidth2 / 2, -(Mathf.PI - 2 * roadcornerHalfAngle - angle2), H, H);
                     }
                     GameObject smoothObj = Instantiate(indicatorInst.roadIndicatorPrefab, transform);
                     smoothInstances.Add(smoothObj);

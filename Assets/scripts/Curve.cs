@@ -99,6 +99,7 @@ public abstract class Curve
 
     public List<Curve> split(float cutpoint, bool byLength = false)
     {
+        cutpoint = Mathf.Clamp01(cutpoint);
         if (cutpoint >= 0.5f)
         {
             return segmentation(this.length * cutpoint, keep_length: byLength);
@@ -118,10 +119,17 @@ public abstract class Curve
     }
 
 
-    /*TODO: test special case: 0/1 */
+    /*TODO: optimize speed for special case: 0/1 */
     public Curve cut(float start, float end)
     {
-        Debug.Assert(0 <= start && start < end && end <= 1);
+        //Debug.Assert(0 <= start && start < end && end <= 1);
+        end = Mathf.Max(start, end);
+
+        if (start < 0f && !Algebra.isclose(start, 0f) || end > 1f && !Algebra.isclose(end, 1f))
+        {
+            Debug.Assert(false);
+            Debug.Log("Abnormal cut, start:" + start + "end:" + end);
+        }
         Curve start_to_1 = split(start).Last();
         float secondFraction = (end - start) / (1f - start);
         return start_to_1.split(secondFraction).First();
@@ -316,11 +324,13 @@ public class Arc : Curve
         {
             ans_candidate += Mathf.PI * 2;
         }
-        if (ans_candidate >= 2 * Mathf.PI)
+        while (ans_candidate >= 2 * Mathf.PI)
+        {
             ans_candidate -= Mathf.PI * 2;
+        }
         Debug.Assert(0 <= ans_candidate && ans_candidate < 2 * Mathf.PI);
         if (ans_candidate < 0 || ans_candidate >= 2 * Mathf.PI){
-            //Debug.Log(t + "'s ans = " + ans_candidate + "(tstart=) " + t_start + " (tend=) " + t_end);
+            Debug.Log(t + "'s ans = " + ans_candidate + "(tstart=) " + t_start + " (tend=) " + t_end);
         }
         return ans_candidate;
     }
@@ -382,7 +392,8 @@ public class Arc : Curve
 
     public override string ToString()
     {
-        return string.Format("Arc: Length={0}, t_start={1} (point={2}), t_end={3} (point={4})", length, t_start, at_ending_2d(true), t_end, at_ending_2d(false));
+        return string.Format("Arc: t_start={0:C3} point={1:C3}, t_end={2:C3} point={3:C3}, z_start={4} z_offset={5}", 
+                             t_start, at_ending_2d(true), t_end, at_ending_2d(false), z_start, z_offset);
     }
 
     public override Vector3 AttouchPoint(Vector3 p)
@@ -654,8 +665,9 @@ public class Bezeir : Curve
 
     public override Vector3 at(float t)
     {
+        float local_t = t;
         t = toGlobalParam(t);
-        float _y = z_start + z_offset * t;
+        float _y = z_start + z_offset * local_t;
         Vector2 x_z = (1 - t) * (1 - t) * P0 + 2 * t * (1 - t) * P1 + t * t * P2;
         return new Vector3(x_z.x, _y, x_z.y);
     }
@@ -749,7 +761,7 @@ public class Bezeir : Curve
                 thisEnd = Mathf.Min(1f, maxlen / this.length * (multipler + 1));
             }
 
-            Bezeir fragment = new Bezeir(this.P0, this.P1, this.P2, this.z_start, this.z_start + this.z_offset);
+            Bezeir fragment = new Bezeir(this.P0, this.P1, this.P2, this.z_start + this.z_offset * lastEnd, this.z_start + this.z_offset * thisEnd);
             fragment.t_start = toGlobalParam(lastEnd);
             fragment.t_end = toGlobalParam(thisEnd);
             result.Add(fragment);

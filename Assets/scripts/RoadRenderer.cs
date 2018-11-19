@@ -116,9 +116,44 @@ public class RoadRenderer : MonoBehaviour
     public float dashIndicatorLength = 1f;
     public float dashIndicatorWidth = 2f;
 
-    public void generate(Curve curve, List<string> laneConfig, 
+    public void generate(Curve curve, List<string> laneConfig,
                          float indicatorMargin_0 = 0f, float indicatorMargin_1 = 0f, float surfaceMargin_0 = 0f, float surfaceMargin_1 = 0f,
-                         bool indicator = false)
+                         bool indicator = false){
+
+        Debug.Assert(surfaceMargin_0 <= indicatorMargin_0);
+        Debug.Assert(indicatorMargin_0 < curve.length - indicatorMargin_1);
+        Debug.Assert(surfaceMargin_1 <= indicatorMargin_1);
+        if (Algebra.isclose(curve.z_offset, 0f) || (indicatorMargin_0 == 0f && indicatorMargin_1 == 0f)){
+            //Debug.Log("generating single in the first place with 0= " + indicatorMargin_0 + " 1= " + indicatorMargin_1);
+            generateSingle(curve, laneConfig, indicatorMargin_0, indicatorMargin_1, surfaceMargin_0, surfaceMargin_1, indicator);
+            return;
+        }
+        else{
+            //Debug.Log(curve + " ---" + indicatorMargin_0 + " : " + indicatorMargin_1);
+            if (indicatorMargin_0 > 0){
+                Curve margin0Curve = curve.cut(0f, indicatorMargin_0 / curve.length);
+                margin0Curve.z_start = curve.at(0f).y;
+                margin0Curve.z_offset = 0f;
+                generateSingle(margin0Curve, laneConfig, indicatorMargin_0, 0f, surfaceMargin_0, 0f, indicator);
+            }
+            Curve middleCurve = curve.cut(indicatorMargin_0 / curve.length, 1f - indicatorMargin_1 / curve.length);
+            middleCurve.z_start = curve.at(0f).y;
+            middleCurve.z_offset = curve.at(1f).y - curve.at(0f).y;
+            generateSingle(middleCurve, laneConfig, 0f, 0f, 0f, 0f, indicator);
+            //Debug.Log("generating single in the 2nd place");
+
+            if (indicatorMargin_1 > 0){
+                Curve margin1Curve = curve.cut(1f - indicatorMargin_1/curve.length, 1f);
+                margin1Curve.z_start = curve.at(1f).y;
+                margin1Curve.z_offset = 0f;
+                generateSingle(margin1Curve, laneConfig, 0f, indicatorMargin_1, 0f, surfaceMargin_1, indicator);
+            }
+        }
+    }
+
+    void generateSingle(Curve curve, List<string> laneConfig, 
+                         float indicatorMargin_0 , float indicatorMargin_1 , float surfaceMargin_0 , float surfaceMargin_1,
+                         bool indicator)
     {
         List<Separator> separators = new List<Separator>();
         List<Linear3DObject> linear3DObjects = new List<Linear3DObject>();
@@ -197,23 +232,38 @@ public class RoadRenderer : MonoBehaviour
         }
 
         //adjust center
-        for (int i = 0; i != separators.Count; i++)
+        if (!Algebra.isclose(indicatorMargin_0 + indicatorMargin_1, curve.length))
         {
-            separators[i].offset -= offset / 2;
-            drawSeparator(curve, separators[i], indicatorMargin_0, indicatorMargin_1);
+            for (int i = 0; i != separators.Count; i++)
+            {
+                separators[i].offset -= offset / 2;
+                drawSeparator(curve, separators[i], indicatorMargin_0, indicatorMargin_1);
+            }
         }
-        for (int i = 0; i != linear3DObjects.Count; i++){
-            linear3DObjects[i].offset -= offset / 2;
-            drawLinear3DObject(curve, linear3DObjects[i], indicatorMargin_0, indicatorMargin_1);
+        if (!Algebra.isclose(indicatorMargin_0 + indicatorMargin_1, curve.length))
+        {
+            for (int i = 0; i != linear3DObjects.Count; i++)
+            {
+                linear3DObjects[i].offset -= offset / 2;
+                drawLinear3DObject(curve, linear3DObjects[i], indicatorMargin_0, indicatorMargin_1);
+            }
         }
-
         if (curve.z_start > 0 || curve.z_offset > 0){
-            drawLinear3DObject(curve, new Linear3DObject("squarecolumn"), indicatorMargin_0, indicatorMargin_1);
-            drawLinear3DObject(curve, new Linear3DObject("crossbeam", offset), indicatorMargin_0, indicatorMargin_1);
-            drawLinear3DObject(curve, new Linear3DObject("bridgepanel", offset), surfaceMargin_0, surfaceMargin_1);
+            if (!Algebra.isclose(indicatorMargin_0 + indicatorMargin_1, curve.length))
+            {
+                drawLinear3DObject(curve, new Linear3DObject("squarecolumn"), indicatorMargin_0, indicatorMargin_1);
+                drawLinear3DObject(curve, new Linear3DObject("crossbeam", offset), indicatorMargin_0, indicatorMargin_1);
+            }
+            if (!Algebra.isclose(surfaceMargin_0 + surfaceMargin_1, curve.length))
+            {
+                drawLinear3DObject(curve, new Linear3DObject("bridgepanel", offset), surfaceMargin_0, surfaceMargin_1);
+            }
         }
         else{
-            drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1, indicator);
+            if (!Algebra.isclose(surfaceMargin_0 + surfaceMargin_1, curve.length))
+            {
+                drawRoadSurface(curve, offset, surfaceMargin_0, surfaceMargin_1, indicator);
+            }
         }
 
     }
