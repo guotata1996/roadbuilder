@@ -166,11 +166,11 @@ public class Algebra {
         return valid_points.ToList();
     }
 
-    internal static float? approximateTo01(float p)
+    internal static float? approximateTo01(float p, float baseline)
     {
-        if (isclose(p, 0f))
+        if (isclose(p * baseline, 0f))
             return 0f;
-        if (isclose(p, 1f))
+        if (isclose(p * baseline, 1f))
             return 1f;
         return p;
     }

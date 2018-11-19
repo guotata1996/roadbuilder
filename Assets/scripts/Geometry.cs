@@ -225,8 +225,7 @@ public static class Geometry {
         var valids =
                 from point in points
                 where c2.contains_2d(point) && c1.contains(c2.at((float)c2.paramOf(point)))
-                //select new Vector3(point.x, c2.at((float)c2.paramOf(point)).y, point.y);
-                select Algebra.toVector3(point);
+                select new Vector3(point.x, c2.at((float)c2.paramOf(point)).y, point.y);
 
         return valids.ToList();
     }

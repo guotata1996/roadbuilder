@@ -9,6 +9,7 @@ public class MainScene : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        /*
         Vector2 P0 = new Vector2(1f, 0f);
         Vector2 P1 = new Vector2(1f, 1f);
         Vector2 P2 = new Vector2(0f, 1f);
@@ -27,8 +28,10 @@ public class MainScene : MonoBehaviour
         Material normalMaterial = new Material(Shader.Find("Standard"));
         normalMaterial.mainTexture = Resources.Load<Texture>("Textures/road");
         decomp.CreateMesh(new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 10f), new Vector2(5f, 10f), 0f, 0f), 0f, normalMaterial, normalMaterial, p);
-
-
-
+        */
+        Line l2631 = new Line(new Vector2(-21.9f, -20.5f), new Vector2(-975.2f, -319.1f), 0f, 0f);
+        Line l2632 = new Line(new Vector2(-23.4f, -20.7f), new Vector2(975.6f, -20.7f), 0f, 0f);
+        List<Vector3> inter = Geometry.curveIntersect(l2631, l2632);
+        Debug.Log(inter.Count);
     }
 }

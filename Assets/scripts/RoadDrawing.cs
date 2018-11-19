@@ -106,7 +106,7 @@ public class RoadDrawing : MonoBehaviour
         if (pointer >= 1)
         {
             interestedApproxLines.Add(new Line(controlPoint[pointer - 1] + Vector3.back * Algebra.InfLength, controlPoint[pointer - 1] + Vector3.forward * Algebra.InfLength));
-            interestedApproxLines.Add(new Line(controlPoint[pointer - 1] + Vector3.left * Algebra.InfLength, controlPoint[pointer - 1] + Vector3.right * Algebra.InfLength, 0f, 0f));
+            interestedApproxLines.Add(new Line(controlPoint[pointer - 1] + Vector3.left * Algebra.InfLength, controlPoint[pointer - 1] + Vector3.right * Algebra.InfLength));
             if (targetRoad != null && !Algebra.isProjectionClose(controlPoint[pointer - 1], targetRoad.curve.AttouchPoint(controlPoint[pointer - 1])))
             {
                 interestedApproxLines.Add(new Line(controlPoint[pointer - 1], targetRoad.curve.AttouchPoint(controlPoint[pointer - 1])));
@@ -133,8 +133,8 @@ public class RoadDrawing : MonoBehaviour
                     roadManager.approxNodeToExistingRoad(controlPoint[0], out cp0_targetRoad);
                     if (cp0_targetRoad != null){
                         //perpendicular
-                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));
-                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));
+                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength));
+                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength));
                         //extension
                         if (Algebra.isclose(cp0_targetRoad.curve.at_ending(true), controlPoint[0])){
                             Node crossingRoad;
@@ -182,8 +182,8 @@ public class RoadDrawing : MonoBehaviour
                     roadManager.approxNodeToExistingRoad(controlPoint[0], out cp0_targetRoad);
                     if (cp0_targetRoad != null)
                     {
-                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));
-                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength, 0f, 0f));
+                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength));
+                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength));
                         if (Algebra.isclose(cp0_targetRoad.curve.at_ending(true), controlPoint[0]))
                         {
                             Node crossingRoad;

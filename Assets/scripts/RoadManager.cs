@@ -72,7 +72,7 @@ public class RoadManager : MonoBehaviour
             List<Vector3> intersectPoints = Geometry.curveIntersect(curve, oldroad.curve);
 
             foreach (Vector3 point in intersectPoints){
-                Debug.Log("Interset points btw curve " + curve + " \nand "+ oldroad.curve + " is " + point);
+                Debug.Log("Interset points btw curve " + curve + " \nand "+ oldroad.curve + " is " + string.Format("{0:C4},{1:C4},{2:C4}", point.x, point.y, point.z));
             }
             if (intersectPoints.Count > 0)
             {

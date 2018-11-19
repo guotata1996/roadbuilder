@@ -138,19 +138,15 @@ public class CurveRenderer : MonoBehaviour
         Vector3[] vertices = new Vector3[segmentCount + 2];
         Vector2[] uvs = new Vector2[segmentCount + 2];
 
-        //vertices[0] = curve.at(0f) + curve.rightNormal(0f) * offset1.x + Vector3.up * offset1.y;
-        //uvs[0] = new Vector2(0f, 0f);
 
         for (int i = -1; i <= segmentCount; ++i)
         {
             float curveParam = Mathf.Clamp(i * 1.0f / (segmentCount - 1), 0f, 1f);
-            vertices[i + 1] = (i % 2 == 1) ? curve.at(curveParam) + curve.rightNormal(curveParam) * offset1.x + Vector3.up * offset1.y :
+            vertices[i + 1] = (i == - 1 || i % 2 == 1) ? curve.at(curveParam) + curve.rightNormal(curveParam) * offset1.x + Vector3.up * offset1.y :
                                                   curve.at(curveParam) + curve.rightNormal(curveParam) * offset2.x + Vector3.up * offset2.y;
             uvs[i + 1] = (i % 2 == 1) ? new Vector2(0f, curveParam * curve.length / (offset1.x - offset2.x)) :
                 new Vector2(1f, curveParam * curve.length / (offset1.x - offset2.x));
         }
-        //ertices[segmentCount + 1] = (segmentCount % 2 == 1) ? curve.at(1f) + curve.rightNormal(1f) * offset1.x + Vector3.up * offset1.y :
-        //                                                            curve.at(1f) + curve.rightNormal(1f) * offset2.x + Vector3.up * offset2.y;
 
         int[] triangles = new int[segmentCount * 3];
         for (int i = 0; i != segmentCount; ++i)

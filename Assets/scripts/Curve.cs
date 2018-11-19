@@ -140,7 +140,9 @@ public abstract class Curve
 
     public bool contains(Vector3 point){
         Vector2 twod_point = new Vector2(point.x, point.z);
+        //Debug.Log("param of " + point + " is " + paramOf(twod_point));
         if (paramOf(twod_point) != null && 0 <= (float)paramOf(twod_point) && (float)paramOf(twod_point) <= 1f){
+            //Debug.Log((this.at((float)paramOf(twod_point)) - point).magnitude.ToString("C4"));
             return Algebra.isclose(this.at((float)paramOf(twod_point)), point);
         }
         else{
@@ -375,7 +377,7 @@ public class Arc : Curve
         while (angle < Mathf.Min(t_start, t_end) && !Algebra.isclose(angle, Mathf.Min(t_start, t_end)))
             angle += 2 * Mathf.PI;
         float p = (angle - t_start) / (t_end - t_start);
-        return Algebra.approximateTo01(p);
+        return Algebra.approximateTo01(p, length);
     }
 
     public override string ToString()
@@ -563,13 +565,13 @@ public class Line : Curve
         {
             p = (point.x - start.x) / (end.x - start.x);
         }
-        return Algebra.approximateTo01(toLocalParam(p));
+        return Algebra.approximateTo01(toLocalParam(p), length);
 
     }
 
     public override string ToString()
     {
-        return string.Format("Line: Start = {0} ; End = {1}, zStart = {2}, zOffset = {3}", start, end, z_start, z_offset);
+        return string.Format("Line: Start = {0:C4},{1:C4} ; End = {2:C4},{3:C4}, zStart = {4}, zOffset = {5}", start.x, start.y, end.x, end.y, z_start, z_offset);
     }
 
 
@@ -772,7 +774,7 @@ public class Bezeir : Curve
             return null;
         }
         else
-            return Algebra.approximateTo01(realparam);
+            return Algebra.approximateTo01(realparam, length);
     }
 
     public override string ToString()
