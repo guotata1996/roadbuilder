@@ -6,10 +6,10 @@ Features:
 - configure your lanes with maximum freedom
 - automatically create round and smooth intersections
 - intelligent assisting tool (sticky mouse pointer, extension of current road, easy-to-do 90 degree intersection, show angle in degree, etc.)
+- support elevated road and 3D objects on road side
 
 Features under development:
-- 3D rendering of elevated road
-- overpass
+- modify & optimize smoothening of elevated road
 
 Features to develop:
 - traffic
