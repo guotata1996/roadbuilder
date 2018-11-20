@@ -31,20 +31,7 @@ public class Road
 
     public float width{
         get{
-            var ans = 0f;
-            for (int i = 0; i != laneconfigure.Count; ++i){
-                if (laneconfigure[i] == "lane")
-                    ans += RoadRenderer.laneWidth;
-                else{
-                    if (laneconfigure[i] == "interval"){
-                        ans += RoadRenderer.separatorInterval;
-                    }
-                    else{
-                        ans += RoadRenderer.separatorWidth;
-                    }
-                }
-            }
-            return ans;
+            return RoadRenderer.getConfigureWidth(laneconfigure);
         }
     }
 }
@@ -87,7 +74,14 @@ public class RoadManager : MonoBehaviour
 
         allNewIntersectPoints = allNewIntersectPoints.Distinct(new IntersectPointComparator()).ToList();
         List<float> intersectParamsWithBeginAndEnd1 = interSectPoints2Fragments(allNewIntersectPoints, curve);
-        addAllFragments(intersectParamsWithBeginAndEnd1, curve, laneConfigure);
+
+        /*TODO: add to UI*/
+        List<string> modifiedLaneConfigure = laneConfigure.ConvertAll((input) => input);
+        modifiedLaneConfigure.Add("column");
+        modifiedLaneConfigure.Insert(0, "fence");
+        modifiedLaneConfigure.Add("fence");
+
+        addAllFragments(intersectParamsWithBeginAndEnd1, curve, modifiedLaneConfigure);
 
         /*TODO revise*/
 
