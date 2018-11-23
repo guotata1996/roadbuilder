@@ -158,7 +158,7 @@ public class RoadDrawing : MonoBehaviour
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
                         //Debug.Log("cp0 = " + controlPoint[0] + ";cp1 = " + controlPoint[1]);
-                        roadConfigure.generate(new Line(controlPoint[0], controlPoint[1]), laneConfig, indicator: true);
+                        roadConfigure.generate(new Line(controlPoint[0], controlPoint[1]), laneConfig);
                     }
                 }
 
@@ -207,7 +207,7 @@ public class RoadDrawing : MonoBehaviour
                     {
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(new Line(controlPoint[0], controlPoint[1]), laneConfig, indicator: true);
+                        roadConfigure.generate(new Line(controlPoint[0], controlPoint[1]), laneConfig);
                     }
                 }
 
@@ -221,7 +221,7 @@ public class RoadDrawing : MonoBehaviour
 
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(new Bezeir(controlPoint[0], controlPoint[1], controlPoint[2]), laneConfig, indicator:true);
+                        roadConfigure.generate(new Bezeir(controlPoint[0], controlPoint[1], controlPoint[2]), laneConfig);
                     }
 
                 }
@@ -280,7 +280,7 @@ public class RoadDrawing : MonoBehaviour
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
                         roadConfigure.generate(new Line(controlPoint[1], controlPoint[0]), laneConfig);
                         if (!Algebra.isclose(controlPoint[1] , controlPoint[0]))
-                            roadConfigure.generate(new Arc(controlPoint[1], controlPoint[0], 1.999f * Mathf.PI), laneConfig, indicator: true);
+                            roadConfigure.generate(new Arc(controlPoint[1], controlPoint[0], 1.999f * Mathf.PI), laneConfig);
                     }
                 }
 
@@ -295,8 +295,8 @@ public class RoadDrawing : MonoBehaviour
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
                         roadConfigure.generate(new Arc(Algebra.toVector2(controlPoint[1]), Algebra.toVector2(controlPoint[0]), 
                                                        Mathf.Deg2Rad * Vector2.SignedAngle(Algebra.toVector2(basedir), Algebra.toVector2(towardsdir)), 
-                                                       controlPoint[0].y, controlPoint[2].y), laneConfig, indicator:true);
-                        roadConfigure.generate(new Arc(controlPoint[1], controlPoint[1] + Vector3.right , 1.999f * Mathf.PI), laneConfig, indicator:true);
+                                                       controlPoint[0].y, controlPoint[2].y), laneConfig);
+                        roadConfigure.generate(new Arc(controlPoint[1], controlPoint[1] + Vector3.right , 1.999f * Mathf.PI), laneConfig);
                     }
                 }
 

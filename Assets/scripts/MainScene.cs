@@ -9,29 +9,11 @@ public class MainScene : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        /*
-        Vector2 P0 = new Vector2(1f, 0f);
-        Vector2 P1 = new Vector2(1f, 1f);
-        Vector2 P2 = new Vector2(0f, 1f);
-        Vector2 P3 = new Vector2(0f, 2f);
-        Vector2 P4 = new Vector2(1f, 2f);
-        Vector2 P5 = new Vector2(1f, 3f);
-        Vector2 P6 = new Vector2(-1f, 3f);
-        Vector2 P7 = new Vector2(-1f, 0f);
+        Curve b = new Bezeir(new Vector2(0f, 0f), new Vector2(10f, 0f), new Vector2(5f, 10f));
+        Debug.Log(b.cut(0f, 0.2f));
+        Debug.Log(b.cut(0.2f, 0.7f));
+        Debug.Log(b.cut(0.7f, 1.0f));
 
-        Polygon p = new Polygon(new List<Curve> { new Line(P0, P1), new Line(P1, P2), new Line(P2, P3), new Line(P3, P4), new Line(P4, P5),
-            new Line(P5, P6), new Line(P6, P7), new Line(P7, P0)});
 
-        GameObject rendins = Instantiate(rend, transform);
-        rendins.transform.parent = this.transform;
-        CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
-        Material normalMaterial = new Material(Shader.Find("Standard"));
-        normalMaterial.mainTexture = Resources.Load<Texture>("Textures/road");
-        decomp.CreateMesh(new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 10f), new Vector2(5f, 10f), 0f, 0f), 0f, normalMaterial, normalMaterial, p);
-        */
-        Line l2631 = new Line(new Vector2(-21.9f, -20.5f), new Vector2(-975.2f, -319.1f), 0f, 0f);
-        Line l2632 = new Line(new Vector2(-23.4f, -20.7f), new Vector2(975.6f, -20.7f), 0f, 0f);
-        List<Vector3> inter = Geometry.curveIntersect(l2631, l2632);
-        Debug.Log(inter.Count);
     }
 }

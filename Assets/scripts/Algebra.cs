@@ -399,4 +399,8 @@ public class Algebra {
     {
         return new Vector2(a.x, a.z);
     }
+
+    public static float Lerp(float a, float b, float t){
+        return t * b + (1 - t) * a;
+    }
 }

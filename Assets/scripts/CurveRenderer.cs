@@ -174,5 +174,14 @@ public class CurveRenderer : MonoBehaviour
 
     }
 
-
+    /*TODO: convert to 3D*/
+    public void CreateMesh(Polygon p, float h, Material mainMaterial){
+        GetComponent<MeshRenderer>().material = mainMaterial;
+        MeshFilter meshFilter = GetComponent<MeshFilter>();
+        Mesh mesh = new Mesh();
+        mesh.vertices = p.toFragments().ToList().ConvertAll((Vector2 input) => new Vector3(input.x, h, input.y)).ToArray();
+        mesh.triangles = p.createMeshTriangle();
+        mesh.uv = p.createUV();
+        meshFilter.mesh = mesh;
+    }
 }

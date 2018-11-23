@@ -36,9 +36,27 @@ public abstract class Curve
     }
 
 
-    public Vector2 at_ending_2d(bool start, float offset = 0f)
+    public Vector2 at_ending_2d(bool start, float offset = 0f, bool byLength = true)
     {
-        offset = offset / length;
+
+        if (byLength)
+        {
+            if (offset > 0f)
+            {
+                if (start)
+                {
+                    offset = (float)paramOf(segmentation(offset).First().at_2d(1f));
+                }
+                else
+                {
+                    offset = 1f - (float)paramOf(segmentation(length - offset).Last().at_2d(0f));
+                }
+            }
+        }
+        else{
+            offset /= length;
+        }
+
         if (start)
             return at_2d(offset);
         else
@@ -78,7 +96,7 @@ public abstract class Curve
     /* split curve into two parts: 1:0~t 2:t~1
      */
 
-    private void reverse()
+    public void reverse()
     {
         float tmp = t_start;
         t_start = t_end;
@@ -97,7 +115,7 @@ public abstract class Curve
         return (global_t - t_start) / (t_end - t_start);
     }
 
-    public List<Curve> split(float cutpoint, bool byLength = false)
+    public List<Curve> split(float cutpoint, bool byLength = true)
     {
         cutpoint = Mathf.Clamp01(cutpoint);
         if (cutpoint >= 0.5f)
@@ -118,11 +136,8 @@ public abstract class Curve
         }
     }
 
-
-    /*TODO: optimize speed for special case: 0/1 */
-    public Curve cut(float start, float end)
+    public Curve cut(float start, float end, bool byLength = true)
     {
-        //Debug.Assert(0 <= start && start < end && end <= 1);
         end = Mathf.Max(start, end);
 
         if (start < 0f && !Algebra.isclose(start, 0f) || end > 1f && !Algebra.isclose(end, 1f))
@@ -130,9 +145,23 @@ public abstract class Curve
             Debug.Assert(false);
             Debug.Log("Abnormal cut, start:" + start + "end:" + end);
         }
-        Curve start_to_1 = split(start).Last();
-        float secondFraction = (end - start) / (1f - start);
-        return start_to_1.split(secondFraction).First();
+        Curve secondAndThird = Algebra.isclose(start, 0f) ? this : split(start, byLength).Last();
+        if (!Algebra.isclose(end, 1f))
+        {
+            Curve third = split(end, byLength).Last();
+            float secondFraction = byLength ? (secondAndThird.length - third.length) / secondAndThird.length : (end - start) / (1f - start);
+            return secondAndThird.split(secondFraction, byLength).First();
+        }
+        else{
+            if (!Algebra.isclose(start, 0f)){
+                return secondAndThird;
+            }
+            else{
+                return segmentation(this.length, keep_length: byLength).First();
+            }
+        }
+        
+
     }
 
     public abstract float? paramOf(Vector2 point);
@@ -182,7 +211,7 @@ public class Arc : Curve
     /* t_start is in range[-Pi, Pi]
      * t_end < 2 * PI + t_start*/
 
-    /*If angle>0, clockwise
+    /*If angle>0, 
      *angle is in radius 
      */
     public Arc(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_end = 0f)
@@ -237,19 +266,6 @@ public class Arc : Curve
         radius = 0.5f * (_start - _end).magnitude / Mathf.Sin(angle / 2);
         t_start = new Line(center, _start, 0f, 0f).angle_ending(true);
         t_end = new Line(center, _end, 0f, 0f).angle_ending(true);
-        /*
-        if (t_end - t_start > Mathf.PI)
-        {
-            t_end -= Mathf.PI * 2;
-        }
-        else
-        {
-            if (t_start - t_end > Mathf.PI)
-            {
-                t_start -= Mathf.PI;
-            }
-        }
-        */
         if (t_start < t_end){
             t_end -= Mathf.PI * 2;
         }

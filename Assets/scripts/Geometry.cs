@@ -3,8 +3,10 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+public enum angleType { Sharp, Blunt, Flat, Reflex};
 
 public static class Geometry {
+
     public static bool Parallel(Vector2 line1, Vector2 line2)
     {
         return (Algebra.isclose(line1.x, 0) && Algebra.isclose(line2.x, 0)) 
@@ -259,6 +261,21 @@ public static class Geometry {
             return false;
         }
         return false;
+    }
+
+    public static angleType getAngleType(float angle){
+        Debug.Assert(0f < angle && angle < Mathf.PI * 2);
+        if (angle <= Mathf.PI/2){
+            return angleType.Sharp;
+        }
+        if (Algebra.isclose(angle, Mathf.PI)){
+            return angleType.Flat;
+        }
+
+        if (Math.PI / 2 < angle && angle < Math.PI){
+            return angleType.Blunt;
+        }
+        return angleType.Reflex;
     }
 }
 

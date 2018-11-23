@@ -114,7 +114,7 @@ public class RoadManager : MonoBehaviour
     {
         for (int i = 0; i != intersectParams.Count - 1; ++i)
         {
-            addPureRoad(curve.cut(intersectParams[i], intersectParams[i + 1]), laneConfigure);
+            addPureRoad(curve.cut(intersectParams[i], intersectParams[i + 1], byLength: false), laneConfigure);
         }
     }
 
@@ -122,7 +122,7 @@ public class RoadManager : MonoBehaviour
     {
         GameObject roadInstance = Instantiate(road, transform);
         RoadRenderer roadConfigure = roadInstance.GetComponent<RoadRenderer>();
-        roadConfigure.generate(curve, laneConfigure, indicator:false);
+        roadConfigure.generate(curve, laneConfigure);
         Road newRoad = new Road(curve, laneConfigure, roadInstance);
         allroads.Add(newRoad);
         createOrAddtoNode(newRoad);
@@ -234,12 +234,22 @@ public class RoadManager : MonoBehaviour
         GameObject roadInstance = Instantiate(road, transform);
         RoadRenderer roadConfigure = roadInstance.GetComponent<RoadRenderer>();
         r.roadObject = roadInstance;
-        Node n0, n1;
+        Node n0, n1, startNode, endNode;
         findNodeAt(r.curve.at(0f), out n0);
         findNodeAt(r.curve.at(1f), out n1);
-        roadConfigure.generate(r.curve, r.laneconfigure, 
-                               n0.getMargin(r).First, n1.getMargin(r).First, n0.getMargin(r).Second, n1.getMargin(r).Second,
-                               indicator:false);
+
+        if (n0.startof(r.curve)){
+            startNode = n0;
+            endNode = n1;
+        }
+        else{
+            startNode = n1;
+            endNode = n0;
+        }
+
+        roadConfigure.generate(r.curve, r.laneconfigure,
+                               startNode.getMargin(r).First, startNode.getMargin(r).Second,
+                               endNode.getMargin(r).First, endNode.getMargin(r).Second);
     }
 
     public void deleteRoad(Road r){
