@@ -32,7 +32,7 @@ public class Polygon
     List<float> v_resize_proportions;
     List<Vector2> fragments;
 
-    float minresolution = 0.15f;
+    float minresolution = 0.1f;
 
     int maxSegmentPerCurve = 15;
 
@@ -91,6 +91,9 @@ public class Polygon
 
         while (vertices.Count > 3){
             int earIndex = findEar(vertices);
+            if (earIndex == -1){
+                break;
+            }
             triangle.Add(vertices_copy_unchanged.IndexOf(vertices[earIndex]));
             triangle.Add(vertices_copy_unchanged.IndexOf(vertices[(earIndex + vertices.Count - 1) % vertices.Count]));
             triangle.Add(vertices_copy_unchanged.IndexOf(vertices[(earIndex + 1) % vertices.Count]));
@@ -126,7 +129,7 @@ public class Polygon
                 }
             }
         }
-        Debug.Assert(false);
+        //Debug.Assert(false);
         return -1;
     }
 
