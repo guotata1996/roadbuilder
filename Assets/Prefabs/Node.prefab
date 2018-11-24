@@ -41,8 +41,8 @@ MonoBehaviour:
   position: {x: 0, y: 0, z: 0}
   roadCornerIndicator: {fileID: 1945630429582350, guid: 0781588308f2f4cbe906f53dce5597e7,
     type: 2}
-  crossingSmoothScale: 0.3
-  laneChangeSmoothScale: 1.2
+  arcSmoothingRadius: 2
+  bezeirSmoothingScale: 3
 --- !u!224 &224057796176161466
 RectTransform:
   m_ObjectHideFlags: 1

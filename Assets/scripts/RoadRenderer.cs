@@ -158,7 +158,7 @@ public class RoadRenderer : MonoBehaviour
     public float dashIndicatorLength = 1f;
     public float dashIndicatorWidth = 2f;
 
-    static List<string> commonTypes = new List<string> { "lane", "interval", "surface", "removal", "fence", "column" };
+    static List<string> commonTypes = new List<string> { "lane", "interval", "surface", "removal", "fence", "column", "singlefence" };
 
     public void generate(Curve curve, List<string> laneConfig,
                          float indicatorMargin_0L = 0f, float indicatorMargin_0R = 0f, float indicatorMargin_1L = 0f, float indicatorMargin_1R = 0f){
@@ -168,14 +168,12 @@ public class RoadRenderer : MonoBehaviour
         float indicatorMargin_0Bound = Mathf.Max(indicatorMargin_0L, indicatorMargin_0R);
         float indicatorMargin_1Bound = Mathf.Max(indicatorMargin_1L, indicatorMargin_1R);
 
-        if (Algebra.isclose(curve.z_offset, 0f) || (indicatorMargin_1Bound == 0f && indicatorMargin_1Bound == 0f)){
-            //Debug.Log("generating single in the first place with 0= " + indicatorMargin_0 + " 1= " + indicatorMargin_1);
+        if (Algebra.isclose(curve.z_offset, 0f) || (indicatorMargin_0Bound == 0f && indicatorMargin_1Bound == 0f)){
+            //Debug.Log("generating single in the first place with 0= " + indicatorMargin_1Bound + " 1= " + indicatorMargin_1Bound);
             generateSingle(curve, laneConfig, indicatorMargin_0L, indicatorMargin_0R, indicatorMargin_1L, indicatorMargin_1R);
             return;
         }
         else{
-            Debug.Log(curve + " 0L= " + indicatorMargin_0L + " 0R= " + indicatorMargin_0R + "\n1L="
-                      + indicatorMargin_1L + " 1R= " + indicatorMargin_1R);
             if (indicatorMargin_0Bound > 0){
                 Curve margin0Curve = curve.cut(0f, indicatorMargin_0Bound / curve.length);
                 margin0Curve.z_start = curve.at(0f).y;
@@ -219,6 +217,8 @@ public class RoadRenderer : MonoBehaviour
                     case "surface":
                         Debug.Assert(configs.Length == 1);
                         Linear3DObject roadBlock = new Linear3DObject("bridgepanel");
+                        //roadBlock.margin_0 = Mathf.Max(indicatorMargin_0L, indicatorMargin_0R);
+                        //roadBlock.margin_1 = Mathf.Max(indicatorMargin_1L, indicatorMargin_1R);
                         linear3DObjects.Add(roadBlock);
                         break;
                     case "column":
@@ -233,20 +233,40 @@ public class RoadRenderer : MonoBehaviour
                         linear3DObjects.Add(crossbeam);
                         break;
                     case "fence":
-                        Linear3DObject fence = new Linear3DObject("fence");
-                        Linear3DObject lowbar = new Linear3DObject("lowbar");
-                        Linear3DObject highbar = new Linear3DObject("highbar");
+                        {
+                            Linear3DObject fence = new Linear3DObject("fence");
+                            Linear3DObject lowbar = new Linear3DObject("lowbar");
+                            Linear3DObject highbar = new Linear3DObject("highbar");
 
-                        fence.offset = lowbar.offset = highbar.offset = partialWidth - fenceWidth / 2;
-                        fence.margin_0 = lowbar.margin_0 = highbar.margin_0 =
-                            Algebra.Lerp(indicatorMargin_0L, indicatorMargin_0R, partialWidth / width);
-                        fence.margin_1 = lowbar.margin_1 = highbar.margin_1 =
-                            Algebra.Lerp(indicatorMargin_1L, indicatorMargin_1R, partialWidth / width);
+                            fence.offset = lowbar.offset = highbar.offset = partialWidth - fenceWidth;
+                            fence.margin_0 = lowbar.margin_0 = highbar.margin_0 =
+                                Algebra.Lerp(indicatorMargin_0L, indicatorMargin_0R, partialWidth / width);
+                            fence.margin_1 = lowbar.margin_1 = highbar.margin_1 =
+                                Algebra.Lerp(indicatorMargin_1L, indicatorMargin_1R, partialWidth / width);
 
-                        linear3DObjects.Add(fence);
-                        linear3DObjects.Add(lowbar);
-                        linear3DObjects.Add(highbar);
-                        break;
+                            linear3DObjects.Add(fence);
+                            linear3DObjects.Add(lowbar);
+                            linear3DObjects.Add(highbar);
+                            break;
+                        }
+                    case "singlefence":
+                        {
+                            Linear3DObject fence = new Linear3DObject("fence");
+                            Linear3DObject lowbar = new Linear3DObject("lowbar");
+                            Linear3DObject highbar = new Linear3DObject("highbar");
+
+                            fence.offset = lowbar.offset = highbar.offset = partialWidth - fenceWidth * 1.5f;
+                            fence.margin_0 = lowbar.margin_0 = highbar.margin_0 =
+                                Algebra.Lerp(indicatorMargin_0L, indicatorMargin_0R, partialWidth / width);
+                            fence.margin_1 = lowbar.margin_1 = highbar.margin_1 =
+                                Algebra.Lerp(indicatorMargin_1L, indicatorMargin_1R, partialWidth / width);
+
+                            linear3DObjects.Add(fence);
+                            linear3DObjects.Add(lowbar);
+                            linear3DObjects.Add(highbar);
+                            break;
+                        }
+
                     case "removal":
                         Debug.Assert(laneConfig.Count == 1);
                         drawRemovalMark(curve, float.Parse(configs[1]));
@@ -297,7 +317,7 @@ public class RoadRenderer : MonoBehaviour
 
         for (int i = 0; i != separators.Count; i++)
         {
-            separators[i].offset -= width / 2;
+            separators[i].offset -= (width / 2 - separatorWidth / 2);
             drawLinear2DObject(curve, separators[i]);
         }
 
@@ -323,14 +343,19 @@ public class RoadRenderer : MonoBehaviour
                         drawLinear3DObject(curve, linear3DObjects[i]);
 
                         break;
-                    default:
-                        linear3DObjects[i].offset -= width / 2;
+                    case "fence":
+                    case "singlefence":
+                    case "highbar":
+                    case  "lowbar":
+
+                        linear3DObjects[i].offset -= (width / 2 - fenceWidth / 2);
 
                         if ((curve.z_start > 0 || curve.z_offset > 0))
                         {
                             drawLinear3DObject(curve, linear3DObjects[i]);
                         }
                         break;
+
                 }
             }
         }
@@ -356,7 +381,7 @@ public class RoadRenderer : MonoBehaviour
 			CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
             Material normalMaterial = new Material(Shader.Find("Standard"));
             normalMaterial.mainTexture = sep.texture;
-            decomp.CreateMesh (curve, separatorWidth, normalMaterial, offset: sep.offset + separatorWidth / 2, z_offset:0.01f);
+            decomp.CreateMesh (curve, separatorWidth, normalMaterial, offset: sep.offset, z_offset:0.01f);
 		}
 		else {
             List<Curve> dashed = curve.segmentation (dashLength + dashInterval);
@@ -368,7 +393,7 @@ public class RoadRenderer : MonoBehaviour
 					CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
                     Material normalMaterial = new Material(Shader.Find("Standard"));
                     normalMaterial.mainTexture = sep.texture;
-                    decomp.CreateMesh (vacant_and_dashed [1], separatorWidth, normalMaterial, offset:sep.offset + separatorWidth / 2, z_offset:0.01f);
+                    decomp.CreateMesh (vacant_and_dashed [1], separatorWidth, normalMaterial, offset:sep.offset, z_offset:0.01f);
 				}
 
 			}
@@ -437,6 +462,7 @@ public class RoadRenderer : MonoBehaviour
                     ans += separatorInterval;
                     break;
                 case "fence":
+                case "singlefence":
                     ans += fenceWidth;
                     break;
             }
@@ -457,6 +483,6 @@ public class RoadRenderer : MonoBehaviour
             default:
                 decomp.CreateMesh(polygon, H, Resources.Load<Material>("Materials/roadsurface"));
                 break;
-        }   
+        }
     }
 }

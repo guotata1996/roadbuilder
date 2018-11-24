@@ -17,10 +17,8 @@ public class Polygon
         Debug.Assert(Algebra.isclose(components[0].at_ending(true), components[components.Count - 1].at_ending(false)));
         Debug.Assert(v_resize_proportions == null || v_resize_proportions.Count == components.Count);
         this.components = components;
-        if (v_resize_proportions != null)
+        if (v_resize_proportions == null)
         {
-            v_resize_proportions = v_resize_proportions;
-        }else{
             v_resize_proportions = new List<float>();
             for (int i = 0; i != components.Count; ++i){
                 v_resize_proportions.Add(0f);
@@ -34,7 +32,7 @@ public class Polygon
     List<float> v_resize_proportions;
     List<Vector2> fragments;
 
-    float minresolution = 0.05f;
+    float minresolution = 0.15f;
 
     int maxSegmentPerCurve = 15;
 
@@ -51,6 +49,8 @@ public class Polygon
             else
             {
                 List<Vector2> segs = curve.segmentation(maxlen: Mathf.Max(minresolution, curve.length / maxSegmentPerCurve)).ConvertAll((Curve input) => input.at_ending_2d(true));
+                segs.RemoveAt(segs.Count - 1);
+
                 int currentNode = components.IndexOf(curve);
                 int nextNode = (currentNode + 1) % components.Count;
                 List<float> offsetSegs = segs.ConvertAll((input) => (1f - (float)curve.paramOf(input)) * 
@@ -73,6 +73,19 @@ public class Polygon
 
     public int[] createMeshTriangle(){
         List<Vector2> vertices = this.toFragments();
+
+
+        //string pr = "";
+        //foreach (Vector2 v in vertices){
+        //    pr += v.x.ToString("F3");
+        //    pr += ",";
+        //    pr += v.y.ToString("F3");
+        //    pr += "; ";
+        //}
+        //Debug.Log(pr);
+        //Debug.Log("--------");
+
+
         List<Vector2> vertices_copy_unchanged = vertices.ConvertAll((input) => input);
         List<int> triangle = new List<int>();
 
@@ -127,5 +140,20 @@ public class Polygon
         Debug.Assert(LM != RM);
         Debug.Assert(TM != BM);
         return vertices.ConvertAll((input) => new Vector2((input.x - LM) / (RM - LM), (input.y - BM) / (TM - BM))).ToArray();
+    }
+
+    public float[] createSideUVY(){
+        List<Vector2> vertices = toFragments();
+        float[] rtn = new float[vertices.Count];
+        rtn[0] = 0f;
+        for (int i = 0; i != vertices.Count; ++i){
+            int ihat = (i + 1) % vertices.Count;
+            rtn[i] = i == 0 ? (vertices[ihat] - vertices[i]).magnitude : rtn[i - 1] + (vertices[ihat] - vertices[i]).magnitude;
+        }
+        Debug.Assert(rtn[vertices.Count - 1] > 0f);
+        for (int i = 0; i != vertices.Count; ++i){
+            rtn[i] /= rtn[vertices.Count - 1];
+        }
+        return rtn;
     }
 }

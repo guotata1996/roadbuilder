@@ -217,7 +217,6 @@ public class RoadManager : MonoBehaviour
 
         }
 
-
         if (candidates.Count > 0)
         {
             match = null;
@@ -246,6 +245,10 @@ public class RoadManager : MonoBehaviour
             startNode = n1;
             endNode = n0;
         }
+
+        Debug.Log(r.curve + " 0L= " + startNode.getMargin(r).First + " 0R= " + startNode.getMargin(r).Second + "\n1L="
+                  + endNode.getMargin(r).First + " 1R= " + endNode.getMargin(r).Second);
+
 
         roadConfigure.generate(r.curve, r.laneconfigure,
                                startNode.getMargin(r).First, startNode.getMargin(r).Second,

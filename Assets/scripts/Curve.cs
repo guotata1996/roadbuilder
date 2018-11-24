@@ -23,9 +23,27 @@ public abstract class Curve
 
     /* range [0, 2Pi)
      */
-    public float angle_ending(bool start, float offset = 0f)
-    {
-        offset = offset / length;
+    public float angle_ending(bool start, float offset = 0f, bool byLength = true)
+    {  
+        if (byLength)
+        {
+            if (offset > 0f)
+            {
+                if (start)
+                {
+                    offset = (float)paramOf(segmentation(offset).First().at_2d(1f));
+                }
+                else
+                {
+                    offset = 1f - (float)paramOf(segmentation(length - offset).Last().at_2d(0f));
+                }
+            }
+        }
+        else
+        {
+            offset /= length;
+        }
+
         if (start)
             return angle_2d(offset);
         else
@@ -98,9 +116,17 @@ public abstract class Curve
 
     public void reverse()
     {
-        float tmp = t_start;
-        t_start = t_end;
-        t_end = tmp;
+        if (this is Line)
+        {
+            Vector2 tmp = ((Line)this).start;
+            ((Line)this).start = ((Line)this).end;
+            ((Line)this).end = tmp;
+        }
+        else{
+            float tmp = t_start;
+            t_start = t_end;
+            t_end = tmp;
+        }
         z_start += z_offset;
         z_offset = -z_offset;
     }
@@ -139,7 +165,7 @@ public abstract class Curve
     public Curve cut(float start, float end, bool byLength = true)
     {
         end = Mathf.Max(start, end);
-
+        Curve rtn;
         if (start < 0f && !Algebra.isclose(start, 0f) || end > 1f && !Algebra.isclose(end, 1f))
         {
             Debug.Assert(false);
@@ -150,17 +176,22 @@ public abstract class Curve
         {
             Curve third = split(end, byLength).Last();
             float secondFraction = byLength ? (secondAndThird.length - third.length) / secondAndThird.length : (end - start) / (1f - start);
-            return secondAndThird.split(secondFraction, byLength).First();
+            rtn = secondAndThird.split(secondFraction, byLength).First();
         }
         else{
             if (!Algebra.isclose(start, 0f)){
-                return secondAndThird;
+                rtn = secondAndThird;
             }
             else{
-                return segmentation(this.length, keep_length: byLength).First();
+                rtn = segmentation(this.length, keep_length: byLength).First();
             }
         }
-        
+        if (Mathf.Abs(rtn.at(0f).y - this.at(end).y) < Mathf.Abs(rtn.at(1f).y - this.at(end).y)){
+            rtn.reverse();
+            rtn.z_start = rtn.z_start + rtn.z_offset;
+            rtn.z_offset = -rtn.z_offset;
+        }
+        return rtn;
 
     }
 
@@ -598,7 +629,7 @@ public class Line : Curve
 
     public override string ToString()
     {
-        return string.Format("Line: Start = {0:C4},{1:C4} ; End = {2:C4},{3:C4}, zStart = {4}, zOffset = {5}", start.x, start.y, end.x, end.y, z_start, z_offset);
+        return string.Format("Line: Start = {0} ; End = {1}, zStart = {2}, zOffset = {3}", at_2d(0f), at_2d(1f), z_start, z_offset);
     }
 
 

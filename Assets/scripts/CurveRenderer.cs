@@ -174,14 +174,66 @@ public class CurveRenderer : MonoBehaviour
 
     }
 
-    /*TODO: convert to 3D*/
+    /*TODO: Choose configuration*/
     public void CreateMesh(Polygon p, float h, Material mainMaterial){
-        GetComponent<MeshRenderer>().material = mainMaterial;
         MeshFilter meshFilter = GetComponent<MeshFilter>();
+        Vector2[] polyVertices = p.toFragments().ToArray();
+        Vector3[] allVertices = new Vector3[4 * polyVertices.Length];
+        for (int i = 0; i != polyVertices.Length; ++i){
+            allVertices[i].x = allVertices[i + 2 * polyVertices.Length].x = polyVertices[i].x;
+            allVertices[i].y = allVertices[i + 2 * polyVertices.Length].y = h;
+            allVertices[i].z = allVertices[i + 2 * polyVertices.Length].z = polyVertices[i].y;
+        }
+        for (int i = 0; i != polyVertices.Length; ++i){
+            allVertices[i + polyVertices.Length].x = allVertices[i + 3 * polyVertices.Length].x = polyVertices[i].x;
+            allVertices[i + polyVertices.Length].y = allVertices[i + 3 * polyVertices.Length].y = h - 0.2f;
+            allVertices[i + polyVertices.Length].z = allVertices[i + 3 * polyVertices.Length].z = polyVertices[i].y;
+        }
+
+        Vector2[] allUVs = new Vector2[4 * polyVertices.Length];
+        Vector2[] polySurfaceUVs = p.createUV();
+        float[] polySideUVYs = p.createSideUVY();
+        for (int i = 0; i != polyVertices.Length; ++i){
+            allUVs[i] = allUVs[i + polyVertices.Length] = polySurfaceUVs[i];
+        }
+        for (int i = 0; i != polyVertices.Length; ++i){
+            allUVs[i + 2 * polyVertices.Length] = new Vector2(0, polySideUVYs[i]);
+            allUVs[i + 3 * polyVertices.Length] = new Vector2(1, polySideUVYs[i]);
+        }
+
+        int[] polyTriangles = p.createMeshTriangle();
+        int[] allTriangles = new int[polyTriangles.Length * 2 + 3 * polyVertices.Length * 2];
+
+        for (int i = 0; i != polyTriangles.Length; ++i){
+            allTriangles[i] = polyTriangles[i];
+            if (i % 3 == 0){
+                allTriangles[polyTriangles.Length + i] = polyTriangles[i] + polyVertices.Length;
+            }
+            if (i % 3 == 1){
+                allTriangles[polyTriangles.Length + i] = polyTriangles[i+1] + polyVertices.Length;
+            }
+            if (i % 3 == 2)
+            {
+                allTriangles[polyTriangles.Length + i] = polyTriangles[i-1] + polyVertices.Length;
+            }
+        }
+
+        for (int i = 0; i != polyVertices.Length; ++i){
+            int nexti = (i + 1) % polyVertices.Length;
+            allTriangles[2 * polyTriangles.Length + 3 * i] = i + 2 * polyVertices.Length;
+            allTriangles[2 * polyTriangles.Length + 3 * i + 1] = nexti + 2 * polyVertices.Length;
+            allTriangles[2 * polyTriangles.Length + 3 * i + 2] = i + (2+1) * polyVertices.Length;
+
+            allTriangles[2 * polyTriangles.Length + 3 * polyVertices.Length + 3 * i] = i + (2+1) * polyVertices.Length;
+            allTriangles[2 * polyTriangles.Length + 3 * polyVertices.Length + 3 * i + 1] = nexti + 2 * polyVertices.Length;
+            allTriangles[2 * polyTriangles.Length + 3 * polyVertices.Length + 3 * i + 2] = nexti + (2 + 1) * polyVertices.Length;
+        }
+
+        GetComponent<MeshRenderer>().material = mainMaterial;
         Mesh mesh = new Mesh();
-        mesh.vertices = p.toFragments().ToList().ConvertAll((Vector2 input) => new Vector3(input.x, h, input.y)).ToArray();
-        mesh.triangles = p.createMeshTriangle();
-        mesh.uv = p.createUV();
+        mesh.vertices = allVertices;
+        mesh.uv = allUVs;
+        mesh.triangles = allTriangles;
         meshFilter.mesh = mesh;
     }
 }
