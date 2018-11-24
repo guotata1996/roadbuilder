@@ -9,10 +9,19 @@ Features:
 - support elevated road and 3D objects on road side
 
 Features under development:
-- modify & optimize smoothening of elevated road
+- optimize speed and shot bugs for smoothening of elevated road
 
 Features to develop:
 - traffic
+
+## 3D modeling of a real-world overpass(Updated 11/11/23)
+背景卫星地图为北京长春桥（远大路上跨蓝靛厂北路及河道)
+![image](https://github.com/guotata1996/roadbuilder/tree/master/docs/capture/map.png)
+![image](https://github.com/guotata1996/roadbuilder/tree/master/docs/capture/1123_1.png)
+![image](https://github.com/guotata1996/roadbuilder/tree/master/docs/capture/1123_2.png)
+![image](https://github.com/guotata1996/roadbuilder/tree/master/docs/capture/1123_5.png)
+![image](https://github.com/guotata1996/roadbuilder/tree/master/docs/capture/1123_4.png)
+![image](https://github.com/guotata1996/roadbuilder/tree/master/docs/capture/1123_3.png)
 
 ## Demo Video(Updated 11/07/18)
 [![Road Builder](http://img.youtube.com/vi/XIef-FpuP0g/0.jpg)](https://www.youtube.com/watch?v=XIef-FpuP0g&feature=youtu.be "Road Builder")
