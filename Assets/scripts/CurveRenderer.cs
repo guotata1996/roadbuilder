@@ -7,7 +7,7 @@ using System.Linq;
 public class CurveRenderer : MonoBehaviour
 {
 
-    float maxAngleDiff = 0.1f;
+    float maxAngleDiff = 0.05f;
 
     /*create mesh for flat surface*/
     public void CreateMesh(Curve curve, float width, Material mainMaterial, float offset = 0f, float z_offset = 0f)
@@ -22,8 +22,7 @@ public class CurveRenderer : MonoBehaviour
     {
         List<Vector2> fragments = cross.toFragments();
 
-        float curveAngle = curve.length;
-        int segmentCount = Mathf.CeilToInt(curveAngle / maxAngleDiff);
+        int segmentCount = Mathf.CeilToInt(curve.length * curve.maximumCurvature / maxAngleDiff);
         int base_vcount = (segmentCount + 1) * fragments.Count;
         int base_tcount = segmentCount * 2 * 3 * fragments.Count;
 
@@ -130,8 +129,7 @@ public class CurveRenderer : MonoBehaviour
     {
         GetComponent<MeshRenderer>().material = mainMaterial;
 
-        float curveAngle = curve.length;
-        int segmentCount = Mathf.CeilToInt(curveAngle / maxAngleDiff);
+        int segmentCount = Mathf.CeilToInt(curve.length * curve.maximumCurvature / maxAngleDiff);
 
         segmentCount = Mathf.Max(segmentCount, 2);
 

@@ -32,7 +32,7 @@ public class Polygon
     List<float> v_resize_proportions;
     List<Vector2> fragments;
 
-    float minresolution = 0.1f;
+    float minresolution = 0.05f;
 
     int maxSegmentPerCurve = 15;
 

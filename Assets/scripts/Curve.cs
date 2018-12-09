@@ -20,6 +20,7 @@ public abstract class Curve
     public abstract Vector2 at_2d(float t);
 
     public abstract float length { get; }
+    public abstract float maximumCurvature { get; }
 
     /* range [0, 2Pi)
      */
@@ -380,6 +381,14 @@ public class Arc : Curve
         }
     }
 
+    public override float maximumCurvature
+    {
+        get
+        {
+            return 1f / radius;
+        }
+    }
+
     public override float angle_2d(float t)
     {
         float ans_candidate;
@@ -563,6 +572,14 @@ public class Line : Curve
         get
         {
             return (start - end).magnitude;
+        }
+    }
+
+    public override float maximumCurvature
+    {
+        get
+        {
+            return 1 / Algebra.InfLength;
         }
     }
 
@@ -750,6 +767,14 @@ public class Bezeir : Curve
         get
         {
             return lengthFromZeroTo(1f);
+        }
+    }
+
+    public override float maximumCurvature
+    {
+        get
+        {
+            return (P2 + P0 - 2 * P1).magnitude / Mathf.Abs((P1.x - P0.x) * (P2.y - P1.y) - (P1.y - P0.y) * (P2.x - P1.x));
         }
     }
 
