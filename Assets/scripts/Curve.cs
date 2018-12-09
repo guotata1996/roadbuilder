@@ -106,11 +106,11 @@ public abstract class Curve
     }
 
     /* Separate the original curve to pieces <= maxLen
-	 * eg. original length = 18, maxlen = 5
-	 * res:[5,5,5,3]
+	 * if keep_length, 
+	 * 
 	 */
-    public abstract List<Curve> segmentation(float maxlen, bool keep_length = true);
-
+    public abstract List<Curve> segmentation(float maxlen);
+    
     /* split curve into two parts: 1:0~t 2:t~1
      */
 
@@ -141,17 +141,17 @@ public abstract class Curve
         return (global_t - t_start) / (t_end - t_start);
     }
 
-    public List<Curve> split(float cutpoint, bool byLength = true)
+    public List<Curve> split(float cutpoint)
     {
         cutpoint = Mathf.Clamp01(cutpoint);
         if (cutpoint >= 0.5f)
         {
-            return segmentation(this.length * cutpoint, keep_length: byLength);
+            return segmentation(this.length * cutpoint);
         }
         else
         {
             this.reverse();
-            List<Curve> reversedSegment = segmentation(this.length * (1 - cutpoint), keep_length: byLength);
+            List<Curve> reversedSegment = segmentation(this.length * (1 - cutpoint));
             foreach (Curve seg in reversedSegment)
             {
                 seg.reverse();
@@ -162,7 +162,8 @@ public abstract class Curve
         }
     }
 
-    public Curve cut(float start, float end, bool byLength = true)
+    /*resulting curve: Length = Original * (end - start)*/
+    public Curve cut(float start, float end)
     {
         end = Mathf.Max(start, end);
         Curve rtn;
@@ -171,19 +172,19 @@ public abstract class Curve
             Debug.Assert(false);
             Debug.Log("Abnormal cut, start:" + start + "end:" + end);
         }
-        Curve secondAndThird = Algebra.isclose(start, 0f) ? this : split(start, byLength).Last();
+        Curve secondAndThird = Algebra.isclose(start, 0f) ? this : split(start).Last();
         if (!Algebra.isclose(end, 1f))
         {
-            Curve third = split(end, byLength).Last();
-            float secondFraction = byLength ? (secondAndThird.length - third.length) / secondAndThird.length : (end - start) / (1f - start);
-            rtn = secondAndThird.split(secondFraction, byLength).First();
+            Curve third = split(end).Last();
+            float secondFraction = (secondAndThird.length - third.length) / secondAndThird.length;
+            rtn = secondAndThird.split(secondFraction).First();
         }
         else{
             if (!Algebra.isclose(start, 0f)){
                 rtn = secondAndThird;
             }
             else{
-                rtn = segmentation(this.length, keep_length: byLength).First();
+                rtn = segmentation(this.length).First();
             }
         }
         if (Mathf.Abs(rtn.at(0f).y - this.at(end).y) < Mathf.Abs(rtn.at(1f).y - this.at(end).y)){
@@ -192,7 +193,22 @@ public abstract class Curve
             rtn.z_offset = -rtn.z_offset;
         }
         return rtn;
+    }
 
+    public Curve cutByParam(float start, float end){
+        if (this is Line)
+        {
+            return cut(start, end);
+        }
+        else
+        {
+            Curve rtn = deepCopy();
+            rtn.z_start = rtn.z_start + rtn.z_offset * start;
+            rtn.z_offset = rtn.z_offset * (end - start);
+            rtn.t_start = toGlobalParam(start);
+            rtn.t_end = toGlobalParam(end);
+            return rtn;
+        }
     }
 
     public abstract float? paramOf(Vector2 point);
@@ -227,6 +243,10 @@ public abstract class Curve
     public abstract Vector3 AttouchPoint(Vector3 p);
 
     public abstract Curve concat(Curve another);
+
+    public Curve deepCopy(){
+        return segmentation(maxlen: Algebra.InfLength).First();
+    }
 
 }
 
@@ -391,7 +411,7 @@ public class Arc : Curve
             return new Vector3(-Mathf.Cos(parametric_t), 0f, -Mathf.Sin(parametric_t));
     }
 
-    public override List<Curve> segmentation(float maxlen, bool keep_length = true)
+    public override List<Curve> segmentation(float maxlen)
     {
         int segCount = Mathf.CeilToInt(this.length / maxlen);
 
@@ -585,7 +605,7 @@ public class Line : Curve
         return new Vector3(tangentdir.y, 0f, -tangentdir.x);
     }
 
-    public override List<Curve> segmentation(float maxlen, bool keep_length = true)
+    public override List<Curve> segmentation(float maxlen)
     {
         Debug.Assert(maxlen != 0f);
         int segCount = Mathf.CeilToInt(this.length / maxlen);
@@ -793,7 +813,7 @@ public class Bezeir : Curve
         return new Vector3(tangentdir.y, 0f, -tangentdir.x);
     }
 
-    public override List<Curve> segmentation(float maxlen, bool keep_length = true)
+    public override List<Curve> segmentation(float maxlen)
     {
         List<Curve> result = new List<Curve>();
         float lastEnd = 0;
@@ -801,12 +821,7 @@ public class Bezeir : Curve
         for (int multipler = 0; multipler < fragCount; multipler++)
         {
             float thisEnd;
-            if (keep_length)
-                thisEnd = Algebra.newTown(this.lengthFromZeroTo, this.lengthGradient, Mathf.Min(this.length, (float)(multipler + 1) * maxlen), Mathf.Min(1f, maxlen / this.length * (multipler + 1)));
-            else
-            {
-                thisEnd = Mathf.Min(1f, maxlen / this.length * (multipler + 1));
-            }
+            thisEnd = Algebra.newTown(this.lengthFromZeroTo, this.lengthGradient, Mathf.Min(this.length, (float)(multipler + 1) * maxlen), Mathf.Min(1f, maxlen / this.length * (multipler + 1)));
 
             Bezeir fragment = new Bezeir(this.P0, this.P1, this.P2, this.z_start + this.z_offset * lastEnd, this.z_start + this.z_offset * thisEnd);
             fragment.t_start = toGlobalParam(lastEnd);

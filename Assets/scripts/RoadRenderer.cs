@@ -370,6 +370,9 @@ public class RoadRenderer : MonoBehaviour
             return;
         }
         Debug.Assert(margin_0 + margin_1 < curve.length);
+        if (margin_0 + margin_1 > curve.length){
+            return;
+        }
 
         if (curve.length > 0 && (margin_0 > 0 || margin_1 > 0))
         {
@@ -386,7 +389,7 @@ public class RoadRenderer : MonoBehaviour
 		else {
             List<Curve> dashed = curve.segmentation (dashLength + dashInterval);
 			foreach (Curve singledash in dashed) {
-                List<Curve> vacant_and_dashed = singledash.split(dashInterval / (dashLength + dashInterval), byLength:true);
+                List<Curve> vacant_and_dashed = singledash.split(dashInterval / (dashLength + dashInterval));
 
                 if (vacant_and_dashed.Count == 2) {
 					GameObject rendins = Instantiate (rend, transform);
@@ -395,7 +398,6 @@ public class RoadRenderer : MonoBehaviour
                     normalMaterial.mainTexture = sep.texture;
                     decomp.CreateMesh (vacant_and_dashed [1], separatorWidth, normalMaterial, offset:sep.offset, z_offset:0.01f);
 				}
-
 			}
 
 		}
@@ -410,6 +412,10 @@ public class RoadRenderer : MonoBehaviour
         }
         Debug.Assert(margin_0 >= 0 && margin_1 >= 0);
         Debug.Assert(margin_0 + margin_1 < curve.length);
+        if (margin_0 + margin_1 > curve.length)
+        {
+            return;
+        }
 
         if (curve.length > 0 && (margin_0 > 0 || margin_1 > 0)){
             curve = curve.cut(margin_0 / curve.length, 1f - margin_1 / curve.length);
@@ -427,7 +433,7 @@ public class RoadRenderer : MonoBehaviour
             List<Curve> dashed = curve.segmentation(obj.dashLength + obj.dashInterval);
             foreach (Curve singledash in dashed)
             {
-                List<Curve> vacant_and_dashed = singledash.split(obj.dashInterval / (obj.dashLength + obj.dashInterval), byLength: true);
+                List<Curve> vacant_and_dashed = singledash.split(obj.dashInterval / (obj.dashLength + obj.dashInterval));
                 if (vacant_and_dashed.Count == 2)
                 {
                     GameObject rendins = Instantiate(rend, transform);

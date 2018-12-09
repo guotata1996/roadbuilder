@@ -114,7 +114,7 @@ public class RoadManager : MonoBehaviour
     {
         for (int i = 0; i != intersectParams.Count - 1; ++i)
         {
-            addPureRoad(curve.cut(intersectParams[i], intersectParams[i + 1], byLength: false), laneConfigure);
+            addPureRoad(curve.cutByParam(intersectParams[i], intersectParams[i + 1]), laneConfigure);
         }
     }
 
@@ -245,10 +245,10 @@ public class RoadManager : MonoBehaviour
             startNode = n1;
             endNode = n0;
         }
-
+        /*
         Debug.Log(r.curve + " 0L= " + startNode.getMargin(r).First + " 0R= " + startNode.getMargin(r).Second + "\n1L="
                   + endNode.getMargin(r).First + " 1R= " + endNode.getMargin(r).Second);
-
+        */
 
         roadConfigure.generate(r.curve, r.laneconfigure,
                                startNode.getMargin(r).First, startNode.getMargin(r).Second,
