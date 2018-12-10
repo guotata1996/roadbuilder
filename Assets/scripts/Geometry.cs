@@ -20,6 +20,7 @@ public static class Geometry {
         return Parallel(new Vector2(line1.x, line1.z), new Vector2(line2.x, line2.z));
     }
 
+    /*if flattened, return Point on c1*/
     public static List<Vector3> curveIntersect(Curve c1, Curve c2)
     {
         List<Vector3> specialcase = new List<Vector3>();

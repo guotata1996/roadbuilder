@@ -241,6 +241,7 @@ public abstract class Curve
         return this.AttouchPoint(new Vector3(p.x, 0f, p.y));
     }
 
+    /*flatten everything, calculate attachPoint param, and return the 3-D position of this param*/
     public abstract Vector3 AttouchPoint(Vector3 p);
 
     public abstract Curve concat(Curve another);
@@ -249,6 +250,10 @@ public abstract class Curve
         return segmentation(maxlen: Algebra.InfLength).First();
     }
 
+    public Curve flattened(){
+        z_start = z_offset = 0f;
+        return this;
+    }
 }
 
 public class Arc : Curve
@@ -770,6 +775,7 @@ public class Bezeir : Curve
         }
     }
 
+    /*https://math.stackexchange.com/questions/220900/bezier-curvature*/
     public override float maximumCurvature
     {
         get

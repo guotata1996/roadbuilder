@@ -116,9 +116,9 @@ public class RoadDrawing : MonoBehaviour
         if (controlPoint[pointer].x != Vector3.negativeInfinity.x && indicatorType != IndicatorType.none)
         {
             Destroy(nodeIndicator);
-            nodeIndicator = Instantiate(nodeIndicatorPrefab, new Vector3(controlPoint[pointer].x, height / 2, controlPoint[pointer].z), Quaternion.identity);
+            nodeIndicator = Instantiate(nodeIndicatorPrefab, new Vector3(controlPoint[pointer].x, controlPoint[pointer].y / 2 + 0.1f, controlPoint[pointer].z), Quaternion.identity);
             nodeIndicator.transform.SetParent(transform);
-            nodeIndicator.transform.localScale = new Vector3(1.5f, Mathf.Max(1f, height/2), 1.5f);
+            nodeIndicator.transform.localScale = new Vector3(1.5f, Mathf.Max(1f, controlPoint[pointer].y/ 2), 1.5f);
 
             if (indicatorType == IndicatorType.line)
             {

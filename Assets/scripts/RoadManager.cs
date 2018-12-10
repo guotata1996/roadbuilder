@@ -180,7 +180,9 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    /*TODO treat additional/existing differenly by height*/
+    /* For non-virtual(existing road), should consider height diff
+    *  For virtual road, always flatten
+    */
     public Vector3 approxNodeToExistingRoad(Vector3 p, out Road match, List<Curve> additionalInterestedLines = null){
         List<Road> allInterestedRoad;
         if (additionalInterestedLines != null){
@@ -193,7 +195,9 @@ public class RoadManager : MonoBehaviour
         }
         //Debug.Assert(additionalInterestedLines == null || additionalInterestedLines.All((arg1) => arg1 is Line));
 
-        List<Road> candidates = allInterestedRoad.FindAll(r => (r.curve.AttouchPoint(p) - p).magnitude <= ApproxLimit);
+        List<Road> candidates = allInterestedRoad.FindAll(r => r.virtualRoad ? 
+                                                          (Algebra.toVector2(r.curve.AttouchPoint(p)) - Algebra.toVector2(p)).magnitude <= ApproxLimit:
+                                                          (r.curve.AttouchPoint(p) - p).magnitude <= ApproxLimit);
 
         List<Road> onlyRoadCandidates = candidates.FindAll((obj) => !obj.virtualRoad);
 
@@ -205,12 +209,32 @@ public class RoadManager : MonoBehaviour
             {
                 if (others != bestMatch)
                 {
-                    List<Vector3> interPoints = Geometry.curveIntersect(bestMatch.curve, others.curve);
-                    foreach(Vector3 point in interPoints){
-                        if ((point - p).magnitude <= ApproxLimit){
-                            return point;
+                    List<Vector3> interPoints;
+                    if (others.virtualRoad){
+                        Curve othersCurve = others.curve.deepCopy().flattened();
+                        Curve bestmatchCurve = bestMatch.curve.deepCopy().flattened();
+                        interPoints = Geometry.curveIntersect(othersCurve, bestmatchCurve);
+
+                        foreach (Vector3 point in interPoints)
+                        {
+                            if (Algebra.toVector2(point - p).magnitude <= ApproxLimit)
+                            {
+                                return bestMatch.curve.at((float)bestMatch.curve.paramOf(point));
+                            }
                         }
                     }
+                    else{
+                        interPoints = Geometry.curveIntersect(bestMatch.curve, others.curve);
+                        foreach (Vector3 point in interPoints)
+                        {
+                            if ((point - p).magnitude <= ApproxLimit)
+                            {
+                                return point;
+                            }
+                        }
+                    }
+
+
                 }
             }
             return bestMatch.curve.AttouchPoint(p);
@@ -220,7 +244,8 @@ public class RoadManager : MonoBehaviour
         if (candidates.Count > 0)
         {
             match = null;
-            return candidates[0].curve.AttouchPoint(p);
+            Vector3 flattened = candidates[0].curve.AttouchPoint(p);
+            return new Vector3(flattened.x, p.y, flattened.z);
         }
 
         match = null;
