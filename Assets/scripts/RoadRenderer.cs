@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 //object that is rendered in a continuous manner
 class Linear3DObject{
@@ -388,6 +389,9 @@ public class RoadRenderer : MonoBehaviour
 		}
 		else {
             List<Curve> dashed = curve.segmentation (dashLength + dashInterval);
+            if (!Algebra.isclose(dashed.Last().length, dashLength + dashInterval)){
+                dashed.RemoveAt(dashed.Count - 1);
+            }
 			foreach (Curve singledash in dashed) {
                 List<Curve> vacant_and_dashed = singledash.split(dashInterval / (dashLength + dashInterval));
 
@@ -431,6 +435,10 @@ public class RoadRenderer : MonoBehaviour
         {
             Debug.Assert(obj.dashLength > 0f);
             List<Curve> dashed = curve.segmentation(obj.dashLength + obj.dashInterval);
+            if (!Algebra.isclose(dashed.Last().length, dashLength + dashInterval))
+            {
+                dashed.RemoveAt(dashed.Count - 1);
+            }
             foreach (Curve singledash in dashed)
             {
                 List<Curve> vacant_and_dashed = singledash.split(obj.dashInterval / (obj.dashLength + obj.dashInterval));

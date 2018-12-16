@@ -6,7 +6,7 @@ using System;
 
 public class Road
 {
-    public Road(Curve _curve, List<string> _lane, GameObject _roadObj)
+    public Road(Curve _curve, List<string> _lane, GameObject _roadObj = null)
     {
         curve = _curve;
         laneconfigure = new List<string>();
@@ -86,7 +86,7 @@ public class RoadManager : MonoBehaviour
         /*TODO revise*/
 
         foreach(Road r in allroads.ToList()){
-            updateMargin(r);
+            createRoadObject(r);
         }
 
     }
@@ -120,10 +120,12 @@ public class RoadManager : MonoBehaviour
 
     private Road addPureRoad(Curve curve, List<string> laneConfigure)
     {
-        GameObject roadInstance = Instantiate(road, transform);
-        RoadRenderer roadConfigure = roadInstance.GetComponent<RoadRenderer>();
-        roadConfigure.generate(curve, laneConfigure);
-        Road newRoad = new Road(curve, laneConfigure, roadInstance);
+        //GameObject roadInstance = Instantiate(road, transform);
+        //RoadRenderer roadConfigure = roadInstance.GetComponent<RoadRenderer>();
+        //roadConfigure.generate(curve, laneConfigure);
+        //Road newRoad = new Road(curve, laneConfigure, roadInstance);
+        Road newRoad = new Road(curve, laneConfigure);
+
         allroads.Add(newRoad);
         createOrAddtoNode(newRoad);
         Debug.Log(curve + " added");
@@ -252,7 +254,7 @@ public class RoadManager : MonoBehaviour
         return p;
     }
 
-    public void updateMargin(Road r)
+    public void createRoadObject(Road r)
     {
         Destroy(r.roadObject);
         GameObject roadInstance = Instantiate(road, transform);

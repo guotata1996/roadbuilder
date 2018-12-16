@@ -20,10 +20,19 @@ public class Pair<T, U>
     public U Second { get; set; }
 };
 
+public class ConnectionInfo{
+    public Pair<float, float> margins;
+    public Pair<float, float> renderStart;
+    public ConnectionInfo(){
+        margins = new Pair<float, float>(0f, 0f);
+        renderStart = new Pair<float, float>(0f, 0f);
+    }
+}
+
 public class Node : MonoBehaviour
 {
-    /*<MarginRight (with respect node), MarginRight>*/
-    public List<Pair<Road, Pair<float, float>>> connection = new List<Pair<Road, Pair<float, float>>>();
+    /*<MarginRight (with respect to node), MarginRight>*/
+    public List<Pair<Road, ConnectionInfo>> connection = new List<Pair<Road, ConnectionInfo>>();
 
     List<Curve> smoothPolygonEdges = new List<Curve>();
 
@@ -65,10 +74,10 @@ public class Node : MonoBehaviour
         for (int i = 0; i != connection.Count; ++i){
             if (connection[i].First == r){
                 if (!startof(r.curve)){
-                    return connection[i].Second;
+                    return connection[i].Second.margins;
                 }
                 else{
-                    return new Pair<float, float>(connection[i].Second.Second, connection[i].Second.First);
+                    return new Pair<float, float>(connection[i].Second.margins.Second, connection[i].Second.margins.First);
                 }
             }
         }
@@ -80,15 +89,15 @@ public class Node : MonoBehaviour
     {
         Debug.Assert(position.y == Mathf.NegativeInfinity || Algebra.isclose(road.curve.at_ending(startof(road.curve)).y, position.y));
 
-        connection.Add(new Pair<Road, Pair<float, float>>(road, new Pair<float, float>(0f, 0f)));
+        connection.Add(new Pair<Road, ConnectionInfo>(road, new ConnectionInfo()));
 
         updateCrossroads();
     }
 
     public void removeRoad(Road road)
     {
-        Pair<Road, Pair<float, float>> target = null;
-        foreach (Pair<Road, Pair<float, float>> pair in connection){
+        Pair<Road, ConnectionInfo> target = null;
+        foreach (Pair<Road, ConnectionInfo> pair in connection){
             if (pair.First == road){
                 target = pair;
                 break;
@@ -110,7 +119,7 @@ public class Node : MonoBehaviour
     //returns one directional line for each of the road connecting to this node.
     public List<Curve> directionalLines(float length, bool reverse = false){
         List<Curve> rtn = new List<Curve>();
-        foreach(Pair<Road, Pair<float, float>> connect in connection){
+        foreach(Pair<Road, ConnectionInfo> connect in connection){
             Vector2 direction = connect.First.curve.direction_ending_2d(startof(connect.First.curve));
             if (reverse){
                 direction = -direction;
@@ -140,7 +149,7 @@ public class Node : MonoBehaviour
                                         r.First.curve.angle_ending(true) : r.First.curve.angle_ending(false)).ToList();
 
         foreach (var rmPair in connection){
-            rmPair.Second = new Pair<float, float>(0f, 0f);
+            rmPair.Second = new ConnectionInfo();
         }
 
         if (connection.Count > 1)
@@ -165,8 +174,8 @@ public class Node : MonoBehaviour
                     generateNodeFence(localSmootheners);
                 }
 
-                connection[i].Second.Second = margins.First;
-                connection[i_hat].Second.First = margins.Second;
+                connection[i].Second.margins.Second = margins.First;
+                connection[i_hat].Second.margins.First = margins.Second;
             }
 
             if (smoothPolygonEdges.Count > 0)
@@ -179,9 +188,10 @@ public class Node : MonoBehaviour
 
             foreach (var rmPair in connection)
             {
-                Debug.Assert(rmPair.Second.First >= 0 && rmPair.Second.Second >= 0);
+                Debug.Assert(rmPair.Second.margins.First >= 0 && rmPair.Second.margins.Second >= 0);
             }
         }
+
     }
 
     public bool startof(Curve c){
@@ -326,7 +336,7 @@ public class Node : MonoBehaviour
         List<float> anglesFromDirection =
             connection.ConvertAll((input) => Algebra.signedAngleToPositive(Vector2.SignedAngle(direction, input.First.curve.direction_ending_2d(startof(input.First.curve)))));
 
-        return connection.FindAll((Pair<Road, Pair<float, float>> arg1) =>
+        return connection.FindAll((Pair<Road, ConnectionInfo> arg1) =>
                                   Algebra.signedAngleToPositive(Vector2.SignedAngle(direction, arg1.First.curve.direction_ending_2d(startof(arg1.First.curve)))) 
                                   == anglesFromDirection.Max() 
                                  ||
