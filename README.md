@@ -8,14 +8,15 @@ Features:
 - intelligent assisting tool (sticky mouse pointer, extension of current road, easy-to-do 90 degree intersection, show angle in degree, etc.)
 - support elevated road and 3D objects on road side
 
-Under development:
+Next step (winter break):
 - fix sharp crossings for elevated road
-- connectivity of dashed objects
-- bridge support position management(manually)
-
-Features to develop:
-- traffic
+- lane configuration for crossroads
+- traffic simulation
 - "exit"(lanes in different directions) in addition to "crossing"(roads in different directions)
+
+Postponed:
+- continuity of dashed objects (Minor feature but complicated algorithm; problem can be eased by increasing dash density)
+- bridge support position management (Not a key feature)
 
 ## 3D modeling of a real-world Overpass(Updated 11/23/18)
 背景卫星地图为北京长春桥（远大路上跨蓝靛厂北路及河道)
