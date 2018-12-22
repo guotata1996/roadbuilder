@@ -751,6 +751,12 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 432290674}
   m_CullTransparentMesh: 0
+--- !u!114 &756108185 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114865301055349830, guid: a92acaae07d2e4d0495260f644792940,
+    type: 2}
+  m_PrefabInternal: {fileID: 302335726}
+  m_Script: {fileID: 11500000, guid: d19dbe38456584115bf79fcc8a069742, type: 3}
 --- !u!1 &795380705
 GameObject:
   m_ObjectHideFlags: 0
@@ -1669,7 +1675,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1936273440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1681,7 +1687,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6025385dd69f94044bd3f3eea93f7517, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rend: {fileID: 1009564055489620, guid: 25e03276a1a7056459f94225d7fe6ed9, type: 2}
+  drawing: {fileID: 756108185}
+  carModelPrefab: {fileID: 1782553675795574, guid: 855e8dbaf67c649139814fdc74ccbcb8,
+    type: 2}
 --- !u!4 &1936273441
 Transform:
   m_ObjectHideFlags: 0

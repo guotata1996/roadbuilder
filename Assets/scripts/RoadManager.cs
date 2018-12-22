@@ -3,38 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System;
-
-public class Road
-{
-    public Road(Curve _curve, List<string> _lane, GameObject _roadObj = null)
-    {
-        curve = _curve;
-        laneconfigure = new List<string>();
-        if (_lane != null)
-        {
-            foreach (string l in _lane)
-            {
-                laneconfigure.Add(l);
-            }
-        }
-        roadObject = _roadObj;
-    }
-    //To add: enterable for, walkable for
-    public Curve curve;
-    public List<string> laneconfigure;
-    public GameObject roadObject;
-    internal bool virtualRoad{
-        get{
-            return laneconfigure.Count == 0;
-        }
-    }
-
-    public float width{
-        get{
-            return RoadRenderer.getConfigureWidth(laneconfigure);
-        }
-    }
-}
+using MoreLinq;
 
 public class RoadManager : MonoBehaviour
 {
@@ -44,7 +13,7 @@ public class RoadManager : MonoBehaviour
 
     public GameObject nodePrefab;
 
-    static List<Road> allroads = new List<Road>();
+    public List<Road> allroads = new List<Road>();
 
     static Dictionary<Vector3, Node> allnodes = new Dictionary<Vector3, Node>();
 
@@ -310,4 +279,97 @@ public class RoadManager : MonoBehaviour
             }
         }
     }
+
+    /*TODO: improve efficiency*/
+    public Path findPath(Road r1, float param1, Road r2, float param2){
+        Node r10;
+        findNodeAt(r1.curve.at(0f), out r10);
+        Node r11;
+        findNodeAt(r1.curve.at(1f), out r11);
+        Node r20;
+        findNodeAt(r2.curve.at(0f), out r20);
+        Node r21;
+        findNodeAt(r2.curve.at(1f), out r21);
+
+        Path p00 = Node2NodeSP(r10, r20);
+        Path p01 = Node2NodeSP(r10, r21);
+        Path p10 = Node2NodeSP(r11, r20);
+        Path p11 = Node2NodeSP(r11, r21);
+
+        if (p00 != null)
+        {
+            List<Path> paths = new List<Path> { p00, p01, p10, p11 };
+            foreach (Path p in paths)
+            {
+                p.insertAtStart(r1, param1);
+                p.insertAtEnd(r2, param2);
+            }
+            return paths.MinBy((arg) => arg.length);
+        }
+        else{
+            return null;
+        }
+    }
+
+    Path Node2NodeSP(Node source, Node destination){
+        Dictionary<Node, float> distances = new Dictionary<Node, float>();
+        Dictionary<Node, Pair<Road, Node>> parentness = new Dictionary<Node, Pair<Road, Node>>();
+        foreach(Node n in allnodes.Values){
+            distances[n] = Mathf.Infinity;
+        }
+        distances[source] = 0f;
+        
+        while (distances.Count > 0){
+            Node closestNode = distances.MinBy((KeyValuePair<Node, float> arg1) => arg1.Value).Key;
+
+            foreach(Pair<Road, ConnectionInfo> rcin in closestNode.connection){
+                Road r1 = rcin.First;
+                Node neighbor;
+                if (Algebra.isclose(r1.curve.at(0f), closestNode.position)){
+                    findNodeAt(r1.curve.at(1f), out neighbor);
+                }
+                else{
+                    findNodeAt(r1.curve.at(0f), out neighbor);
+                }
+                Debug.Assert(neighbor != null);
+                float w1 = r1.SPWeight;
+
+                if (distances.ContainsKey(neighbor) && distances[neighbor] > distances[closestNode] + w1){
+                    distances[neighbor] = distances[closestNode] + w1;
+                    parentness[neighbor] = new Pair<Road, Node>(rcin.First, closestNode);
+                }
+            }
+            distances.Remove(closestNode);
+        }
+
+        if (parentness.ContainsKey(destination) || source.Equals(destination)){
+            List<Road> sp = new List<Road>();
+            Node currentNode = destination;
+            while (parentness.ContainsKey(currentNode)){
+                sp.Add(parentness[currentNode].First);
+                currentNode = parentness[currentNode].Second;
+            }
+            sp.Reverse();
+            return new Path(source, sp, destination);
+        }
+        else{
+            return null;
+        }
+
+    }
 }
+
+class NodeDistComparator : Comparer<Pair<Node, float>>
+{
+
+    public override int Compare(Pair<Node, float> x, Pair<Node, float> y)
+    {
+        if (x.Second == y.Second){
+            return 0;
+        }
+        if (x.Second < y.Second){
+            return -1;
+        }
+        return 1;
+    }
+};

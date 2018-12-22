@@ -137,7 +137,7 @@ public class Node : MonoBehaviour
     public override bool Equals(object obj)
     {
         Node n = obj as Node;
-        return n.position == this.position;
+        return Algebra.isclose(n.position,  this.position);
     }
 
     void updateCrossroads(){
@@ -407,4 +407,6 @@ public class Node : MonoBehaviour
             nodeSide.z_start = 0f;
         }
     }
+
+
 }
