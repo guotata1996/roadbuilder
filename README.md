@@ -12,11 +12,11 @@ Next step (winter break):
 - fix sharp crossings for elevated road
 - lane configuration for crossroads
 - traffic simulation
-- "exit"(lanes in different directions) in addition to "crossing"(roads in different directions)
 
 Postponed:
 - continuity of dashed objects (Minor feature but complicated algorithm; problem can be eased by increasing dash density)
 - bridge support position management (Not a key feature)
+- "exit"(lanes in different directions) in addition to "crossing"(roads in different directions) (quite complicated)
 
 ## 3D modeling of a real-world Overpass(Updated 11/23/18)
 背景卫星地图为北京长春桥（远大路上跨蓝靛厂北路及河道)
@@ -32,5 +32,7 @@ Postponed:
 
 ![image](https://github.com/guotata1996/roadbuilder/raw/master/docs/capture/1123_3.png)
 
-## Demo Video(Updated 11/07/18)
+## Demo Video(Updated 12/21/18)
+[![Vehicle](https://img.youtube.com/vi/4WqC87MmbsI/0.jpg)](https://www.youtube.com/watch?v=4WqC87MmbsI&feature=youtu.be)
+
 [![Road Builder](http://img.youtube.com/vi/XIef-FpuP0g/0.jpg)](https://www.youtube.com/watch?v=XIef-FpuP0g&feature=youtu.be "Road Builder")
