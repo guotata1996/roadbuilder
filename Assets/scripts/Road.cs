@@ -18,7 +18,6 @@ public class Road
         }
         roadObject = _roadObj;
     }
-    //To add: enterable for, walkable for
     public Curve curve;
     public List<string> laneconfigure;
     public GameObject roadObject;
@@ -44,7 +43,72 @@ public class Road
             return curve.length;
         }
     }
-    
+
+    float margin0End, margin1End;
+    Curve[] renderingFragements;
+
+    public void setMargins(float _margin0L, float _margin0R, float _margin1L, float _margin1R){
+        float indicatorMargin0Bound = Mathf.Max(_margin0L, _margin0R);
+        float indicatorMargin1Bound = Mathf.Max(_margin1L, _margin1R);
+        renderingFragements = RoadRenderer.splitByMargin(curve, indicatorMargin0Bound, indicatorMargin1Bound);
+        if (renderingFragements[0] != null){
+            margin0End = (float)curve.paramOf(renderingFragements[0].at(1f));
+        }
+        else{
+            margin0End = 0;
+        }
+        if (renderingFragements[2] != null){
+            margin1End = (float)curve.paramOf(renderingFragements[2].at(0f));
+        }
+        else{
+            margin1End = 1;
+        }
+    }
+
+    delegate Vector3 curveValueFinder(int id, float p);
+
+    Vector3 renderingCurveSolver(float param, curveValueFinder finder){
+        Debug.Assert(renderingFragements != null);
+        if (param < margin0End)
+        {
+            return finder(0, param / margin0End);
+        }
+        else
+        {
+            if (param > margin1End)
+            {
+                return finder(2, (param - margin1End) / (1f - margin1End));
+            }
+            else
+            {
+                return finder(1, (param - margin0End) / (margin1End - margin0End));
+            }
+        }
+    }
+
+    public Vector3 at(float param){
+        return renderingCurveSolver(param, at_finder);
+    }
+
+    public Vector3 frontNormal(float param){
+        return renderingCurveSolver(param, frontNormal_finder);
+    }
+
+    public Vector3 upNormal(float param){
+        return renderingCurveSolver(param, upNormal_finder);
+    }
+
+    Vector3 at_finder(int id, float p){
+        return renderingFragements[id].at(p);
+    }
+
+    Vector3 frontNormal_finder(int id, float p){
+        return renderingFragements[id].frontNormal(p);
+    }
+
+    Vector3 upNormal_finder(int id, float p){
+        return renderingFragements[id].upNormal(p);
+    }
 }
 
 /*defines a path between two NODEs plus two additional segments if exists*/

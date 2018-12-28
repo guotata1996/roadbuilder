@@ -36,7 +36,8 @@ public class Vehicle : MonoBehaviour {
             bool termination;
             int nextSeg;
             Pair<Road, float> nextInfo = pathOn.travelAlong(currentSeg, currentParam, distToTravel, out nextSeg, out termination);
-            Curve curveOn = nextInfo.First.curve;
+            //Curve curveOn = nextInfo.First.curve;
+            Road roadOn = nextInfo.First;
             currentParam = nextInfo.Second;
             currentSeg = nextSeg;
 
@@ -46,16 +47,16 @@ public class Vehicle : MonoBehaviour {
             }
             else
             {
-                transform.position = curveOn.at(currentParam);
+                //transform.position = curveOn.at(currentParam);
+                transform.position = roadOn.at(currentParam);
                 /*
-                transform.rotation = destParam - currentParam > 0 ? 
-                    Quaternion.Euler(0f, - Mathf.Rad2Deg * curveOn.angle_2d(currentParam), curveOn.upNormal(currentParam)) :
-                    Quaternion.Euler(0f, - Mathf.Rad2Deg * curveOn.angle_2d(currentParam) - 180f, 0f);
-                */
                 transform.rotation = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
                     Quaternion.LookRotation(curveOn.frontNormal(currentParam), curveOn.upNormal(currentParam)) :
                     Quaternion.LookRotation(-curveOn.frontNormal(currentParam), curveOn.upNormal(currentParam));
-
+                */
+                transform.rotation = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
+                    Quaternion.LookRotation(roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam)) :
+                    Quaternion.LookRotation(-roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam));
 
                 wheelRotation = (wheelRotation + distToTravel / wheeRadius * Mathf.Rad2Deg) % 360;
                 /*TODO: calculate wheel radius*/

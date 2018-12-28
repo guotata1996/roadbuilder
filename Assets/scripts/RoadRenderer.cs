@@ -3,121 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-//object that is rendered in a continuous manner
-class Linear3DObject{
-	public Material linearMaterial, crossMaterial;
-    public float dashLength, dashInterval;
-    public Polygon cross_section;
-    public float offset;
-    public float margin_0, margin_1;
-    public string tag;
-    public Linear3DObject(string name, float param = 0f){
-        //TODO: read config dynamically
-        //TODO: non-symmetry case
-        tag = name;
-        margin_0 = margin_1 = offset = 0f;
-        switch (name)
-        {
-            case "fence":
-                {
-                    crossMaterial = Resources.Load<Material>("Materials/roadBarrier1");
-                    linearMaterial = Resources.Load<Material>("Materials/roadBarrier2");
-                    Vector2 P0 = new Vector2(0.1f, 0f);
-                    Vector2 P1 = new Vector2(0.1f, 1.0f);
-                    Vector2 P2 = new Vector2(0f, 1.0f);
-                    Vector2 P3 = new Vector2(-0.1f, 1.0f);
-                    Vector2 P4 = new Vector2(-0.1f, 0f);
-                    cross_section = new Polygon(new List<Curve> { new Line(P0, P1), new Arc(P2, P1, Mathf.PI), new Line(P3, P4), new Line(P4, P0) });
-                    dashLength = 0.2f;
-                    dashInterval = 2f;
-                }
-                break;
-            case "lowbar":
-                {
-                    crossMaterial = linearMaterial = Resources.Load<Material>("Materials/white");
-                    Vector2 P0 = new Vector2(0f, 0.4f);
-                    Vector2 P1 = new Vector2(0.1f, 0.4f);
-                    Vector2 P2 = new Vector2(-0.1f, 0.4f);
-                    cross_section = new Polygon(new List<Curve> { new Arc(P0, P1, Mathf.PI), new Arc(P0, P2, Mathf.PI) });
-                    dashInterval = 0f;
-                }
-                break;
-            case "highbar":
-                {
-                    crossMaterial = linearMaterial = Resources.Load<Material>("Materials/white");
-                    Vector2 P0 = new Vector2(0f, 0.9f);
-                    Vector2 P1 = new Vector2(0.1f, 0.9f);
-                    Vector2 P2 = new Vector2(-0.1f, 0.9f);
-                    cross_section = new Polygon(new List<Curve> { new Arc(P0, P1, Mathf.PI), new Arc(P0, P2, Mathf.PI) });
-                    dashInterval = 0f;
-                }
-                break;
-
-            case "squarecolumn":
-                linearMaterial = crossMaterial = Resources.Load<Material>("Materials/concrete");
-                cross_section = new Polygon(new List<Curve>{
-                    new Line(new Vector2(0.5f, -0.2f), new Vector2(-0.5f, -0.2f)),
-                    new Line(new Vector2(-0.5f, -0.2f), new Vector2(-0.5f, -1f)),
-                    new Line(new Vector2(-0.5f, -1f), new Vector2(0.5f, -1f)),
-                    new Line(new Vector2(0.5f, -1f), new Vector2(0.5f, -0.2f))
-                },
-                                            new List<float>{
-                    0f, 
-                    0f,
-                    -1.0f,
-                    -1.0f
-                }
-                );
-
-                dashLength = 1f;
-                dashInterval = 8f;
-                break;
-            case "crossbeam":
-                linearMaterial = crossMaterial = Resources.Load<Material>("Materials/concrete");
-                if (param > 0f)
-                {
-                    setParam(param);
-                }
-                dashLength = 1f;
-                dashInterval = 8f;
-                break;
-            case "bridgepanel":
-                linearMaterial = Resources.Load<Material>("Materials/roadsurface");
-                crossMaterial = Resources.Load<Material>("Materials/concrete");
-                if (param > 0f){
-                    setParam(param);
-                }
-                dashInterval = 0f;
-                break;
-            default:
-                break;
-        }
-    }
-
-    public void setParam(float param){
-        switch(tag){
-            case "crossbeam":
-                cross_section = new Polygon(new List<Curve>{
-                        new Line(new Vector2(param/2, -0.2f), new Vector2(-param/2, -0.2f)),
-                        new Line(new Vector2(-param/2, -0.2f), new Vector2(-param/2, -1f)),
-                        new Line(new Vector2(-param/2, -1f), new Vector2(-1f, -1.3f)),
-                        new Line(new Vector2(-1f, -1.3f), new Vector2(1f, -1.3f)),
-                        new Line(new Vector2(1f, -1.3f), new Vector2(param/2, -1f)),
-                        new Line(new Vector2(param/2, -1f), new Vector2(param/2, -0.2f))
-                    });
-                break;
-            case "bridgepanel":
-                cross_section = new Polygon(new List<Curve>
-                {
-                    new Line(new Vector2(param/2, 0f), new Vector2(-param/2, 0f)),
-                    new Line(new Vector2(-param/2, 0f), new Vector2(-param/2, -0.2f)),
-                    new Line(new Vector2(-param/2, -0.2f), new Vector2(param/2, -0.2f)),
-                    new Line(new Vector2(param/2, -0.2f), new Vector2(param/2, 0f))
-                });
-                break;
-        }
-    }
-}
 
 //objects rendered in discontinues manner
 class NonLinear3DObject{
@@ -169,6 +54,7 @@ public class RoadRenderer : MonoBehaviour
         float indicatorMargin_0Bound = Mathf.Max(indicatorMargin_0L, indicatorMargin_0R);
         float indicatorMargin_1Bound = Mathf.Max(indicatorMargin_1L, indicatorMargin_1R);
 
+        /*
         if (Algebra.isclose(curve.z_offset, 0f) || (indicatorMargin_0Bound == 0f && indicatorMargin_1Bound == 0f)){
             //Debug.Log("generating single in the first place with 0= " + indicatorMargin_1Bound + " 1= " + indicatorMargin_1Bound);
             generateSingle(curve, laneConfig, indicatorMargin_0L, indicatorMargin_0R, indicatorMargin_1L, indicatorMargin_1R);
@@ -185,7 +71,6 @@ public class RoadRenderer : MonoBehaviour
             middleCurve.z_start = curve.at(0f).y;
             middleCurve.z_offset = curve.at(1f).y - curve.at(0f).y;
             generateSingle(middleCurve, laneConfig, 0f, 0f, 0f, 0f);
-            //Debug.Log("generating single in the 2nd place");
 
             if (indicatorMargin_1Bound > 0){
                 Curve margin1Curve = curve.cut(1f - indicatorMargin_1Bound / curve.length, 1f);
@@ -194,6 +79,44 @@ public class RoadRenderer : MonoBehaviour
                 generateSingle(margin1Curve, laneConfig, 0f, 0f,indicatorMargin_1L, indicatorMargin_1R);
             }
         }
+        */
+        Curve[] fragments = splitByMargin(curve, indicatorMargin_0Bound, indicatorMargin_1Bound);
+        if (fragments[0] != null){
+            generateSingle(fragments[0], laneConfig, indicatorMargin_0L, indicatorMargin_0R, 0f, 0f);
+        }
+        if (fragments[1] != null){
+            generateSingle(fragments[1], laneConfig, 0f, 0f, 0f, 0f);
+        }
+        if (fragments[2] != null){
+            generateSingle(fragments[2], laneConfig, 0f, 0f, indicatorMargin_1L, indicatorMargin_1R);
+        }
+    }
+
+    public static Curve[] splitByMargin(Curve curve, float indicatorMargin_0Bound, float indicatorMargin_1Bound)
+    {
+        Curve[] rtn = new Curve[3];
+
+        if (indicatorMargin_0Bound > 0)
+        {
+            Curve margin0Curve = curve.cut(0f, indicatorMargin_0Bound / curve.length);
+            margin0Curve.z_start = curve.at(0f).y;
+            margin0Curve.z_offset = 0f;
+            rtn[0] = margin0Curve;
+        }
+
+        Curve middleCurve = curve.cut(indicatorMargin_0Bound / curve.length, 1f - indicatorMargin_1Bound / curve.length);
+        middleCurve.z_start = curve.at(0f).y;
+        middleCurve.z_offset = curve.at(1f).y - curve.at(0f).y;
+        rtn[1] = middleCurve;
+
+        if (indicatorMargin_1Bound > 0)
+        {
+            Curve margin1Curve = curve.cut(1f - indicatorMargin_1Bound / curve.length, 1f);
+            margin1Curve.z_start = curve.at(1f).y;
+            margin1Curve.z_offset = 0f;
+            rtn[2] = margin1Curve;
+        }
+        return rtn;
     }
 
     void generateSingle(Curve curve, List<string> laneConfig, 

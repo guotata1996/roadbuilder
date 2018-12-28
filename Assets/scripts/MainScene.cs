@@ -20,11 +20,11 @@ public class MainScene : MonoBehaviour
     {
         drawing = GameObject.Find("curveIndicator").GetComponent<RoadDrawing>();
 
-        Curve b = new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 50f), new Vector2(80f, 40f), 0f, 5f);
+        Curve b = new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 50f), new Vector2(80f, 40f), 0f, 10f);
         drawing.roadManager.addRoad(b, new List<string> { "lane", "surface" });
-        Curve c = new Line(new Vector2(80f, 40f), new Vector2(80f, 0f), 5f, 5f);
+        Curve c = new Line(new Vector2(80f, 40f), new Vector2(80f, 0f), 10f, 0f);
         drawing.roadManager.addRoad(c, new List<string> { "lane", "surface" });
-        Curve d = new Line(new Vector2(50f, -40f), new Vector2(80f, 0f),5f, 5f);
+        Curve d = new Line(new Vector2(50f, -40f), new Vector2(80f, 0f),0f, 0f);
         drawing.roadManager.addRoad(d, new List<string> { "lane", "surface" });
 
         Path sp = drawing.roadManager.findPath(drawing.roadManager.allroads[0], 0f, drawing.roadManager.allroads[2], 0f);
@@ -43,7 +43,7 @@ public class MainScene : MonoBehaviour
         {
             vh[i] = Instantiate(carModelPrefab);
             vh[i].GetComponent<Vehicle>().SetStart(new Vector3(0f, 0f, 0f));
-            vh[i].GetComponent<Vehicle>().SetDest(new Vector3(50f, 4f, -40f));
+            vh[i].GetComponent<Vehicle>().SetDest(new Vector3(50f, 0f, -40f));
         }
 
     }

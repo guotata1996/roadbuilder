@@ -249,6 +249,7 @@ public class RoadManager : MonoBehaviour
         roadConfigure.generate(r.curve, r.laneconfigure,
                                startNode.getMargin(r).First, startNode.getMargin(r).Second,
                                endNode.getMargin(r).First, endNode.getMargin(r).Second);
+        r.setMargins(startNode.getMargin(r).First, startNode.getMargin(r).Second, endNode.getMargin(r).First, endNode.getMargin(r).Second);
     }
 
     public void deleteRoad(Road r){
