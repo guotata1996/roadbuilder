@@ -37,6 +37,34 @@ public class Road
         }
     }
 
+    public float getLaneCenterOffset(int laneNum){
+        if (laneNum < 0 || laneNum >= validLaneCount){
+            Debug.Assert(false);
+            return 0;
+        }
+
+        for (int foundLanes = 0, j = 0; foundLanes <= laneNum; j++){
+            if (laneconfigure[j] == "lane"){
+                foundLanes++;
+            }
+            if (foundLanes == laneNum + 1){
+                return RoadRenderer.getConfigureWidth(laneconfigure.GetRange(0, j)) +
+                                   0.5f * RoadRenderer.getConfigureWidth(laneconfigure.GetRange(j, 1)) -
+                                   0.5f * width;
+            }
+        }
+
+        Debug.Assert(false);
+        return 0;
+    }
+
+    /*TODO: support "valid"*/
+    public int validLaneCount{
+        get{
+            return laneconfigure.Count(config => config == "lane");
+        }
+    }
+
     public float SPWeight{
         get
         {
@@ -98,6 +126,10 @@ public class Road
         return renderingCurveSolver(param, upNormal_finder);
     }
 
+    public Vector3 rightNormal(float param){
+        return renderingCurveSolver(param, rightNormal_finder);
+    }
+
     Vector3 at_finder(int id, float p){
         return renderingFragements[id].at(p);
     }
@@ -108,6 +140,10 @@ public class Road
 
     Vector3 upNormal_finder(int id, float p){
         return renderingFragements[id].upNormal(p);
+    }
+
+    Vector3 rightNormal_finder(int id, float p){
+        return renderingFragements[id].rightNormal(p);
     }
 }
 
@@ -252,6 +288,10 @@ public class Path
         termination = false;
         nextseg = segnum;
         return new Pair<Road, float>(roadOn.First, newParam);
+    }
+
+    public Road getRoadOfSeg(int segnum){
+        return components[segnum].First;
     }
 
     public bool getHeadingOfCurrentSeg(int segnum){

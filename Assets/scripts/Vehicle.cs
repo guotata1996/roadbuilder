@@ -8,9 +8,10 @@ public class Vehicle : MonoBehaviour {
     Road startRoad;
 
     Path pathOn;
-    Road currentRoad;
     int currentSeg;
     float currentParam;
+
+    int laneOn;
 
     float speed = 0f;
     float wheelRotation = 0f;
@@ -48,7 +49,7 @@ public class Vehicle : MonoBehaviour {
             else
             {
                 //transform.position = curveOn.at(currentParam);
-                transform.position = roadOn.at(currentParam);
+                transform.position = roadOn.at(currentParam) + roadOn.rightNormal(currentParam) * roadOn.getLaneCenterOffset(laneOn);
                 /*
                 transform.rotation = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
                     Quaternion.LookRotation(curveOn.frontNormal(currentParam), curveOn.upNormal(currentParam)) :
@@ -72,7 +73,7 @@ public class Vehicle : MonoBehaviour {
     public void SetStart(Vector3 position){
         Vector3 modifiedPosition = drawing.roadManager.approxNodeToExistingRoad(position, out startRoad);
         startParam = currentParam = (float)startRoad.curve.paramOf(modifiedPosition);
-        currentRoad = startRoad;
+        laneOn = 0;
     }
 
     public void SetDest(Vector3 position){
@@ -89,6 +90,18 @@ public class Vehicle : MonoBehaviour {
         currentParam = Mathf.Infinity;
         speed = 0f;
         currentSeg = 0;
+        laneOn = 0;
+    }
+
+    public void ShiftLane(bool right){
+        if (pathOn.getHeadingOfCurrentSeg(currentSeg)){
+            laneOn = right ? Mathf.Min(pathOn.getRoadOfSeg(currentSeg).validLaneCount - 1, laneOn + 1) :
+                                  Mathf.Max(0, laneOn - 1);
+        }
+        else{
+            laneOn = right ? Mathf.Max(0, laneOn - 1) :
+                                  Mathf.Min(pathOn.getRoadOfSeg(currentSeg).validLaneCount - 1, laneOn + 1);
+        }
     }
 
     public void Accelerate(float a){

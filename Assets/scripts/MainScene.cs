@@ -21,11 +21,14 @@ public class MainScene : MonoBehaviour
         drawing = GameObject.Find("curveIndicator").GetComponent<RoadDrawing>();
 
         Curve b = new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 50f), new Vector2(80f, 40f), 0f, 10f);
-        drawing.roadManager.addRoad(b, new List<string> { "lane", "surface" });
+        List<string> sampleLaneConfig = new List<string>{ "solid_white", "lane", "dash_white", "lane", "solid_yellow", "lane" };
+
+
+        drawing.roadManager.addRoad(b, sampleLaneConfig);
         Curve c = new Line(new Vector2(80f, 40f), new Vector2(80f, 0f), 10f, 0f);
-        drawing.roadManager.addRoad(c, new List<string> { "lane", "surface" });
+        drawing.roadManager.addRoad(c, sampleLaneConfig);
         Curve d = new Line(new Vector2(50f, -40f), new Vector2(80f, 0f),0f, 0f);
-        drawing.roadManager.addRoad(d, new List<string> { "lane", "surface" });
+        drawing.roadManager.addRoad(d, sampleLaneConfig);
 
         Path sp = drawing.roadManager.findPath(drawing.roadManager.allroads[0], 0f, drawing.roadManager.allroads[2], 0f);
         if (sp != null)
@@ -46,6 +49,8 @@ public class MainScene : MonoBehaviour
             vh[i].GetComponent<Vehicle>().SetDest(new Vector3(50f, 0f, -40f));
         }
 
+
+
     }
 
     private void Update()
@@ -55,5 +60,33 @@ public class MainScene : MonoBehaviour
         {
             vh[i].GetComponent<Vehicle>().Accelerate(Random.Range(0.2f, 0.3f));
         }
+        if (Input.GetKeyDown(KeyCode.N)){
+            for (int i = 0; i != numCar; ++i)
+            {
+                vh[i].GetComponent<Vehicle>().ShiftLane(false);
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.M)){
+            for (int i = 0; i != numCar; ++i)
+            {
+                vh[i].GetComponent<Vehicle>().ShiftLane(true);
+            }
+        }
+    }
+
+    void learn(){
+        System.Nullable<int> a = 5;
+        bool? bb = null;
+    }
+}
+
+class Test<T>{
+    T a;
+    bool valid;
+    public T bb{
+        get{
+            return a;
+        }
+
     }
 }

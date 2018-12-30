@@ -46,7 +46,6 @@ public class RoadManager : MonoBehaviour
 
         /*TODO: add to UI*/
         List<string> modifiedLaneConfigure = laneConfigure.ConvertAll((input) => input);
-        modifiedLaneConfigure.Add("column");
         modifiedLaneConfigure.Insert(0, "fence");
         modifiedLaneConfigure.Add("fence");
 

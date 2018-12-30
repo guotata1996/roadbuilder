@@ -137,25 +137,22 @@ public class RoadRenderer : MonoBehaviour
                 {
                     case "lane":
                     case "interval":
-                        break;
-                    case "surface":
-                        Debug.Assert(configs.Length == 1);
-                        Linear3DObject roadBlock = new Linear3DObject("bridgepanel");
-                        //roadBlock.margin_0 = Mathf.Max(indicatorMargin_0L, indicatorMargin_0R);
-                        //roadBlock.margin_1 = Mathf.Max(indicatorMargin_1L, indicatorMargin_1R);
-                        linear3DObjects.Add(roadBlock);
-                        break;
-                    case "column":
-                        Linear3DObject squarecolumn = new Linear3DObject("squarecolumn");
-                        Linear3DObject crossbeam = new Linear3DObject("crossbeam");
-                        squarecolumn.margin_0 = crossbeam.margin_0 =
-                            Algebra.Lerp(indicatorMargin_0L, indicatorMargin_0R, partialWidth / width);
-                        squarecolumn.margin_1 = crossbeam.margin_1 =
-                            Algebra.Lerp(indicatorMargin_1L, indicatorMargin_1R, partialWidth / width);
+                        if (!linear3DObjects.Any(obj=>obj.tag == "bridgepanel")){
+                            linear3DObjects.Add(new Linear3DObject("bridgepanel"));
+                        }
+                        if (!linear3DObjects.Any(obj=>obj.tag == "crossbeam")){
+                            Linear3DObject squarecolumn = new Linear3DObject("squarecolumn");
+                            Linear3DObject crossbeam = new Linear3DObject("crossbeam");
+                            squarecolumn.margin_0 = crossbeam.margin_0 =
+                                Algebra.Lerp(indicatorMargin_0L, indicatorMargin_0R, partialWidth / width);
+                            squarecolumn.margin_1 = crossbeam.margin_1 =
+                                Algebra.Lerp(indicatorMargin_1L, indicatorMargin_1R, partialWidth / width);
 
-                        linear3DObjects.Add(squarecolumn);
-                        linear3DObjects.Add(crossbeam);
+                            linear3DObjects.Add(squarecolumn);
+                            linear3DObjects.Add(crossbeam);
+                        }
                         break;
+
                     case "fence":
                         {
                             Linear3DObject fence = new Linear3DObject("fence");
