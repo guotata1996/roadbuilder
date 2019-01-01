@@ -58,7 +58,7 @@ public class MainScene : MonoBehaviour
 
         for (int i = 0; i != numCar; ++i)
         {
-            vh[i].GetComponent<Vehicle>().Accelerate(Random.Range(0.2f, 0.3f));
+            vh[i].GetComponent<Vehicle>().Accelerate(Random.Range(0.2f, 0.5f));
         }
         if (Input.GetKeyDown(KeyCode.N)){
             for (int i = 0; i != numCar; ++i)

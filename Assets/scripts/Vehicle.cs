@@ -6,17 +6,23 @@ public class Vehicle : MonoBehaviour {
 
     float startParam;
     Road startRoad;
-
+    /*dynamic Path info*/
     Path pathOn;
     int currentSeg;
     float currentParam;
 
+    /*lateral info
+    laneOn: view from behind the vehicle, left to right 
+    */
     int laneOn;
+    float rightOffset;
 
+    /*longitudinal info*/
     float speed = 0f;
     float wheelRotation = 0f;
 
     public float wheeRadius = 0.14f;
+    public float lateralSpeed = 2f;
 
     RoadDrawing drawing;
 
@@ -42,14 +48,18 @@ public class Vehicle : MonoBehaviour {
             currentParam = nextInfo.Second;
             currentSeg = nextSeg;
 
+            rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeed * Time.deltaTime, 0f);
+
             if (termination)
             {
                 Reset();
             }
             else
             {
-                //transform.position = curveOn.at(currentParam);
-                transform.position = roadOn.at(currentParam) + roadOn.rightNormal(currentParam) * roadOn.getLaneCenterOffset(laneOn);
+                transform.position = roadOn.at(currentParam) + (
+                    pathOn.getHeadingOfCurrentSeg(currentSeg) ?
+                    roadOn.rightNormal(currentParam) * (roadOn.getLaneCenterOffset(laneOn) + rightOffset):
+                    -roadOn.rightNormal(currentParam) * (roadOn.getLaneCenterOffset(laneOn) + rightOffset));
                 /*
                 transform.rotation = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
                     Quaternion.LookRotation(curveOn.frontNormal(currentParam), curveOn.upNormal(currentParam)) :
@@ -58,6 +68,14 @@ public class Vehicle : MonoBehaviour {
                 transform.rotation = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
                     Quaternion.LookRotation(roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam)) :
                     Quaternion.LookRotation(-roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam));
+
+                if (rightOffset > 0)
+                {
+                    transform.Rotate(roadOn.upNormal(currentParam), -Mathf.Atan(lateralSpeed / speed) * Mathf.Rad2Deg);
+                }
+                if (rightOffset < 0){
+                    transform.Rotate(roadOn.upNormal(currentParam), Mathf.Atan(lateralSpeed / speed) * Mathf.Rad2Deg);
+                }
 
                 wheelRotation = (wheelRotation + distToTravel / wheeRadius * Mathf.Rad2Deg) % 360;
                 /*TODO: calculate wheel radius*/
@@ -91,17 +109,23 @@ public class Vehicle : MonoBehaviour {
         speed = 0f;
         currentSeg = 0;
         laneOn = 0;
+        rightOffset = 0f;
     }
 
     public void ShiftLane(bool right){
-        if (pathOn.getHeadingOfCurrentSeg(currentSeg)){
-            laneOn = right ? Mathf.Min(pathOn.getRoadOfSeg(currentSeg).validLaneCount - 1, laneOn + 1) :
-                                  Mathf.Max(0, laneOn - 1);
-        }
-        else{
-            laneOn = right ? Mathf.Max(0, laneOn - 1) :
-                                  Mathf.Min(pathOn.getRoadOfSeg(currentSeg).validLaneCount - 1, laneOn + 1);
-        }
+        int newLane;
+        newLane = right ? Mathf.Min(pathOn.getRoadOfSeg(currentSeg).validLaneCount - 1, laneOn + 1) :
+                              Mathf.Max(0, laneOn - 1);
+            
+        Road roadOn = pathOn.getRoadOfSeg(currentSeg);
+        int laneOnByRoad = pathOn.getHeadingOfCurrentSeg(currentSeg) ? laneOn : roadOn.validLaneCount - laneOn - 1;
+        int newlaneOnByRoad = pathOn.getHeadingOfCurrentSeg(currentSeg) ? newLane : roadOn.validLaneCount - newLane - 1;
+
+        rightOffset = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
+                            roadOn.getLaneCenterOffset(laneOnByRoad) - roadOn.getLaneCenterOffset(newlaneOnByRoad) :
+                            roadOn.getLaneCenterOffset(newlaneOnByRoad) - roadOn.getLaneCenterOffset(laneOnByRoad);
+
+        laneOn = newLane;
     }
 
     public void Accelerate(float a){
