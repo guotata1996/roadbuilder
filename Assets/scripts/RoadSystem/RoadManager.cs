@@ -355,7 +355,14 @@ public class RoadManager : MonoBehaviour
         else{
             return null;
         }
+    }
 
+    private void FixedUpdate()
+    {
+        foreach(Road r in allroads){
+            r.forwardVehicleController.updateAccs();
+            r.backwardVehicleController.updateAccs();
+        }
     }
 }
 

@@ -17,6 +17,9 @@ public class Road
             }
         }
         roadObject = _roadObj;
+        forwardVehicleController = new VehicleController(validLaneCount);
+        backwardVehicleController = new VehicleController(validLaneCount);
+
     }
     public Curve curve;
     public List<string> laneconfigure;
@@ -71,6 +74,8 @@ public class Road
             return curve.length;
         }
     }
+
+    /*actual render info for vehicle*/
 
     float margin0End, margin1End;
     Curve[] renderingFragements;
@@ -145,6 +150,9 @@ public class Road
     Vector3 rightNormal_finder(int id, float p){
         return renderingFragements[id].rightNormal(p);
     }
+
+    public VehicleController forwardVehicleController, backwardVehicleController;
+
 }
 
 /*defines a path between two NODEs plus two additional segments if exists*/
@@ -268,7 +276,9 @@ public class Path
 
     public Pair<Road, float> travelAlong(int segnum, float param, float distToTravel, out int nextseg, out bool termination){
         //check whether to jump at the very beginning
-        if (Algebra.isclose(param, 1f)){
+
+        if (components[segnum].Second && Algebra.isclose(param, 1f) || (!components[segnum].Second) && Algebra.isclose(param, 0f))
+        {
             segnum++;
             if (segnum == components.Count)
             {

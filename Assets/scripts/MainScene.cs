@@ -8,12 +8,12 @@ public class MainScene : MonoBehaviour
     public GameObject carModelPrefab;
 
     int numCar = 1;
-    GameObject[] vh;
+    List<GameObject> vh;
 
     // Use this for initialization
     private void Awake()
     {
-        vh = new GameObject[numCar];
+        vh = new List<GameObject>();
     }
 
     void Start()
@@ -37,29 +37,24 @@ public class MainScene : MonoBehaviour
         }
         else
         {
-            Debug.Log("path not found");
+            Debug.LogError("path not found");
         }
 
         Debug.Assert(drawing.roadManager != null);
-
+        /*
         for (int i = 0; i != numCar; ++i)
         {
             vh[i] = Instantiate(carModelPrefab);
             vh[i].GetComponent<Vehicle>().SetStart(new Vector3(0f, 0f, 0f));
             vh[i].GetComponent<Vehicle>().SetDest(new Vector3(50f, 0f, -40f));
         }
-
-
+        */
 
     }
 
     private void Update()
     {
-
-        for (int i = 0; i != numCar; ++i)
-        {
-            vh[i].GetComponent<Vehicle>().Accelerate(Random.Range(0.2f, 0.5f));
-        }
+        /*
         if (Input.GetKeyDown(KeyCode.N)){
             for (int i = 0; i != numCar; ++i)
             {
@@ -72,21 +67,16 @@ public class MainScene : MonoBehaviour
                 vh[i].GetComponent<Vehicle>().ShiftLane(true);
             }
         }
-    }
-
-    void learn(){
-        System.Nullable<int> a = 5;
-        bool? bb = null;
-    }
-}
-
-class Test<T>{
-    T a;
-    bool valid;
-    public T bb{
-        get{
-            return a;
+        */
+        if (Input.GetKeyDown(KeyCode.J)){
+            GameObject newVh = Instantiate(carModelPrefab);
+            newVh.GetComponent<Vehicle>().SetStart(new Vector3(0f, 0f, 0f));
+            newVh.GetComponent<Vehicle>().SetDest(new Vector3(50f, 0f, -40f));
+            vh.Add(newVh);
         }
 
+        if (Input.GetKey(KeyCode.T)){
+            vh[0].GetComponent<Vehicle>().speed = 0f;
+        }
     }
 }
