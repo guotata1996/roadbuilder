@@ -408,5 +408,35 @@ public class Node : MonoBehaviour
         }
     }
 
+    /*End of modelling part; 
+     * Begin of traffic part*/
+
+    public Road getVirtualRoad(Road r1, Road r2){
+        /*for now, do not consider direction arrangement*/
+        Debug.Assert(containsRoad(r1) && containsRoad(r2));
+        Debug.Assert(r1 != r2);
+        float r1_margin = startof(r1.curve) ? r1.margin0End : r1.margin1End;
+        float r2_margin = startof(r2.curve) ? r2.margin0End : r2.margin1End;
+        Vector3 r1_endPos = r1.at(r1_margin);
+        Vector3 r2_endPos = r2.at(r2_margin);
+
+        Vector2 r1_direction = startof(r1.curve) ? - r1.curve.direction_2d(r1_margin) : r1.curve.direction_2d(r1_margin);
+        Vector2 r2_direction = startof(r2.curve) ? - r2.curve.direction_2d(r2_margin) : r2.curve.direction_2d(r2_margin);
+
+        if (Geometry.Parallel(r1_direction, r2_direction))
+        {
+            return new Road(new Line(r1_endPos, r2_endPos), r1.laneconfigure);
+        }
+        else
+        {
+            Line l1 = new Line(Algebra.toVector2(r1_endPos), Algebra.toVector2(r1_endPos) + Algebra.InfLength * r1_direction, r1_endPos.y, r1_endPos.y);
+            Line l2 = new Line(Algebra.toVector2(r2_endPos), Algebra.toVector2(r2_endPos) + Algebra.InfLength * r2_direction, r2_endPos.y, r2_endPos.y);
+            Debug.Log(l1);
+            Debug.Log(l2);
+            List<Vector3> intereSectionPoint = Geometry.curveIntersect(l1, l2);
+            Debug.Assert(intereSectionPoint.Count == 1);
+            return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), r1.laneconfigure);
+        }
+    }
 
 }

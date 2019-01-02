@@ -282,6 +282,11 @@ public class RoadManager : MonoBehaviour
 
     /*TODO: improve efficiency*/
     public Path findPath(Road r1, float param1, Road r2, float param2){
+        if (r1 == r2){
+            /*Special trivial case*/
+            return new Path(r1, param1, param2);
+        }
+
         Node r10;
         findNodeAt(r1.curve.at(0f), out r10);
         Node r11;
@@ -344,13 +349,17 @@ public class RoadManager : MonoBehaviour
 
         if (parentness.ContainsKey(destination) || source.Equals(destination)){
             List<Road> sp = new List<Road>();
+            List<Node> AllPassingNodes = new List<Node>();
             Node currentNode = destination;
+            AllPassingNodes.Add(currentNode);
             while (parentness.ContainsKey(currentNode)){
                 sp.Add(parentness[currentNode].First);
                 currentNode = parentness[currentNode].Second;
+                AllPassingNodes.Add(currentNode);
             }
             sp.Reverse();
-            return new Path(source, sp, destination);
+            AllPassingNodes.Reverse();
+            return new Path(AllPassingNodes, sp);
         }
         else{
             return null;

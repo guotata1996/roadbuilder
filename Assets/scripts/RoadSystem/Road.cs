@@ -20,6 +20,7 @@ public class Road
         forwardVehicleController = new VehicleController(validLaneCount);
         backwardVehicleController = new VehicleController(validLaneCount);
 
+        setMargins(0f, 0f, 0f, 0f);
     }
     public Curve curve;
     public List<string> laneconfigure;
@@ -77,7 +78,7 @@ public class Road
 
     /*actual render info for vehicle*/
 
-    float margin0End, margin1End;
+    public float margin0End, margin1End;
     Curve[] renderingFragements;
 
     public void setMargins(float _margin0L, float _margin0R, float _margin1L, float _margin1R){
@@ -102,13 +103,13 @@ public class Road
 
     Vector3 renderingCurveSolver(float param, curveValueFinder finder){
         Debug.Assert(renderingFragements != null);
-        if (param < margin0End)
+        if (param < margin0End && renderingFragements[0] != null)
         {
             return finder(0, param / margin0End);
         }
         else
         {
-            if (param > margin1End)
+            if (param > margin1End && renderingFragements[2] != null)
             {
                 return finder(2, (param - margin1End) / (1f - margin1End));
             }
@@ -155,30 +156,41 @@ public class Road
 
 }
 
-/*defines a path between two NODEs plus two additional segments if exists*/
 public class Path
 {
     List<Pair<Road, bool>> components;
     float startParam, endParam;
     Node sourceNode, destNode;
 
-    public Path(Node source, List<Road> comp, Node dest){
-        components = comp.ConvertAll((input) => new Pair<Road, bool>(input, true));
-        for (int i = 0; i != components.Count; ++i){
-            if (i == 0){
-                if (Algebra.isclose(comp[0].curve.at(1f), source.position)){
-                    components[0].Second = false;
-                }
+    public Path(List<Node> passingNodes, List<Road> comp){
+        Debug.Assert(passingNodes.Count == comp.Count + 1 || passingNodes.Count == 0);
+
+        components = new List<Pair<Road, bool>>();
+        for (int i = 0; i != comp.Count; ++i){
+            if (Algebra.isclose(passingNodes[i].position, comp[i].at(0f))){
+                components.Add(new Pair<Road, bool>(comp[i], true));
             }
             else{
-                if (Algebra.isclose(comp[i].curve.at(0f), comp[i-1].curve.at_ending(!components[i-1].Second))){
-                    components[i].Second = false;
-                }
+                components.Add(new Pair<Road, bool>(comp[i], false));
             }
+
+            if (i != comp.Count - 1){
+                Road virtualNodePath = passingNodes[i + 1].getVirtualRoad(comp[i], comp[i + 1]);
+                components.Add(new Pair<Road, bool>(virtualNodePath, true));
+            }
+
         }
         startParam = endParam = Mathf.Infinity;
-        sourceNode = source;
-        destNode = dest;
+        sourceNode = passingNodes.First();
+        destNode = passingNodes.Last();
+    }
+
+    /*trivial case*/
+    public Path(Road r, float startP, float endP){
+        components = new List<Pair<Road, bool>>();
+        components.Add(new Pair<Road, bool>(r, endP > startP));
+        startParam = startP;
+        endParam = endP;
     }
 
     public void insertAtStart(Road road, float param){
@@ -193,22 +205,34 @@ public class Path
             Debug.Assert(Algebra.isclose(road.curve.at(1f), sourceNode.position));
             components.Insert(0, new Pair<Road, bool>(road, true));
         }
-
+        if (components.Count > 1 && road != components[1].First)
+        {
+            //otherwise, must not be SP
+            Road virtualNodePath = sourceNode.getVirtualRoad(road, components[1].First);
+            components.Insert(1, new Pair<Road, bool>(virtualNodePath, true));
+        }
         startParam = param;
     }
 
     public void insertAtEnd(Road road, float param){
         Debug.Assert(float.IsPositiveInfinity(endParam));
 
-            if (Algebra.isclose(road.curve.at(0f), destNode.position))
-            {
-                components.Add(new Pair<Road, bool>(road, true));
-            }
-            else
-            {
-                Debug.Assert(Algebra.isclose(road.curve.at(1f), destNode.position));
-                components.Add(new Pair<Road, bool>(road, false));
-            }
+        if (Algebra.isclose(road.curve.at(0f), destNode.position))
+        {
+            components.Add(new Pair<Road, bool>(road, true));
+        }
+        else
+        {
+            Debug.Assert(Algebra.isclose(road.curve.at(1f), destNode.position));
+            components.Add(new Pair<Road, bool>(road, false));
+        }
+
+        if (components.Count > 1 && road != components[components.Count - 2].First)
+        {
+            //otherwise, must not be SP
+            Road virtualNodePath = destNode.getVirtualRoad(components[components.Count - 2].First, road);
+            components.Insert(components.Count - 1, new Pair<Road, bool>(virtualNodePath, true));
+        }
         endParam = param;
     }
 
@@ -276,8 +300,12 @@ public class Path
 
     public Pair<Road, float> travelAlong(int segnum, float param, float distToTravel, out int nextseg, out bool termination){
         //check whether to jump at the very beginning
+        //Debug.Log(segnum + " , " + param + " , " + components[segnum].Second + " , " + components[segnum].First.margin1End);
 
-        if (components[segnum].Second && Algebra.isclose(param, 1f) || (!components[segnum].Second) && Algebra.isclose(param, 0f))
+        if (components[segnum].Second && (param > components[segnum].First.margin1End) || 
+            (!components[segnum].Second) && (param < components[segnum].First.margin0End) ||
+            (segnum == components.Count - 1 && components[segnum].Second && param > endParam) ||
+            (segnum == components.Count - 1 && !components[segnum].Second && param < endParam))
         {
             segnum++;
             if (segnum == components.Count)
@@ -288,7 +316,7 @@ public class Path
             }
             else
             {
-                param = components[segnum].Second ? 0f : 1f;
+                param = components[segnum].Second ? components[segnum].First.margin0End : components[segnum].First.margin1End;
             }
         }
 

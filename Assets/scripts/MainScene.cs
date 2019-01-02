@@ -27,7 +27,7 @@ public class MainScene : MonoBehaviour
         drawing.roadManager.addRoad(b, sampleLaneConfig);
         Curve c = new Line(new Vector2(80f, 40f), new Vector2(80f, 0f), 10f, 0f);
         drawing.roadManager.addRoad(c, sampleLaneConfig);
-        Curve d = new Line(new Vector2(50f, -40f), new Vector2(80f, 0f),0f, 0f);
+        Curve d = new Line(new Vector2(40f, 0f), new Vector2(80f, 0f),0f, 0f);
         drawing.roadManager.addRoad(d, sampleLaneConfig);
 
         Path sp = drawing.roadManager.findPath(drawing.roadManager.allroads[0], 0f, drawing.roadManager.allroads[2], 0f);
@@ -49,7 +49,6 @@ public class MainScene : MonoBehaviour
             vh[i].GetComponent<Vehicle>().SetDest(new Vector3(50f, 0f, -40f));
         }
         */
-
     }
 
     private void Update()
@@ -70,8 +69,8 @@ public class MainScene : MonoBehaviour
         */
         if (Input.GetKeyDown(KeyCode.J)){
             GameObject newVh = Instantiate(carModelPrefab);
-            newVh.GetComponent<Vehicle>().SetStart(new Vector3(0f, 0f, 0f));
-            newVh.GetComponent<Vehicle>().SetDest(new Vector3(50f, 0f, -40f));
+            newVh.GetComponent<Vehicle>().SetStart(new Vector3(75f, 0f, 0f));
+            newVh.GetComponent<Vehicle>().SetDest(new Vector3(60f, 0f, 0f));
             vh.Add(newVh);
         }
 

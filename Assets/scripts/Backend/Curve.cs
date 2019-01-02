@@ -91,12 +91,12 @@ public abstract class Curve
 
     }
 
-    public Vector3 at_ending(bool start, float offset = 0f){
-        offset = offset / length;
+    public Vector3 at_ending(bool start){
+        //offset = offset / length;
         if (start)
-            return at(offset);
+            return at(0f);
         else{
-            return at(1f - offset);
+            return at(1f);
         }
     }
 
