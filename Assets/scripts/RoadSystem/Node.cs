@@ -431,8 +431,6 @@ public class Node : MonoBehaviour
         {
             Line l1 = new Line(Algebra.toVector2(r1_endPos), Algebra.toVector2(r1_endPos) + Algebra.InfLength * r1_direction, r1_endPos.y, r1_endPos.y);
             Line l2 = new Line(Algebra.toVector2(r2_endPos), Algebra.toVector2(r2_endPos) + Algebra.InfLength * r2_direction, r2_endPos.y, r2_endPos.y);
-            Debug.Log(l1);
-            Debug.Log(l2);
             List<Vector3> intereSectionPoint = Geometry.curveIntersect(l1, l2);
             Debug.Assert(intereSectionPoint.Count == 1);
             return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), r1.laneconfigure);
