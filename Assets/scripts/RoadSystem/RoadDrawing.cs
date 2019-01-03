@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public enum IndicatorType { line, arc, bezeir, none, delete };
 
@@ -38,19 +37,14 @@ public class RoadDrawing : MonoBehaviour
 
     List<Curve> interestedApproxLines;
 
-    float height;
-
-    GameObject heightTextField;
-
-    public void fixControlPoint(Vector2 cp)
+    public void fixControlPoint(Vector3 cp)
     {
         //call after setControlPoint is called
         pointer++;
     }
 
-    public void setControlPoint(Vector2 cp)
+    public void setControlPoint(Vector3 cp3)
     {
-        Vector3 cp3 = new Vector3(cp.x, height, cp.y);
         cp3 = roadManager.approxNodeToExistingRoad(cp3, out targetRoad, interestedApproxLines);
 
         if (pointer <= 3)
@@ -69,9 +63,6 @@ public class RoadDrawing : MonoBehaviour
         interestedApproxLines = new List<Curve>();
         degreeTextInstance = new List<GameObject>();
         neighborIndicatorInstance = new List<GameObject>();
-        height = 0f;
-        heightTextField = GameObject.Find("Canvas/Height");
-        heightTextField.GetComponent<Text>().text = "0";
 
         reset();
     }
@@ -94,14 +85,6 @@ public class RoadDrawing : MonoBehaviour
         clearAngleDrawing();
         laneConfig = GameObject.FindWithTag("UI/laneconfig").GetComponent<LaneConfigPanelBehavior>().laneconfigresult;
         interestedApproxLines.Clear();
-        if (Input.GetKeyDown(KeyCode.P)){
-            height += 1f;
-            heightTextField.GetComponent<Text>().text = height.ToString();
-        }
-        if (Input.GetKeyDown(KeyCode.L)){
-            height = Mathf.Max(0f, height - 1f); //TODO: support height < 0
-            heightTextField.GetComponent<Text>().text = height.ToString();
-        }
 
         if (pointer >= 1)
         {

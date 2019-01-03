@@ -17,12 +17,12 @@ public class curvetypeButton : MonoBehaviour
     public void Update()
     {
         if (indicator.indicatorType != IndicatorType.none && !EventSystem.current.IsPointerOverGameObject()){
-            Vector2 twodhitpoint = GameObject.FindWithTag("MainCamera").GetComponent<RayHit>().hitpoint;
+            Vector3 hitpoint = GameObject.FindWithTag("MainCamera").GetComponent<RayHit>().hitpoint3;
             if (Input.GetMouseButtonDown(0)){
-                indicator.fixControlPoint(twodhitpoint);
+                indicator.fixControlPoint(hitpoint);
             }
             else{
-                indicator.setControlPoint(twodhitpoint);
+                indicator.setControlPoint(hitpoint);
             }
         }
     }

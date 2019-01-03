@@ -1,19 +1,27 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RayHit : MonoBehaviour {
 
-    public Vector2 hitpoint;
     public float zoomStep = 0.02f;
-    Vector3 hitpoint3;
+    public Vector3 hitpoint3;
     float MinimumPitch = 90f, MaximumPitch = 20f;
     float MaximumHeight = 110f;
 
     Vector3 targetPosition;   //intended position of camera right on top
 
-	// Use this for initialization
-	void Start () {
+    GameObject heightTextField;
+
+    private void Awake()
+    {
+        heightTextField = GameObject.Find("Canvas/Height");
+        heightTextField.GetComponent<Text>().text = "0";
+    }
+
+    // Use this for initialization
+    void Start () {
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
         targetPosition = transform.position;
@@ -25,8 +33,8 @@ public class RayHit : MonoBehaviour {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit))
         {
-            hitpoint3 = hit.point;
-            hitpoint = new Vector2(hitpoint3.x, hitpoint3.z);
+            hitpoint3.x = hit.point.x;
+            hitpoint3.z = hit.point.z;
         }
         var scrollWheel = Input.GetAxis("Mouse ScrollWheel");
 
@@ -89,5 +97,18 @@ public class RayHit : MonoBehaviour {
                                   Algebra.angle2dir(Mathf.Deg2Rad * (270f - transform.rotation.eulerAngles.y));
         Vector3 biasedPosition = targetPosition + new Vector3(xz_offset.x, 0f, xz_offset.y);
         transform.position = Vector3.Lerp(transform.position, biasedPosition, Time.deltaTime * 5);
+
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            hitpoint3.y += 1f;
+            heightTextField.GetComponent<Text>().text = hitpoint3.y.ToString();
+        }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            hitpoint3.y = Mathf.Max(0f, hitpoint3.y - 1f); //TODO: support height < 0
+            heightTextField.GetComponent<Text>().text = hitpoint3.y.ToString();
+        }
+
     }
 }
