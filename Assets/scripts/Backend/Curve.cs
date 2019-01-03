@@ -38,23 +38,22 @@ public abstract class Curve
             {
                 if (offset > 0f)
                 {
-                    offset = (float)paramOf(segmentation(offset).First().at_2d(1f));
+                    offset = paramOf(split(offset / this.length).First().at_2d(1f)).GetValueOrDefault(0f);
                 }
                 if (offset < 0f)
                 {
-                    offset = -(float)paramOf(segmentation(-offset).First().at_2d(1f));
-
+                    offset = -paramOf(split(- offset / this.length).First().at_2d(1f)).GetValueOrDefault(0f);
                 }
             }
             else
             {
                 if (offset > 0f)
                 {
-                    offset = 1f - (float)paramOf(segmentation(length - offset).Last().at_2d(0f));
+                    offset = 1f - paramOf(split(1f - offset / this.length).Last().at_2d(0f)).GetValueOrDefault(0f);
                 }
                 if (offset < 0f)
                 {
-                    offset = (float)paramOf(segmentation(length + offset).Last().at_2d(0f)) - 1f;
+                    offset = paramOf(split(1f + offset / this.length).Last().at_2d(0f)).GetValueOrDefault(0f) - 1f;
                 }
             }
         }
@@ -77,23 +76,22 @@ public abstract class Curve
             {
                 if (offset > 0f)
                 {
-                    offset = (float)paramOf(segmentation(offset).First().at_2d(1f));
+                    offset = paramOf(split(offset / this.length).First().at_2d(1f)).GetValueOrDefault(0f);
                 }
                 if (offset < 0f)
                 {
-                    offset = -(float)paramOf(segmentation(-offset).First().at_2d(1f));
-
+                    offset = -paramOf(split(-offset / this.length).First().at_2d(1f)).GetValueOrDefault(0f);
                 }
             }
             else
             {
                 if (offset > 0f)
                 {
-                    offset = 1f - (float)paramOf(segmentation(length - offset).Last().at_2d(0f));
+                    offset = 1f - paramOf(split(1f - offset / this.length).Last().at_2d(0f)).GetValueOrDefault(0f);
                 }
                 if (offset < 0f)
                 {
-                    offset = (float)paramOf(segmentation(length + offset).Last().at_2d(0f)) - 1f;
+                    offset = paramOf(split(1f + offset / this.length).Last().at_2d(0f)).GetValueOrDefault(0f) - 1f;
                 }
             }
         }
