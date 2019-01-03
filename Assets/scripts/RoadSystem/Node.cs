@@ -48,6 +48,8 @@ public class Node : MonoBehaviour
 
     GameObject smoothInstance;
 
+    List<Vector3> debugPoints = new List<Vector3>();
+
     public void Awake()
     {
         indicatorInst = GameObject.FindWithTag("Road/curveIndicator").GetComponent<RoadDrawing>();
@@ -207,7 +209,9 @@ public class Node : MonoBehaviour
         this.r2 = r2;
         smootheners = new List<Curve>();
         Vector2 streetCorner = approxStreetCorner();
-        switch(Geometry.getAngleType(delta_angle)){
+        //debugPoints.Add(Algebra.toVector3(streetCorner));
+
+        switch (Geometry.getAngleType(delta_angle)){
             case angleType.Sharp:
             case angleType.Blunt:
                 if (c1_offset > 0f && c2_offset > 0f){
@@ -358,22 +362,22 @@ public class Node : MonoBehaviour
 
     float C1sidepointToC2Sidepoint(float l1)
     {
-        float c2_tan_angle = r2.curve.angle_ending(startof(r2.curve), offset: c2_offset, byLength:false);
+        float c2_tan_angle = r2.curve.angle_ending(startof(r2.curve), offset: c2_offset);
         Vector2 c2_normDir = new Vector2(Mathf.Cos(c2_tan_angle - Mathf.PI / 2), Mathf.Sin(c2_tan_angle - Mathf.PI / 2));
-        float c1_tan_angle = r1.curve.angle_ending(startof(r1.curve), offset: l1, byLength:false);
+        float c1_tan_angle = r1.curve.angle_ending(startof(r1.curve), offset: l1);
         Vector2 c1_normDir = new Vector2(Mathf.Cos(c1_tan_angle + Mathf.PI / 2), Mathf.Sin(c1_tan_angle + Mathf.PI / 2));
-        return ((r1.curve.at_ending_2d(startof(r1.curve), l1, byLength : false) + c1_normDir * r1.width / 2f) -
-                (r2.curve.at_ending_2d(startof(r2.curve), c2_offset, byLength : false) + c2_normDir * r2.width / 2f)).magnitude;
+        return ((r1.curve.at_ending_2d(startof(r1.curve), l1) + c1_normDir * r1.width / 2f) -
+                (r2.curve.at_ending_2d(startof(r2.curve), c2_offset) + c2_normDir * r2.width / 2f)).magnitude;
     }
 
     float C2sidepointToC1Sidepoint(float l2)
     {
-        float c2_tan_angle = r2.curve.angle_ending(startof(r2.curve), offset: l2, byLength:false);
+        float c2_tan_angle = r2.curve.angle_ending(startof(r2.curve), offset: l2);
         Vector2 c2_normDir = new Vector2(Mathf.Cos(c2_tan_angle - Mathf.PI / 2), Mathf.Sin(c2_tan_angle - Mathf.PI / 2));
-        float c1_tan_angle = r1.curve.angle_ending(startof(r1.curve), offset: c1_offset, byLength:false);
+        float c1_tan_angle = r1.curve.angle_ending(startof(r1.curve), offset: c1_offset);
         Vector2 c1_normDir = new Vector2(Mathf.Cos(c1_tan_angle + Mathf.PI / 2), Mathf.Sin(c1_tan_angle + Mathf.PI / 2));
-        return ((r1.curve.at_ending_2d(startof(r1.curve), c1_offset, byLength : false) + c1_normDir * r1.width / 2f) -
-                (r2.curve.at_ending_2d(startof(r2.curve), l2, byLength : false) + c2_normDir * r2.width / 2f)).magnitude;
+        return ((r1.curve.at_ending_2d(startof(r1.curve), c1_offset) + c1_normDir * r1.width / 2f) -
+                (r2.curve.at_ending_2d(startof(r2.curve), l2) + c2_normDir * r2.width / 2f)).magnitude;
     }
 
     Vector2 approxStreetCorner(){
@@ -391,10 +395,10 @@ public class Node : MonoBehaviour
             if (c1_diff + c2_diff < 1e-3)
                 break;
         }
-        float c2_tan_angle = r2.curve.angle_ending(startof(r2.curve), offset: c2_offset, byLength:false);
+        float c2_tan_angle = r2.curve.angle_ending(startof(r2.curve), offset: c2_offset);
         Vector2 c2_normDir = new Vector2(Mathf.Cos(c2_tan_angle - Mathf.PI / 2), Mathf.Sin(c2_tan_angle - Mathf.PI / 2));
 
-        return r2.curve.at_ending_2d(startof(r2.curve), c2_offset, byLength:false) + c2_normDir * r2.width / 2f;
+        return r2.curve.at_ending_2d(startof(r2.curve), c2_offset) + c2_normDir * r2.width / 2f;
 
     }
 
@@ -436,5 +440,13 @@ public class Node : MonoBehaviour
             return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), r1.laneconfigure);
         }
     }
-
+    /*
+    private void OnDrawGizmos()
+    {
+        foreach(Vector3 p in debugPoints){
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(p, 0.2f);
+        }
+    }
+    */
 }

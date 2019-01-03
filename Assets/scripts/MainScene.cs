@@ -20,14 +20,15 @@ public class MainScene : MonoBehaviour
     {
         drawing = GameObject.Find("curveIndicator").GetComponent<RoadDrawing>();
 
-        Curve b = new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 50f), new Vector2(80f, 40f), 0f, 10f);
-        List<string> sampleLaneConfig = new List<string>{ "solid_white", "lane", "dash_white", "lane", "solid_yellow", "lane" };
-
+        Curve b = new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 40f), new Vector2(80f, 40f), 0f, 10f);
+        List<string> sampleLaneConfig = new List<string>{ "solid_white", "lane", "dash_white", "lane", "dash_white", "lane" };
 
         drawing.roadManager.addRoad(b, sampleLaneConfig);
         Curve c = new Line(new Vector2(80f, 40f), new Vector2(80f, 0f), 10f, 0f);
         drawing.roadManager.addRoad(c, sampleLaneConfig);
-        Curve d = new Line(new Vector2(40f, 0f), new Vector2(80f, 0f),0f, 0f);
+
+
+        Curve d = new Line(new Vector2(40f, 0f), new Vector2(120f, 0f),0f, 0f);
         drawing.roadManager.addRoad(d, sampleLaneConfig);
 
         Path sp = drawing.roadManager.findPath(drawing.roadManager.allroads[0], 0f, drawing.roadManager.allroads[2], 0f);
@@ -53,7 +54,7 @@ public class MainScene : MonoBehaviour
 
     private void Update()
     {
-        /*
+
         if (Input.GetKeyDown(KeyCode.N)){
             for (int i = 0; i != numCar; ++i)
             {
@@ -66,11 +67,11 @@ public class MainScene : MonoBehaviour
                 vh[i].GetComponent<Vehicle>().ShiftLane(true);
             }
         }
-        */
+
         if (Input.GetKeyDown(KeyCode.J)){
             GameObject newVh = Instantiate(carModelPrefab);
-            newVh.GetComponent<Vehicle>().SetStart(new Vector3(75f, 0f, 0f));
-            newVh.GetComponent<Vehicle>().SetDest(new Vector3(60f, 0f, 0f));
+            newVh.GetComponent<Vehicle>().SetStart(new Vector3(0f, 0f, 0f));
+            newVh.GetComponent<Vehicle>().SetDest(new Vector3(110f, 0f, 0f));
             vh.Add(newVh);
         }
 

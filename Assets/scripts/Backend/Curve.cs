@@ -30,25 +30,33 @@ public abstract class Curve
 
     /* range [0, 2Pi)
      */
-    public float angle_ending(bool start, float offset = 0f, bool byLength = true)
-    {  
-        if (byLength)
+    public float angle_ending(bool start, float offset = 0f)
+    {
+        if (!Algebra.isclose(offset, 0f))
         {
-            if (offset > 0f)
+            if (start)
             {
-                if (start)
+                if (offset > 0f)
                 {
                     offset = (float)paramOf(segmentation(offset).First().at_2d(1f));
                 }
-                else
+                if (offset < 0f)
+                {
+                    offset = -(float)paramOf(segmentation(-offset).First().at_2d(1f));
+
+                }
+            }
+            else
+            {
+                if (offset > 0f)
                 {
                     offset = 1f - (float)paramOf(segmentation(length - offset).Last().at_2d(0f));
                 }
+                if (offset < 0f)
+                {
+                    offset = (float)paramOf(segmentation(length + offset).Last().at_2d(0f)) - 1f;
+                }
             }
-        }
-        else
-        {
-            offset /= length;
         }
 
         if (start)
@@ -61,25 +69,33 @@ public abstract class Curve
     }
 
 
-    public Vector2 at_ending_2d(bool start, float offset = 0f, bool byLength = true)
+    public Vector2 at_ending_2d(bool start, float offset = 0f)
     {
-
-        if (byLength)
+        if (!Algebra.isclose(offset, 0f))
         {
-            if (offset > 0f)
+            if (start)
             {
-                if (start)
+                if (offset > 0f)
                 {
                     offset = (float)paramOf(segmentation(offset).First().at_2d(1f));
                 }
-                else
+                if (offset < 0f)
+                {
+                    offset = -(float)paramOf(segmentation(-offset).First().at_2d(1f));
+
+                }
+            }
+            else
+            {
+                if (offset > 0f)
                 {
                     offset = 1f - (float)paramOf(segmentation(length - offset).Last().at_2d(0f));
                 }
+                if (offset < 0f)
+                {
+                    offset = (float)paramOf(segmentation(length + offset).Last().at_2d(0f)) - 1f;
+                }
             }
-        }
-        else{
-            offset /= length;
         }
 
         if (start)
