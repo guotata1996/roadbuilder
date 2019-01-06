@@ -32,10 +32,10 @@ public class RoadDrawing : MonoBehaviour
     public int pointer;
 
     public IndicatorType indicatorType;
-
-    public GameObject preview;
-
+    
     List<Curve> interestedApproxLines;
+
+    Dictionary<Curve, GameObject> highLighters;
 
     public void fixControlPoint(Vector3 cp)
     {
@@ -59,12 +59,12 @@ public class RoadDrawing : MonoBehaviour
         roadManager = manager.GetComponent<RoadManager>();
         indicatorType = IndicatorType.none;
         controlPoint = new Vector3[4];
+        highLighters = new Dictionary<Curve, GameObject>();
 
         interestedApproxLines = new List<Curve>();
         degreeTextInstance = new List<GameObject>();
         neighborIndicatorInstance = new List<GameObject>();
 
-        reset();
     }
 
 
@@ -74,10 +74,14 @@ public class RoadDrawing : MonoBehaviour
             controlPoint[i] = Vector3.negativeInfinity;
         }
         pointer = 0;
-        Destroy(nodeIndicator);
+        nodeIndicator.transform.localScale = Vector3.zero;
         Destroy(roadIndicator);
-        interestedApproxLines.Clear();
-        clearAngleDrawing();
+    }
+
+    private void Start()
+    {
+        nodeIndicator = Instantiate(nodeIndicatorPrefab, transform);
+        reset();
     }
 
     public void Update()
@@ -96,11 +100,13 @@ public class RoadDrawing : MonoBehaviour
             }
         }
 
+        if (indicatorType == IndicatorType.none){
+            nodeIndicator.transform.localScale = Vector3.zero;
+        }
+
         if (controlPoint[pointer].x != Vector3.negativeInfinity.x && indicatorType != IndicatorType.none)
         {
-            Destroy(nodeIndicator);
-            nodeIndicator = Instantiate(nodeIndicatorPrefab, new Vector3(controlPoint[pointer].x, controlPoint[pointer].y / 2 + 0.1f, controlPoint[pointer].z), Quaternion.identity);
-            nodeIndicator.transform.SetParent(transform);
+            nodeIndicator.transform.position = new Vector3(controlPoint[pointer].x, controlPoint[pointer].y / 2 + 0.1f, controlPoint[pointer].z);
             nodeIndicator.transform.localScale = new Vector3(1.5f, Mathf.Max(1f, controlPoint[pointer].y/ 2), 1.5f);
 
             if (indicatorType == IndicatorType.line)
@@ -377,5 +383,16 @@ public class RoadDrawing : MonoBehaviour
 
     }
 
-}
+    public void highLightRoad(Curve c){
+        GameObject highlighter = Instantiate(roadIndicatorPrefab, transform);
+        RoadRenderer roadConfigure = highlighter.GetComponent<RoadRenderer>();
+        roadConfigure.generate(c, new List<string> { "removal_1.4" });
+        highLighters.Add(c, highlighter);
+    }
 
+    public void deHighLightRoad(Curve c){
+        GameObject highLighter = highLighters[c];
+        Destroy(highLighter);
+        highLighters.Remove(c);
+    }
+}

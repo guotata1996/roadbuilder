@@ -374,18 +374,3 @@ public class RoadManager : MonoBehaviour
         }
     }
 }
-
-class NodeDistComparator : Comparer<Pair<Node, float>>
-{
-
-    public override int Compare(Pair<Node, float> x, Pair<Node, float> y)
-    {
-        if (x.Second == y.Second){
-            return 0;
-        }
-        if (x.Second < y.Second){
-            return -1;
-        }
-        return 1;
-    }
-};

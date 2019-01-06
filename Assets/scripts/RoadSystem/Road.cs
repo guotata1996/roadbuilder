@@ -336,4 +336,41 @@ public class Path
         return components[segnum].Second;
     }
 
+    /* derived property */
+    List<Curve> curveRepresentation;
+
+    public List<Curve> getAllComponents(){
+
+        if (curveRepresentation == null)
+        {
+
+            if (components.Count == 1)
+            {
+                Curve p = components.First().First.curve.cutByParam(Mathf.Min(startParam, endParam), Mathf.Max(startParam, endParam));
+                curveRepresentation = new List<Curve> { p };
+            }
+            else
+            {
+                List<Curve> allcurves = new List<Curve>();
+                Curve ps = components.First().Second ?
+                                     components.First().First.curve.cutByParam(startParam, components.First().First.margin1End) :
+                                     components.First().First.curve.cutByParam(components.First().First.margin0End, startParam);
+                allcurves.Add(ps);
+
+                foreach (var c in components.GetRange(1, components.Count - 2))
+                {
+                    allcurves.Add(c.First.curve.cut(c.First.margin0End, c.First.margin1End));
+                }
+
+                Curve pe = components.Last().Second ?
+                                     components.Last().First.curve.cutByParam(components.Last().First.margin0End, endParam) :
+                                     components.Last().First.curve.cutByParam(endParam, components.Last().First.margin1End);
+                allcurves.Add(pe);
+
+                curveRepresentation = allcurves;
+            }
+        }
+
+        return curveRepresentation;
+    }
 }

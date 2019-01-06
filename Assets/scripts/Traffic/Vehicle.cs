@@ -28,6 +28,9 @@ public class Vehicle : MonoBehaviour {
     public float bodyLength = 3.9f;
 
     RoadDrawing drawing;
+    bool isshowingPath;
+
+    public GameObject roadIndicatorPrefab;
 
     private void Awake()
     {
@@ -157,7 +160,6 @@ public class Vehicle : MonoBehaviour {
         float endParam = (float)endRoad.curve.paramOf(modifiedPosition);
         pathOn = drawing.roadManager.findPath(startRoad, startParam, endRoad, endParam);
 
-
     }
 
     private void Reset()
@@ -186,5 +188,25 @@ public class Vehicle : MonoBehaviour {
                             roadOn.getLaneCenterOffset(newlaneOnByRoad) - roadOn.getLaneCenterOffset(laneOnByRoad);
 
         laneOn = newLane;
+    }
+
+    public void toggleRouteView(){
+        isshowingPath = !isshowingPath;
+
+        List<Curve> path = pathOn.getAllComponents();
+        foreach (Curve c in path)
+        {
+            if (isshowingPath)
+            {
+                Debug.Log("highlighting");
+                drawing.highLightRoad(c);
+            }
+            else
+            {
+                Debug.Log("dehighlight");
+                drawing.deHighLightRoad(c);
+
+            }
+        }
     }
 }

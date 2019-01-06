@@ -17,6 +17,8 @@ public class RoutePanelBehavior : MonoBehaviour {
     public GameObject indicatorPrefab;
     GameObject indicator;
 
+    GameObject vehicle;
+
     void Start () {
         workingMode = mode.none;
         setStartFlag();
@@ -79,6 +81,8 @@ public class RoutePanelBehavior : MonoBehaviour {
     }
 
     public void enterListenMode(){
+        GameObject.Find("Canvas").GetComponent<UIController>().ResetDrawing();
+
         if (start == null){
             workingMode = mode.listenStart;
         }
@@ -91,9 +95,12 @@ public class RoutePanelBehavior : MonoBehaviour {
     }
 
     void placeVehicle(){
-        GameObject vh = Instantiate(carModelPrefab);
-        vh.GetComponent<Vehicle>().SetStart(start.Value);
-        vh.GetComponent<Vehicle>().SetDest(end.Value);
+        vehicle = Instantiate(carModelPrefab);
+        vehicle.GetComponent<Vehicle>().SetStart(start.Value);
+        vehicle.GetComponent<Vehicle>().SetDest(end.Value);
     }
 
+    public void toggleRouteView(){
+        vehicle.GetComponent<Vehicle>().toggleRouteView();
+    }
 }
