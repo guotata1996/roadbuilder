@@ -287,29 +287,52 @@ public class RoadManager : MonoBehaviour
             return new Path(r1, param1, param2);
         }
 
-        Node r10;
-        findNodeAt(r1.curve.at(0f), out r10);
-        Node r11;
-        findNodeAt(r1.curve.at(1f), out r11);
-        Node r20;
-        findNodeAt(r2.curve.at(0f), out r20);
-        Node r21;
-        findNodeAt(r2.curve.at(1f), out r21);
+        List<Node> possibleStartNodes = new List<Node>();
+        List<Node> possibleEndNodes = new List<Node>();
+        if (r1.validLaneCount(false) > 0){
+            Node r10;
+            findNodeAt(r1.curve.at(1f), out r10);
+            possibleStartNodes.Add(r10);
+        }
 
-        Path p00 = Node2NodeSP(r10, r20);
-        Path p01 = Node2NodeSP(r10, r21);
-        Path p10 = Node2NodeSP(r11, r20);
-        Path p11 = Node2NodeSP(r11, r21);
+        if (r1.validLaneCount(true) > 0){
+            Node r11;
+            findNodeAt(r1.curve.at(1f), out r11);
+            possibleStartNodes.Add(r11);
+        }
 
-        if (p00 != null)
+        if (r2.validLaneCount(true) > 0){
+            Node r20;
+            findNodeAt(r2.curve.at(0f), out r20);
+            possibleEndNodes.Add(r20);
+        }
+
+        if (r2.validLaneCount(false) > 0)
         {
-            List<Path> paths = new List<Path> { p00, p01, p10, p11 };
-            foreach (Path p in paths)
-            {
-                p.insertAtStart(r1, param1);
-                p.insertAtEnd(r2, param2);
+            Node r21;
+            findNodeAt(r2.curve.at(1f), out r21);
+            possibleEndNodes.Add(r21);
+        }
+
+        if (possibleStartNodes.Count * possibleEndNodes.Count == 0){
+            return null;
+        }
+
+        List<Path> candicatePaths = new List<Path>();
+        foreach(Node nstart in possibleStartNodes){
+            foreach(Node nend in possibleEndNodes){
+                Path p = Node2NodeSP(nstart, nend);
+                if (p != null){
+                    p.insertAtStart(r1, param1);
+                    p.insertAtEnd(r2, param2);
+                    candicatePaths.Add(p);
+                }
             }
-            return paths.MinBy((arg) => arg.length);
+        }
+
+        if (candicatePaths.Count > 0)
+        {
+            return candicatePaths.MinBy((arg) => arg.length);
         }
         else{
             return null;
@@ -317,6 +340,7 @@ public class RoadManager : MonoBehaviour
     }
 
     Path Node2NodeSP(Node source, Node destination){
+
         Dictionary<Node, float> distances = new Dictionary<Node, float>();
         Dictionary<Node, Pair<Road, Node>> parentness = new Dictionary<Node, Pair<Road, Node>>();
         foreach(Node n in allnodes.Values){
@@ -329,17 +353,19 @@ public class RoadManager : MonoBehaviour
 
             foreach(Pair<Road, ConnectionInfo> rcin in closestNode.connection){
                 Road r1 = rcin.First;
-                Node neighbor;
-                if (Algebra.isclose(r1.curve.at(0f), closestNode.position)){
+                Node neighbor = null;
+                if (Algebra.isclose(r1.curve.at(0f), closestNode.position) && r1.validLaneCount(true) > 0){
                     findNodeAt(r1.curve.at(1f), out neighbor);
                 }
                 else{
-                    findNodeAt(r1.curve.at(0f), out neighbor);
+                    if (Algebra.isclose(r1.curve.at(1f), closestNode.position) && r1.validLaneCount(false) > 0)
+                    {
+                        findNodeAt(r1.curve.at(0f), out neighbor);
+                    }
                 }
-                Debug.Assert(neighbor != null);
                 float w1 = r1.SPWeight;
 
-                if (distances.ContainsKey(neighbor) && distances[neighbor] > distances[closestNode] + w1){
+                if (neighbor != null && distances.ContainsKey(neighbor) && distances[neighbor] > distances[closestNode] + w1){
                     distances[neighbor] = distances[closestNode] + w1;
                     parentness[neighbor] = new Pair<Road, Node>(rcin.First, closestNode);
                 }

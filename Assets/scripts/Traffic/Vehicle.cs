@@ -14,7 +14,9 @@ public class Vehicle : MonoBehaviour {
     bool firstUpdate;
 
     /*lateral info
-    laneOn: view from behind the vehicle, left to right 
+    laneOn: |   |   ||  |   |
+            | 0   1 || 1  0 |
+            |   |   ||  |   |
     */
     int laneOn;
     float rightOffset;
@@ -72,7 +74,7 @@ public class Vehicle : MonoBehaviour {
                 }
                 else
                 {
-                    pathOn.getRoadOfSeg(currentSeg).backwardVehicleController.VehicleLeave(this, pathOn.getRoadOfSeg(currentSeg).validLaneCount - 1 - laneOn);
+                    pathOn.getRoadOfSeg(currentSeg).backwardVehicleController.VehicleLeave(this, laneOn);
                 }
 
                 Reset();
@@ -92,7 +94,7 @@ public class Vehicle : MonoBehaviour {
                     }
                     else
                     {
-                        pathOn.getRoadOfSeg(currentSeg).backwardVehicleController.VehicleLeave(this, pathOn.getRoadOfSeg(currentSeg).validLaneCount - 1 - laneOn);
+                        pathOn.getRoadOfSeg(currentSeg).backwardVehicleController.VehicleLeave(this, laneOn);
                     }
                 }
 
@@ -103,7 +105,7 @@ public class Vehicle : MonoBehaviour {
                 }
                 else
                 {
-                    roadOn.backwardVehicleController.VehicleEnter(this, roadOn.validLaneCount - 1 - laneOn);
+                    roadOn.backwardVehicleController.VehicleEnter(this, laneOn);
                 }
 
                 distTraveledOnSeg = distToTravel;
@@ -113,25 +115,22 @@ public class Vehicle : MonoBehaviour {
 
             rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeed * Time.deltaTime, 0f);
 
-            transform.position = roadOn.at(currentParam) + (
-                pathOn.getHeadingOfCurrentSeg(currentSeg) ?
-                roadOn.rightNormal(currentParam) * (roadOn.getLaneCenterOffset(laneOn) + rightOffset):
-                -roadOn.rightNormal(currentParam) * (roadOn.getLaneCenterOffset(laneOn) + rightOffset));
-            /*
-            transform.rotation = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
-                Quaternion.LookRotation(curveOn.frontNormal(currentParam), curveOn.upNormal(currentParam)) :
-                Quaternion.LookRotation(-curveOn.frontNormal(currentParam), curveOn.upNormal(currentParam));
-            */
+            transform.position = roadOn.at(currentParam) +
+                roadOn.rightNormal(currentParam) * (roadOn.getLaneCenterOffset(laneOn, pathOn.getHeadingOfCurrentSeg(currentSeg)) + rightOffset);
+
             transform.rotation = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
                 Quaternion.LookRotation(roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam)) :
                 Quaternion.LookRotation(-roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam));
 
-            if (rightOffset > 0)
+            if (rightOffset != 0f)
             {
-                transform.Rotate(roadOn.upNormal(currentParam), -Mathf.Atan(lateralSpeed / speed) * Mathf.Rad2Deg);
-            }
-            if (rightOffset < 0){
-                transform.Rotate(roadOn.upNormal(currentParam), Mathf.Atan(lateralSpeed / speed) * Mathf.Rad2Deg);
+                if (pathOn.getHeadingOfCurrentSeg(currentSeg))
+                {
+                    transform.Rotate(roadOn.upNormal(currentParam), -Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeed / speed) * Mathf.Rad2Deg);
+                }
+                else{
+                    transform.Rotate(roadOn.upNormal(currentParam), Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeed / speed) * Mathf.Rad2Deg);
+                }
             }
 
             wheelRotation = (wheelRotation + distToTravel / wheeRadius * Mathf.Rad2Deg) % 360;
@@ -140,7 +139,6 @@ public class Vehicle : MonoBehaviour {
                 transform.GetChild(0).GetChild(3).localRotation= transform.GetChild(0).GetChild(4).localRotation = 
                     Quaternion.Euler(wheelRotation, 0f, 0f);
 
-            
 
             if (firstUpdate)
                 firstUpdate = false;
@@ -160,6 +158,7 @@ public class Vehicle : MonoBehaviour {
         float endParam = (float)endRoad.curve.paramOf(modifiedPosition);
         pathOn = drawing.roadManager.findPath(startRoad, startParam, endRoad, endParam);
 
+        toggleRouteView();
     }
 
     private void Reset()
@@ -176,16 +175,12 @@ public class Vehicle : MonoBehaviour {
 
     public void ShiftLane(bool right){
         int newLane;
-        newLane = right ? Mathf.Min(pathOn.getRoadOfSeg(currentSeg).validLaneCount - 1, laneOn + 1) :
-                              Mathf.Max(0, laneOn - 1);
-            
+        newLane = right ? Mathf.Max(0, laneOn - 1) :
+                               Mathf.Min(pathOn.getRoadOfSeg(currentSeg).validLaneCount(pathOn.getHeadingOfCurrentSeg(currentSeg)) - 1, laneOn + 1);
         Road roadOn = pathOn.getRoadOfSeg(currentSeg);
-        int laneOnByRoad = pathOn.getHeadingOfCurrentSeg(currentSeg) ? laneOn : roadOn.validLaneCount - laneOn - 1;
-        int newlaneOnByRoad = pathOn.getHeadingOfCurrentSeg(currentSeg) ? newLane : roadOn.validLaneCount - newLane - 1;
 
-        rightOffset = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
-                            roadOn.getLaneCenterOffset(laneOnByRoad) - roadOn.getLaneCenterOffset(newlaneOnByRoad) :
-                            roadOn.getLaneCenterOffset(newlaneOnByRoad) - roadOn.getLaneCenterOffset(laneOnByRoad);
+        rightOffset = roadOn.getLaneCenterOffset(laneOn, pathOn.getHeadingOfCurrentSeg(currentSeg)) -
+                            roadOn.getLaneCenterOffset(newLane, pathOn.getHeadingOfCurrentSeg(currentSeg));
 
         laneOn = newLane;
     }
@@ -193,17 +188,15 @@ public class Vehicle : MonoBehaviour {
     public void toggleRouteView(){
         isshowingPath = !isshowingPath;
 
-        List<Curve> path = pathOn.getAllComponents();
+        List<Curve> path = pathOn.getCurveRepresentation();
         foreach (Curve c in path)
         {
             if (isshowingPath)
             {
-                Debug.Log("highlighting");
                 drawing.highLightRoad(c);
             }
             else
             {
-                Debug.Log("dehighlight");
                 drawing.deHighLightRoad(c);
 
             }

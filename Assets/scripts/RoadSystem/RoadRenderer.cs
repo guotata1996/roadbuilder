@@ -16,6 +16,7 @@ class Separator
     public bool dashed;
     public float offset = 0f;
     public float margin_0 = 0f, margin_1 = 0f;
+    public float width = RoadRenderer.separatorWidth;
 }
 
 /*should support:
@@ -54,32 +55,6 @@ public class RoadRenderer : MonoBehaviour
         float indicatorMargin_0Bound = Mathf.Max(indicatorMargin_0L, indicatorMargin_0R);
         float indicatorMargin_1Bound = Mathf.Max(indicatorMargin_1L, indicatorMargin_1R);
 
-        /*
-        if (Algebra.isclose(curve.z_offset, 0f) || (indicatorMargin_0Bound == 0f && indicatorMargin_1Bound == 0f)){
-            //Debug.Log("generating single in the first place with 0= " + indicatorMargin_1Bound + " 1= " + indicatorMargin_1Bound);
-            generateSingle(curve, laneConfig, indicatorMargin_0L, indicatorMargin_0R, indicatorMargin_1L, indicatorMargin_1R);
-            return;
-        }
-        else{
-            if (indicatorMargin_0Bound > 0){
-                Curve margin0Curve = curve.cut(0f, indicatorMargin_0Bound / curve.length);
-                margin0Curve.z_start = curve.at(0f).y;
-                margin0Curve.z_offset = 0f;
-                generateSingle(margin0Curve, laneConfig, indicatorMargin_0L, indicatorMargin_0R, 0f, 0f);
-            }
-            Curve middleCurve = curve.cut(indicatorMargin_0Bound / curve.length, 1f - indicatorMargin_1Bound / curve.length);
-            middleCurve.z_start = curve.at(0f).y;
-            middleCurve.z_offset = curve.at(1f).y - curve.at(0f).y;
-            generateSingle(middleCurve, laneConfig, 0f, 0f, 0f, 0f);
-
-            if (indicatorMargin_1Bound > 0){
-                Curve margin1Curve = curve.cut(1f - indicatorMargin_1Bound / curve.length, 1f);
-                margin1Curve.z_start = curve.at(1f).y;
-                margin1Curve.z_offset = 0f;
-                generateSingle(margin1Curve, laneConfig, 0f, 0f,indicatorMargin_1L, indicatorMargin_1R);
-            }
-        }
-        */
         Curve[] fragments = splitByMargin(curve, indicatorMargin_0Bound, indicatorMargin_1Bound);
         if (fragments[0] != null){
             generateSingle(fragments[0], laneConfig, indicatorMargin_0L, indicatorMargin_0R, 0f, 0f);
@@ -190,8 +165,15 @@ public class RoadRenderer : MonoBehaviour
 
                     case "removal":
                         Debug.Assert(laneConfig.Count == 1);
-                        drawRemovalMark(curve, float.Parse(configs[1]));
-                        return;
+                        //drawRemovalMark(curve, float.Parse(configs[1]));
+                        Separator sep = new Separator();
+                        sep.texture = Resources.Load<Texture>("Textures/orange");
+                        sep.dashed = false;
+                        sep.width = float.Parse(configs[1]);
+                        sep.margin_0 = Mathf.Max(indicatorMargin_0L, indicatorMargin_0R);
+                        sep.margin_1 = Mathf.Max(indicatorMargin_1L, indicatorMargin_1R);
+                        drawLinear2DObject(curve, sep);
+                        break;
                 }
             }
             else
@@ -305,7 +287,7 @@ public class RoadRenderer : MonoBehaviour
 			CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
             Material normalMaterial = new Material(Shader.Find("Standard"));
             normalMaterial.mainTexture = sep.texture;
-            decomp.CreateMesh (curve, separatorWidth, normalMaterial, offset: sep.offset, z_offset:0.01f);
+            decomp.CreateMesh (curve, sep.width, normalMaterial, offset: sep.offset, z_offset:0.01f);
 		}
 		else {
             List<Curve> dashed = curve.segmentation (dashLength + dashInterval);
@@ -320,7 +302,7 @@ public class RoadRenderer : MonoBehaviour
 					CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
                     Material normalMaterial = new Material(Shader.Find("Standard"));
                     normalMaterial.mainTexture = sep.texture;
-                    decomp.CreateMesh (vacant_and_dashed [1], separatorWidth, normalMaterial, offset:sep.offset, z_offset:0.01f);
+                    decomp.CreateMesh (vacant_and_dashed [1], sep.width, normalMaterial, offset:sep.offset, z_offset:0.01f);
 				}
 			}
 
@@ -373,39 +355,14 @@ public class RoadRenderer : MonoBehaviour
         }
     }
 
-    void drawRemovalMark(Curve curve, float width){
-        GameObject rendins = Instantiate(rend, transform);
-        rendins.transform.parent = this.transform;
-        CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
-        Material normalMaterial = new Material(Shader.Find("Standard"));
-        normalMaterial.mainTexture = Resources.Load<Texture>("Textures/orange");
-        decomp.CreateMesh(curve, width, normalMaterial, z_offset:0.02f);
-    }
-
-    public static float getConfigureWidth(List<string> laneconfigure){
-        var ans = 0f;
-        for (int i = 0; i != laneconfigure.Count; ++i)
-        {
-            if (commonTypes.Contains(laneconfigure[i].Split('_')[0]))
-                switch (laneconfigure[i].Split('_')[0])
-            {
-                case "lane":
-                    ans += laneWidth;
-                    break;
-                case "interval":
-                    ans += separatorInterval;
-                    break;
-                case "fence":
-                case "singlefence":
-                    ans += fenceWidth;
-                    break;
-            }
-            else{
-                ans += separatorWidth;
-            }
-        }
-        return ans;
-    }
+    //void drawRemovalMark(Curve curve, float width){
+    //    GameObject rendins = Instantiate(rend, transform);
+    //    rendins.transform.parent = this.transform;
+    //    CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
+    //    Material normalMaterial = new Material(Shader.Find("Standard"));
+    //    normalMaterial.mainTexture = Resources.Load<Texture>("Textures/orange");
+    //    decomp.CreateMesh(curve, width, normalMaterial, z_offset:0.1f);
+    //}
 
     public void generate(Polygon polygon, float H, string materialconfig)
     {
@@ -419,4 +376,32 @@ public class RoadRenderer : MonoBehaviour
                 break;
         }
     }
+
+    public static float getConfigureWidth(List<string> laneconfigure)
+    {
+        var ans = 0f;
+        for (int i = 0; i != laneconfigure.Count; ++i)
+        {
+            if (commonTypes.Contains(laneconfigure[i].Split('_')[0]))
+                switch (laneconfigure[i].Split('_')[0])
+                {
+                    case "lane":
+                        ans += laneWidth;
+                        break;
+                    case "interval":
+                        ans += separatorInterval;
+                        break;
+                    case "fence":
+                    case "singlefence":
+                        ans += fenceWidth;
+                        break;
+                }
+            else
+            {
+                ans += separatorWidth;
+            }
+        }
+        return ans;
+    }
+       
 }
