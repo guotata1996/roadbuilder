@@ -135,6 +135,12 @@ public class Road
         }
     }
 
+    public Curve marginedOutCurve{
+        get{
+            return renderingFragements[1];
+        }
+    }
+
     public Vector3 at(float param){
         return renderingCurveSolver(param, at_finder);
     }
@@ -166,6 +172,7 @@ public class Road
     Vector3 rightNormal_finder(int id, float p){
         return renderingFragements[id].rightNormal(p);
     }
+
 
     public VehicleController forwardVehicleController, backwardVehicleController;
 

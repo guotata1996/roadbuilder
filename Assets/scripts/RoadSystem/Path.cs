@@ -200,14 +200,15 @@ public class Path
     }
 
     /* derived property */
-    List<Curve> curveRepresentation;
+    List<Pair<Curve, float>> curveRepresentation;
 
-    public List<Curve> getCurveRepresentation()
+    public List<Pair<Curve, float>> getCurveRepresentation()
     {
 
         if (curveRepresentation == null)
         {
-
+            curveRepresentation = new List<Pair<Curve, float>>();
+            /*
             if (components.Count == 1)
             {
                 Curve p = components.First().First.curve.cutByParam(Mathf.Min(startParam, endParam), Mathf.Max(startParam, endParam));
@@ -223,7 +224,7 @@ public class Path
 
                 foreach (var c in components.GetRange(1, components.Count - 2))
                 {
-                    allcurves.Add(c.First.curve.cut(c.First.margin0End, c.First.margin1End));
+                    allcurves.Add(c.First.marginedOutCurve);
                 }
 
                 Curve pe = components.Last().Second ?
@@ -232,6 +233,12 @@ public class Path
                 allcurves.Add(pe);
 
                 curveRepresentation = allcurves;
+            }*/
+            foreach(var c in components){
+                Curve mainCurve = c.First.marginedOutCurve;
+                for (int i = 0; i != c.First.validLaneCount(c.Second); ++i){
+                    curveRepresentation.Add(new Pair<Curve, float>(mainCurve, c.First.getLaneCenterOffset(i, c.Second)));
+                }
             }
         }
 

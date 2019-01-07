@@ -139,7 +139,6 @@ public class Vehicle : MonoBehaviour {
                 transform.GetChild(0).GetChild(3).localRotation= transform.GetChild(0).GetChild(4).localRotation = 
                     Quaternion.Euler(wheelRotation, 0f, 0f);
 
-
             if (firstUpdate)
                 firstUpdate = false;
         }
@@ -158,7 +157,6 @@ public class Vehicle : MonoBehaviour {
         float endParam = (float)endRoad.curve.paramOf(modifiedPosition);
         pathOn = drawing.roadManager.findPath(startRoad, startParam, endRoad, endParam);
 
-        toggleRouteView();
     }
 
     private void Reset()
@@ -188,8 +186,8 @@ public class Vehicle : MonoBehaviour {
     public void toggleRouteView(){
         isshowingPath = !isshowingPath;
 
-        List<Curve> path = pathOn.getCurveRepresentation();
-        foreach (Curve c in path)
+        var path = pathOn.getCurveRepresentation();
+        foreach (var c in path)
         {
             if (isshowingPath)
             {

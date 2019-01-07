@@ -287,7 +287,7 @@ public class RoadRenderer : MonoBehaviour
 			CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
             Material normalMaterial = new Material(Shader.Find("Standard"));
             normalMaterial.mainTexture = sep.texture;
-            decomp.CreateMesh (curve, sep.width, normalMaterial, offset: sep.offset, z_offset:0.01f);
+            decomp.CreateMesh (curve, sep.width, normalMaterial, offset: sep.offset, z_offset:0.02f);
 		}
 		else {
             List<Curve> dashed = curve.segmentation (dashLength + dashInterval);
@@ -302,7 +302,7 @@ public class RoadRenderer : MonoBehaviour
 					CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
                     Material normalMaterial = new Material(Shader.Find("Standard"));
                     normalMaterial.mainTexture = sep.texture;
-                    decomp.CreateMesh (vacant_and_dashed [1], sep.width, normalMaterial, offset:sep.offset, z_offset:0.01f);
+                    decomp.CreateMesh (vacant_and_dashed [1], sep.width, normalMaterial, offset:sep.offset, z_offset:0.02f);
 				}
 			}
 
@@ -317,7 +317,11 @@ public class RoadRenderer : MonoBehaviour
             return;
         }
         Debug.Assert(margin_0 >= 0 && margin_1 >= 0);
-        Debug.Assert(margin_0 + margin_1 < curve.length);
+        /*
+        if (margin_0 + margin_1 >= curve.length){
+            Debug.LogError(margin_0 + " ; " + margin_1 + " >= " + curve.length + " at: " + curve);
+        }
+        */
         if (margin_0 + margin_1 > curve.length)
         {
             return;
@@ -354,15 +358,6 @@ public class RoadRenderer : MonoBehaviour
             }
         }
     }
-
-    //void drawRemovalMark(Curve curve, float width){
-    //    GameObject rendins = Instantiate(rend, transform);
-    //    rendins.transform.parent = this.transform;
-    //    CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
-    //    Material normalMaterial = new Material(Shader.Find("Standard"));
-    //    normalMaterial.mainTexture = Resources.Load<Texture>("Textures/orange");
-    //    decomp.CreateMesh(curve, width, normalMaterial, z_offset:0.1f);
-    //}
 
     public void generate(Polygon polygon, float H, string materialconfig)
     {
@@ -403,5 +398,4 @@ public class RoadRenderer : MonoBehaviour
         }
         return ans;
     }
-       
 }

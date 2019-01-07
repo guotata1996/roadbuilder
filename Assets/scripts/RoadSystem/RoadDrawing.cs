@@ -12,12 +12,14 @@ public class RoadDrawing : MonoBehaviour
     public GameObject nodeIndicatorPrefab;
 
     public GameObject roadIndicatorPrefab;
-
+    
     public GameObject roadManagerPrefab;
 
     protected GameObject nodeIndicator, roadIndicator;
 
     public RoadManager roadManager;
+
+    public GameObject CurveRendererPrefab;
 
     public GameObject degreeTextPrefab;
 
@@ -35,7 +37,7 @@ public class RoadDrawing : MonoBehaviour
     
     List<Curve> interestedApproxLines;
 
-    Dictionary<Curve, GameObject> highLighters;
+    Dictionary<Pair<Curve, float>, GameObject> highLighters;
 
     public void fixControlPoint(Vector3 cp)
     {
@@ -59,7 +61,7 @@ public class RoadDrawing : MonoBehaviour
         roadManager = manager.GetComponent<RoadManager>();
         indicatorType = IndicatorType.none;
         controlPoint = new Vector3[4];
-        highLighters = new Dictionary<Curve, GameObject>();
+        highLighters = new Dictionary<Pair<Curve, float>, GameObject>();
 
         interestedApproxLines = new List<Curve>();
         degreeTextInstance = new List<GameObject>();
@@ -106,8 +108,15 @@ public class RoadDrawing : MonoBehaviour
 
         if (controlPoint[pointer].x != Vector3.negativeInfinity.x && indicatorType != IndicatorType.none)
         {
-            nodeIndicator.transform.position = new Vector3(controlPoint[pointer].x, controlPoint[pointer].y / 2 + 0.1f, controlPoint[pointer].z);
-            nodeIndicator.transform.localScale = new Vector3(1.5f, Mathf.Max(1f, controlPoint[pointer].y/ 2), 1.5f);
+            Vector3 adjustedAttach;
+            if (targetRoad != null){
+                adjustedAttach = targetRoad.at(targetRoad.curve.paramOf(targetRoad.curve.AttouchPoint(controlPoint[pointer])).Value);
+            }
+            else{
+                adjustedAttach = controlPoint[pointer];
+            }
+            nodeIndicator.transform.position = new Vector3(adjustedAttach.x, adjustedAttach.y / 2 + 0.1f, adjustedAttach.z);
+            nodeIndicator.transform.localScale = new Vector3(1.5f, Mathf.Max(1f, adjustedAttach.y/ 2), 1.5f);
 
             if (indicatorType == IndicatorType.line)
             {
@@ -383,16 +392,18 @@ public class RoadDrawing : MonoBehaviour
 
     }
 
-    public void highLightRoad(Curve c){
-        GameObject highlighter = Instantiate(roadIndicatorPrefab, transform);
-        RoadRenderer roadConfigure = highlighter.GetComponent<RoadRenderer>();
-        roadConfigure.generate(c, new List<string> { "removal_1.4" });
-        highLighters.Add(c, highlighter);
+    public void highLightRoad(Pair<Curve, float> c_offset){
+        GameObject highlighter = Instantiate(CurveRendererPrefab, transform);
+        CurveRenderer renderer = highlighter.GetComponent<CurveRenderer>();
+        Material normalMaterial = new Material(Shader.Find("Standard"));
+        normalMaterial.mainTexture = Resources.Load<Texture>("Textures/orange");
+        renderer.CreateMesh(c_offset.First, 0.3f, normalMaterial, offset:c_offset.Second, z_offset: 0.03f);
+        highLighters.Add(c_offset, highlighter);
     }
 
-    public void deHighLightRoad(Curve c){
-        GameObject highLighter = highLighters[c];
+    public void deHighLightRoad(Pair<Curve, float> c_offset){
+        GameObject highLighter = highLighters[c_offset];
         Destroy(highLighter);
-        highLighters.Remove(c);
+        highLighters.Remove(c_offset);
     }
 }

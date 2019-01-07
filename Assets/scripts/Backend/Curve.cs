@@ -187,33 +187,49 @@ public abstract class Curve
     public Curve cut(float start, float end)
     {
         end = Mathf.Max(start, end);
-        Curve rtn;
-        if (start < 0f && !Algebra.isclose(start, 0f) || end > 1f && !Algebra.isclose(end, 1f))
+        if (this is Line || this is Arc)
         {
-            Debug.Assert(false);
-            Debug.Log("Abnormal cut, start:" + start + "end:" + end);
+            Curve rtn;
+            if (start < 0f && !Algebra.isclose(start, 0f) || end > 1f && !Algebra.isclose(end, 1f))
+            {
+                Debug.Assert(false);
+                Debug.Log("Abnormal cut, start:" + start + "end:" + end);
+            }
+            Curve secondAndThird = Algebra.isclose(start, 0f) ? this : split(start).Last();
+            if (!Algebra.isclose(end, 1f))
+            {
+                Curve third = split(end).Last();
+                float secondFraction = (secondAndThird.length - third.length) / secondAndThird.length;
+                rtn = secondAndThird.split(secondFraction).First();
+            }
+            else
+            {
+                if (!Algebra.isclose(start, 0f))
+                {
+                    rtn = secondAndThird;
+                }
+                else
+                {
+                    rtn = segmentation(this.length).First();
+                }
+            }
+            if (Mathf.Abs(rtn.at(0f).y - this.at(end).y) < Mathf.Abs(rtn.at(1f).y - this.at(end).y))
+            {
+                rtn.reverse();
+                rtn.z_start = rtn.z_start + rtn.z_offset;
+                rtn.z_offset = -rtn.z_offset;
+            }
+            return rtn;
         }
-        Curve secondAndThird = Algebra.isclose(start, 0f) ? this : split(start).Last();
-        if (!Algebra.isclose(end, 1f))
+        else
         {
-            Curve third = split(end).Last();
-            float secondFraction = (secondAndThird.length - third.length) / secondAndThird.length;
-            rtn = secondAndThird.split(secondFraction).First();
+            Vector2 p1 = this.at_ending_2d(true, start * length);
+            Vector2 p2 = this.at_ending_2d(false, (1f - end) * length);
+            Curve rtn = deepCopy();
+            rtn.t_start = toGlobalParam(paramOf(p1).Value);
+            rtn.t_end = toGlobalParam(paramOf(p2).Value);
+            return rtn;
         }
-        else{
-            if (!Algebra.isclose(start, 0f)){
-                rtn = secondAndThird;
-            }
-            else{
-                rtn = segmentation(this.length).First();
-            }
-        }
-        if (Mathf.Abs(rtn.at(0f).y - this.at(end).y) < Mathf.Abs(rtn.at(1f).y - this.at(end).y)){
-            rtn.reverse();
-            rtn.z_start = rtn.z_start + rtn.z_offset;
-            rtn.z_offset = -rtn.z_offset;
-        }
-        return rtn;
     }
 
     public Curve cutByParam(float start, float end){

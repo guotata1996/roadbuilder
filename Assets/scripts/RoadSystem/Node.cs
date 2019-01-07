@@ -194,6 +194,7 @@ public class Node : MonoBehaviour
             }
         }
 
+        updateDirectionLaneRange();
     }
 
     public bool startof(Curve c){
@@ -416,19 +417,46 @@ public class Node : MonoBehaviour
      * Begin of traffic part*/
 
     public Road getVirtualRoad(Road r1, Road r2){
-        /*for now, do not consider direction arrangement*/
         Debug.Assert(containsRoad(r1) && containsRoad(r2));
-        Debug.Assert(r1 != r2);
+
+        int i1 = connection.FindIndex((obj) => obj.First == r1);
+        int i2 = connection.FindIndex((obj) => obj.First == r2);
+
+        if (outLaneRange[i1, i2] == null){
+            return null;
+        }
+        int loOutLaneNum = outLaneRange[i1, i2].First;
+        int hiOutLaneNum = outLaneRange[i1, i2].Second;
+
+        int loInLaneNum = inLaneRange[i2, i1].First;
+        int hiInLaneNum = inLaneRange[i2, i1].Second;
+
+        Debug.Assert(hiOutLaneNum - loOutLaneNum == hiInLaneNum - loInLaneNum);
+
         float r1_margin = startof(r1.curve) ? r1.margin0End : r1.margin1End;
         float r2_margin = startof(r2.curve) ? r2.margin0End : r2.margin1End;
-        Vector3 r1_endPos = r1.at(r1_margin);
-        Vector3 r2_endPos = r2.at(r2_margin);
 
-        Vector2 r1_direction = startof(r1.curve) ? - r1.curve.direction_2d(r1_margin) : r1.curve.direction_2d(r1_margin);
-        Vector2 r2_direction = startof(r2.curve) ? - r2.curve.direction_2d(r2_margin) : r2.curve.direction_2d(r2_margin);
+        float r1_radiOffset = 0.5f * (r1.getLaneCenterOffset(loOutLaneNum, !startof(r1.curve)) + r1.getLaneCenterOffset(hiOutLaneNum, !startof(r1.curve)));
+        float r2_radiOffset = 0.5f * (r2.getLaneCenterOffset(loInLaneNum, startof(r2.curve)) + r2.getLaneCenterOffset(hiInLaneNum, startof(r2.curve)));
+        Vector3 r1_endPos = r1.at(r1_margin) + r1.rightNormal(r1_margin) * r1_radiOffset;
+        Vector3 r2_endPos = r2.at(r2_margin) + r2.rightNormal(r2_margin) * r2_radiOffset;
+
+        List<string> virtualRoadLaneCfg = new List<string>();
+        int virtualRoadLaneCount = hiOutLaneNum - loOutLaneNum + 1;
+        Debug.Log("vitual road has " + virtualRoadLaneCount + " lanes");
+        for (int i = 0; i != virtualRoadLaneCount; ++i){
+            virtualRoadLaneCfg.Add("lane");
+            if (i != virtualRoadLaneCount - 1){
+                virtualRoadLaneCfg.Add("dash_white");
+            }
+        }
+        
+        Vector2 r1_direction = startof(r1.curve) ? -r1.curve.direction_2d(r1_margin) : r1.curve.direction_2d(r1_margin);
+        Vector2 r2_direction = startof(r2.curve) ? -r2.curve.direction_2d(r2_margin) : r2.curve.direction_2d(r2_margin);
 
         if (Geometry.Parallel(r1_direction, r2_direction))
         {
+            /*TODO: perform a U turn when r1 = r2*/
             return new Road(new Line(r1_endPos, r2_endPos), r1.laneconfigure);
         }
         else
@@ -437,8 +465,9 @@ public class Node : MonoBehaviour
             Line l2 = new Line(Algebra.toVector2(r2_endPos), Algebra.toVector2(r2_endPos) + Algebra.InfLength * r2_direction, r2_endPos.y, r2_endPos.y);
             List<Vector3> intereSectionPoint = Geometry.curveIntersect(l1, l2);
             Debug.Assert(intereSectionPoint.Count == 1);
-            return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), r1.laneconfigure);
+            return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), virtualRoadLaneCfg);
         }
+
     }
     /*
     private void OnDrawGizmos()
@@ -449,4 +478,71 @@ public class Node : MonoBehaviour
         }
     }
     */
+
+    Pair<int, int>[,] outLaneRange = null;
+    Pair<int, int>[,] inLaneRange = null;
+
+    void updateDirectionLaneRange(){
+        int dirCount = connection.Count;
+
+        outLaneRange = new Pair<int, int>[dirCount, dirCount];
+        for (int i = 0; i != dirCount; ++i){
+            int incomingLanesNum = connection[i].First.validLaneCount(!startof(connection[i].First.curve));
+            int outgoingLaneNum = connection.Sum(r => r.First.validLaneCount(startof(r.First.curve)));
+            Debug.Log("for road # " + connection[i].First.curve + " ,incoming= " + incomingLanesNum + " outgoing= " + outgoingLaneNum);
+
+            int beingAssigned = 0;
+
+            if (incomingLanesNum < outgoingLaneNum)
+            {
+                //supply smaller than demand
+                for (int j = i + 1; j <= i + dirCount; ++j)
+                {
+                    int target = j % dirCount;
+                    int targetLaneNum = connection[target].First.validLaneCount(startof(connection[target].First.curve));
+
+                    if (incomingLanesNum > 0 && targetLaneNum > 0)
+                    {
+                        int lo = incomingLanesNum * (beingAssigned + 1) / (outgoingLaneNum + 1);
+                        int hi = incomingLanesNum * (beingAssigned + targetLaneNum) / (outgoingLaneNum + 1);
+
+                        outLaneRange[i, target] = new Pair<int, int>(lo, hi);
+                        beingAssigned += targetLaneNum;
+                    }
+
+                }
+            }
+            else
+            {
+                //supply satisfies demand
+                for (int j = i + 1; j <= i + dirCount; ++j){
+                    int target = j % dirCount;
+                    int targetLaneNum = connection[target].First.validLaneCount(startof(connection[target].First.curve));
+                    if (incomingLanesNum > 0&& targetLaneNum > 0){
+                        outLaneRange[i, target] = new Pair<int, int>(beingAssigned, beingAssigned + targetLaneNum - 1);
+                        beingAssigned += targetLaneNum;
+                    }
+                }
+            }
+        }
+
+        inLaneRange = new Pair<int, int>[dirCount, dirCount];
+        for (int i = 0; i != dirCount; ++i){
+            int myCapacity = connection[i].First.validLaneCount(startof(connection[i].First.curve));
+
+            for (int j = i + 1; j <= i + dirCount; ++j){
+                int target = j % dirCount;
+
+                if (outLaneRange[target, i] != null)
+                {
+                    int incomingCount = outLaneRange[target, i].Second - outLaneRange[target, i].First + 1;
+                    Debug.Assert(incomingCount <= myCapacity);
+                    inLaneRange[i, target] = (j == i + dirCount - 1) ? new Pair<int, int>(0, incomingCount - 1) :
+                    new Pair<int, int>(myCapacity - incomingCount, myCapacity - 1);
+                }
+
+            }
+
+        }
+    }
 }
