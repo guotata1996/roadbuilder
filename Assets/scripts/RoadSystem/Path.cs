@@ -149,33 +149,10 @@ public class Path
 
     public override string ToString()
     {
-        string str = components[0].First.curve.at(startParam) + " ==> ";
-
-        if (components.Count > 2)
-        {
-            foreach (var component in components)
-            {
-                if (component != components.Last())
-                {
-                    str += component.First.curve.at_ending(!component.Second);
-                    str += " ==> ";
-                }
-                else
-                {
-                    str += component.First.curve.at(endParam);
-                }
-            }
-        }
-        else
-        {
-            if (components[0].First != components[1].First)
-            {
-                str += components[0].First.curve.at_ending(!components[0].Second);
-                str += "==>";
-            }
-            str += components[1].First.curve.at(endParam);
-        }
-        return str;
+        string rtn = "";
+        rtn += "Vroad count " + components.Count(a => a.First.noEntity);
+        rtn += " ;road count " + components.Count(a => !a.First.noEntity);
+        return rtn;
     }
 
     public Pair<Road, float> travelAlong(int segnum, float param, float distToTravel, int lane, out int nextseg, out int nextLane, out bool termination)
@@ -203,8 +180,6 @@ public class Path
                 Node refNode = EndNodes[components[segnum - 1].First];
                 if (components[segnum].First.noEntity){
                     //enter a crossing
-                    Debug.Log(components[segnum + 1].First);
-                    Debug.Log(refNode.position);
                     int laneNumInValidLanes = lane - refNode.getValidInRoadLanes(components[segnum - 1].First, components[segnum + 1].First).First;
                     nextLane = Mathf.Clamp(laneNumInValidLanes, 0, components[segnum].First.validLaneCount(true) - 1);
                 }

@@ -27,9 +27,6 @@ public class RoadManager : MonoBehaviour
         {
             List<Vector3> intersectPoints = Geometry.curveIntersect(curve, oldroad.curve);
 
-            foreach (Vector3 point in intersectPoints){
-                Debug.Log("Interset points btw curve " + curve + " \nand "+ oldroad.curve + " is " + string.Format("{0:C4},{1:C4},{2:C4}", point.x, point.y, point.z));
-            }
             if (intersectPoints.Count > 0)
             {
                 allNewIntersectPoints.AddRange(intersectPoints);
@@ -88,15 +85,11 @@ public class RoadManager : MonoBehaviour
 
     private Road addPureRoad(Curve curve, List<string> laneConfigure)
     {
-        //GameObject roadInstance = Instantiate(road, transform);
-        //RoadRenderer roadConfigure = roadInstance.GetComponent<RoadRenderer>();
-        //roadConfigure.generate(curve, laneConfigure);
-        //Road newRoad = new Road(curve, laneConfigure, roadInstance);
         Road newRoad = new Road(curve, laneConfigure);
 
         allroads.Add(newRoad);
         createOrAddtoNode(newRoad);
-        Debug.Log(curve + " added");
+        //Debug.Log(curve + " added");
         return newRoad;
     }
 
@@ -115,7 +108,7 @@ public class RoadManager : MonoBehaviour
         endNode.removeRoad(road);
 
         Destroy(road.roadObject);
-        Debug.Log(road.curve + " removed!");
+        //Debug.Log(road.curve + " removed!");
 
     }
 
@@ -291,7 +284,7 @@ public class RoadManager : MonoBehaviour
         List<Node> possibleEndNodes = new List<Node>();
         if (r1.validLaneCount(false) > 0){
             Node r10;
-            findNodeAt(r1.curve.at(1f), out r10);
+            findNodeAt(r1.curve.at(0f), out r10);
             possibleStartNodes.Add(r10);
         }
 
@@ -325,6 +318,7 @@ public class RoadManager : MonoBehaviour
                 if (p != null){
                     p.insertAtStart(r1, param1);
                     p.insertAtEnd(r2, param2);
+                    //Debug.Log("found path between " + nstart + " " + nend + " :" + p);
                     candicatePaths.Add(p);
                 }
             }

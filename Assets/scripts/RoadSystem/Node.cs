@@ -465,15 +465,20 @@ public class Node : MonoBehaviour
                 /*exact same lane config for neighbors, just go straight*/
                 return null;
             }
-            return new Road(new Line(r1_endPos, r2_endPos), r1.laneconfigure, _noEntity: true);
+            return new Road(new Line(r1_endPos, r2_endPos), virtualRoadLaneCfg, _noEntity: true);
         }
         else
         {
             Line l1 = new Line(Algebra.toVector2(r1_endPos), Algebra.toVector2(r1_endPos) + Algebra.InfLength * r1_direction, r1_endPos.y, r1_endPos.y);
             Line l2 = new Line(Algebra.toVector2(r2_endPos), Algebra.toVector2(r2_endPos) + Algebra.InfLength * r2_direction, r2_endPos.y, r2_endPos.y);
             List<Vector3> intereSectionPoint = Geometry.curveIntersect(l1, l2);
-            Debug.Assert(intereSectionPoint.Count == 1);
-            return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), virtualRoadLaneCfg, _noEntity:true);
+            if (intereSectionPoint.Count == 1)
+            {
+                return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), virtualRoadLaneCfg, _noEntity: true);
+            }
+            else{
+                return new Road(new Line(r1_endPos, r2_endPos), virtualRoadLaneCfg, _noEntity: true);
+            }
         }
 
     }
@@ -569,5 +574,10 @@ public class Node : MonoBehaviour
             }
 
         }
+    }
+
+    public override string ToString()
+    {
+        return position.ToString();
     }
 }

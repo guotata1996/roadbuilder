@@ -91,7 +91,6 @@ public class RoutePanelBehavior : MonoBehaviour {
                 workingMode = mode.listenEnd;
             }
         }
-        Debug.Log("set working mode to " + workingMode);
     }
 
     void placeVehicle(){
