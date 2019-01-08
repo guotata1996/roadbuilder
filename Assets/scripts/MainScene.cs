@@ -50,6 +50,7 @@ public class MainScene : MonoBehaviour
             vh[i].GetComponent<Vehicle>().SetDest(new Vector3(50f, 0f, -40f));
         }
         */
+
     }
 
     private void Update()

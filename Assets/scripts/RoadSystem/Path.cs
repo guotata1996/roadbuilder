@@ -9,11 +9,16 @@ public class Path
     float startParam, endParam;
     Node sourceNode, destNode;
 
+    /*EndNode[i] = the node following segment i*/
+    Dictionary<Road, Node> EndNodes;
+
     public Path(List<Node> passingNodes, List<Road> comp)
     {
-        Debug.Assert(passingNodes.Count == comp.Count + 1 || passingNodes.Count == 0);
+        Debug.Assert(passingNodes.Count == comp.Count + 1);
 
         components = new List<Pair<Road, bool>>();
+        EndNodes = new Dictionary<Road, Node>();
+
         for (int i = 0; i != comp.Count; ++i)
         {
             if (Algebra.isclose(passingNodes[i].position, comp[i].at(0f)))
@@ -23,12 +28,18 @@ public class Path
             else
             {
                 components.Add(new Pair<Road, bool>(comp[i], false));
+
             }
+            EndNodes[comp[i]] = passingNodes[i + 1];
 
             if (i != comp.Count - 1)
             {
                 Road virtualNodePath = passingNodes[i + 1].getVirtualRoad(comp[i], comp[i + 1]);
-                components.Add(new Pair<Road, bool>(virtualNodePath, true));
+                if (virtualNodePath != null)
+                {
+                    components.Add(new Pair<Road, bool>(virtualNodePath, true));
+                    EndNodes[virtualNodePath] = passingNodes[i + 1];
+                }
             }
 
         }
@@ -59,11 +70,17 @@ public class Path
             Debug.Assert(Algebra.isclose(road.curve.at(1f), sourceNode.position));
             components.Insert(0, new Pair<Road, bool>(road, true));
         }
+        EndNodes[road] = sourceNode;
+
         if (components.Count > 1 && road != components[1].First)
         {
             //otherwise, must not be SP
             Road virtualNodePath = sourceNode.getVirtualRoad(road, components[1].First);
-            components.Insert(1, new Pair<Road, bool>(virtualNodePath, true));
+            if (virtualNodePath != null)
+            {
+                components.Insert(1, new Pair<Road, bool>(virtualNodePath, true));
+                EndNodes[virtualNodePath] = sourceNode;
+            }
         }
         startParam = param;
     }
@@ -86,7 +103,11 @@ public class Path
         {
             //otherwise, must not be SP
             Road virtualNodePath = destNode.getVirtualRoad(components[components.Count - 2].First, road);
-            components.Insert(components.Count - 1, new Pair<Road, bool>(virtualNodePath, true));
+            if (virtualNodePath != null)
+            {
+                components.Insert(components.Count - 1, new Pair<Road, bool>(virtualNodePath, true));
+                EndNodes[virtualNodePath] = destNode;
+            }
         }
         endParam = param;
     }
@@ -157,28 +178,51 @@ public class Path
         return str;
     }
 
-
-    public Pair<Road, float> travelAlong(int segnum, float param, float distToTravel, out int nextseg, out bool termination)
+    public Pair<Road, float> travelAlong(int segnum, float param, float distToTravel, int lane, out int nextseg, out int nextLane, out bool termination)
     {
         //check whether to jump at the very beginning
         //Debug.Log(segnum + " , " + param + " , " + components[segnum].Second + " , " + components[segnum].First.margin1End);
 
-        if (components[segnum].Second && (param > components[segnum].First.margin1End) ||
-            (!components[segnum].Second) && (param < components[segnum].First.margin0End) ||
-            (segnum == components.Count - 1 && components[segnum].Second && param > endParam) ||
-            (segnum == components.Count - 1 && !components[segnum].Second && param < endParam))
+        if (components[segnum].Second && (param >= components[segnum].First.margin1End) ||
+            (!components[segnum].Second) && (param <= components[segnum].First.margin0End) ||
+            (segnum == components.Count - 1 && components[segnum].Second && param >= endParam) ||
+            (segnum == components.Count - 1 && !components[segnum].Second && param <= endParam))
         {
             segnum++;
             if (segnum == components.Count)
             {
                 termination = true;
                 nextseg = segnum;
+                nextLane = 0;
                 return null;
             }
             else
             {
                 param = components[segnum].Second ? components[segnum].First.margin0End : components[segnum].First.margin1End;
+
+                Node refNode = EndNodes[components[segnum - 1].First];
+                if (components[segnum].First.noEntity){
+                    //enter a crossing
+                    Debug.Log(components[segnum + 1].First);
+                    Debug.Log(refNode.position);
+                    int laneNumInValidLanes = lane - refNode.getValidInRoadLanes(components[segnum - 1].First, components[segnum + 1].First).First;
+                    nextLane = Mathf.Clamp(laneNumInValidLanes, 0, components[segnum].First.validLaneCount(true) - 1);
+                }
+                else{
+                    if (components[segnum - 1].First.noEntity){
+                        //leave a crossing
+                        int ValidLanesStart = refNode.getValidOutRoadLanes(components[segnum - 2].First, components[segnum].First).First;
+                        nextLane = lane + ValidLanesStart;
+                    }
+                    else{
+                        //no virtualroad at this crossing
+                        nextLane = lane;
+                    }
+                }
             }
+        }
+        else{
+            nextLane = lane;
         }
 
         //Do not jump to second road
@@ -186,6 +230,7 @@ public class Path
         float newParam = roadOn.First.curve.TravelAlong(param, distToTravel, roadOn.Second);
         termination = false;
         nextseg = segnum;
+
         return new Pair<Road, float>(roadOn.First, newParam);
     }
 

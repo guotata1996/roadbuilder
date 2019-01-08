@@ -62,8 +62,8 @@ public class Vehicle : MonoBehaviour {
 
             distTraveledOnSeg += distToTravel;
             bool termination;
-            int nextSeg;
-            Pair<Road, float> nextInfo = pathOn.travelAlong(currentSeg, currentParam, distToTravel, out nextSeg, out termination);
+            int nextSeg, nextLane;
+            Pair<Road, float> nextInfo = pathOn.travelAlong(currentSeg, currentParam, distToTravel, laneOn, out nextSeg, out nextLane, out termination);
 
             if (termination)
             {
@@ -98,17 +98,18 @@ public class Vehicle : MonoBehaviour {
                     }
                 }
 
-
                 if (pathOn.getHeadingOfCurrentSeg(nextSeg))
                 {
-                    roadOn.forwardVehicleController.VehicleEnter(this, laneOn);
+                    roadOn.forwardVehicleController.VehicleEnter(this, nextLane);
                 }
                 else
                 {
-                    roadOn.backwardVehicleController.VehicleEnter(this, laneOn);
+                    roadOn.backwardVehicleController.VehicleEnter(this, nextLane);
                 }
 
                 distTraveledOnSeg = distToTravel;
+
+                laneOn = nextLane;
 
             }
             currentSeg = nextSeg;

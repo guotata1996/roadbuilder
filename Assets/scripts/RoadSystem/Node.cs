@@ -18,6 +18,11 @@ public class Pair<T, U>
 
     public T First { get; set; }
     public U Second { get; set; }
+
+    public override string ToString()
+    {
+        return First.ToString() + " ; " + Second.ToString();
+    }
 };
 
 public class ConnectionInfo{
@@ -443,7 +448,6 @@ public class Node : MonoBehaviour
 
         List<string> virtualRoadLaneCfg = new List<string>();
         int virtualRoadLaneCount = hiOutLaneNum - loOutLaneNum + 1;
-        Debug.Log("vitual road has " + virtualRoadLaneCount + " lanes");
         for (int i = 0; i != virtualRoadLaneCount; ++i){
             virtualRoadLaneCfg.Add("lane");
             if (i != virtualRoadLaneCount - 1){
@@ -457,7 +461,11 @@ public class Node : MonoBehaviour
         if (Geometry.Parallel(r1_direction, r2_direction))
         {
             /*TODO: perform a U turn when r1 = r2*/
-            return new Road(new Line(r1_endPos, r2_endPos), r1.laneconfigure);
+            if (Algebra.isRoadNodeClose(r1_endPos, r2_endPos)){
+                /*exact same lane config for neighbors, just go straight*/
+                return null;
+            }
+            return new Road(new Line(r1_endPos, r2_endPos), r1.laneconfigure, _noEntity: true);
         }
         else
         {
@@ -465,10 +473,27 @@ public class Node : MonoBehaviour
             Line l2 = new Line(Algebra.toVector2(r2_endPos), Algebra.toVector2(r2_endPos) + Algebra.InfLength * r2_direction, r2_endPos.y, r2_endPos.y);
             List<Vector3> intereSectionPoint = Geometry.curveIntersect(l1, l2);
             Debug.Assert(intereSectionPoint.Count == 1);
-            return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), virtualRoadLaneCfg);
+            return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), virtualRoadLaneCfg, _noEntity:true);
         }
 
     }
+
+    public Pair<int, int> getValidInRoadLanes(Road inRoad, Road outRoad){
+        Debug.Assert(containsRoad(inRoad));
+        Debug.Assert(containsRoad(outRoad));
+        int i1 = connection.FindIndex((obj) => obj.First == inRoad);
+        int i2 = connection.FindIndex((obj) => obj.First == outRoad);
+        return outLaneRange[i1, i2];
+    }
+
+    public Pair<int, int> getValidOutRoadLanes(Road inRoad, Road outRoad){
+        Debug.Assert(containsRoad(inRoad));
+        Debug.Assert(containsRoad(outRoad));
+        int i1 = connection.FindIndex((obj) => obj.First == inRoad);
+        int i2 = connection.FindIndex((obj) => obj.First == outRoad);
+        return inLaneRange[i2, i1];
+    }
+
     /*
     private void OnDrawGizmos()
     {
@@ -489,7 +514,7 @@ public class Node : MonoBehaviour
         for (int i = 0; i != dirCount; ++i){
             int incomingLanesNum = connection[i].First.validLaneCount(!startof(connection[i].First.curve));
             int outgoingLaneNum = connection.Sum(r => r.First.validLaneCount(startof(r.First.curve)));
-            Debug.Log("for road # " + connection[i].First.curve + " ,incoming= " + incomingLanesNum + " outgoing= " + outgoingLaneNum);
+            //Debug.Log("for road # " + connection[i].First.curve + " ,incoming= " + incomingLanesNum + " outgoing= " + outgoingLaneNum);
 
             int beingAssigned = 0;
 
