@@ -6,17 +6,7 @@ using System.Linq;
 struct IDMInfo
 {
     public int laneNo;
-    public int leadingNo;
-    public float leadingS, leadingV, myV;
-
-    public IDMInfo(int _laneNo)
-    {
-        laneNo = _laneNo;
-        leadingNo = -1;
-        leadingS = Mathf.Infinity;
-        leadingV = 0f;
-        myV = 0f;
-    }
+    public float leadingS, leadingV, followingS, followingV, myV;
 
     public float deltaV{
         get{
@@ -49,7 +39,8 @@ public class VehicleController {
         laneNum = _laneNum;
     }
 
-    List<Vehicle>[] vehicles;
+    /*always sorted*/
+    List<Vehicle>[] vehicles;   
 
     public void VehicleLeave(Vehicle vh, int laneNo){
         Debug.Assert(vehicles[laneNo].Remove(vh));
@@ -76,27 +67,50 @@ public class VehicleController {
     IDMInfo GetIDMInfo(int lane, int index){
         Debug.Assert(0 <= lane && lane < laneNum);
         List<Vehicle> targetLane = vehicles[lane];
+        Vehicle me = targetLane[index];
+
+        float leadingV, leadingS;
         if (index == targetLane.Count - 1){
-            return new IDMInfo
-            {
-                laneNo = lane,
-                leadingNo = -1,
-                leadingS = Mathf.Infinity, //TODO: consider node blocking
-                leadingV = 0f,
-                myV = targetLane[index].speed
-            };
+            //I am the oldest/leading vehicle 
+            int? nextCorrespondingLane = me.correspondingLaneOfNextSeg;
+            Vehicle leadingVh = nextCorrespondingLane == null ? null :
+                me.VhCtrlOfNextSeg.vehicles[me.correspondingLaneOfNextSeg.Value].Count == 0 ?
+                  null : me.VhCtrlOfNextSeg.vehicles[me.correspondingLaneOfNextSeg.Value].First();
+
+            leadingV = leadingVh == null ? 0f : leadingVh.speed;
+            leadingS = leadingVh == null ? Mathf.Infinity : leadingVh.distTraveledOnSeg + me.distTowardsEndOfSeg - leadingVh.bodyLength;
         }
         else{
-            return new IDMInfo
-            {
-                laneNo = lane,
-                leadingNo = index + 1,
-                leadingS = targetLane[index + 1].distTraveledOnSeg - targetLane[index].distTraveledOnSeg
-                                                - targetLane[index + 1].bodyLength,
-                leadingV = targetLane[index + 1].speed,
-                myV = targetLane[index].speed
-            };
+            leadingV = targetLane[index + 1].speed;
+            leadingS = targetLane[index + 1].distTraveledOnSeg - me.distTraveledOnSeg - targetLane[index + 1].bodyLength;
         }
+
+        float followingV, followingS;
+        if (index == 0){
+            //I am the youngest/last vehicle
+            int? prevCorrespondingLane = me.correspondingLaneOfPrevSeg;
+            Vehicle followingVh = prevCorrespondingLane == null ? null :
+                me.VhCtrlOfPrevSeg.vehicles[me.correspondingLaneOfPrevSeg.Value].Count == 0 ?
+                  null : me.VhCtrlOfPrevSeg.vehicles[me.correspondingLaneOfPrevSeg.Value].Last();
+
+            followingV = followingVh == null ? 0f : followingVh.speed;
+            followingS = followingVh == null ? Mathf.Infinity : me.distTraveledOnSeg + followingVh.distTowardsEndOfSeg - me.bodyLength;
+        }
+        else{
+            followingV = targetLane[index - 1].speed;
+            followingS = me.distTraveledOnSeg - targetLane[index - 1].distTraveledOnSeg - me.bodyLength;
+        }
+
+        return new IDMInfo
+        {
+            laneNo = lane,
+            leadingS = leadingS,
+            leadingV = leadingV,
+            myV = targetLane[index].speed,
+            followingS = followingS,
+            followingV = followingV
+        };
+            
     }
 
     float GetIDMAcc(IDMInfo iDMInfo, DriverBehavior driver){

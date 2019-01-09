@@ -166,7 +166,7 @@ public class Algebra {
         return valid_points.ToList();
     }
 
-    internal static float? approximateTo01(float p, float baseline)
+    internal static float approximateTo01(float p, float baseline)
     {
         if (isclose(p * baseline, 0f))
             return 0f;

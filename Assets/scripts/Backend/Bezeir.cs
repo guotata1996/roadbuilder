@@ -158,7 +158,8 @@ public class Bezeir : Curve
         float currentLength = lengthFromZeroTo(currentParam);
         float targetLength = zeroToOne ? currentLength + distToTravel : currentLength - distToTravel;
         targetLength = Mathf.Clamp(targetLength, 0f, length);
-        return Algebra.newTown(this.lengthFromZeroTo, lengthGradient, targetLength, currentParam);
+        float newParam = Algebra.newTown(this.lengthFromZeroTo, lengthGradient, targetLength, currentParam);
+        return Algebra.approximateTo01(newParam, 1f);
     }
 
     public override float? paramOf(Vector2 point)

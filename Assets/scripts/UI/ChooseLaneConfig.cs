@@ -11,7 +11,7 @@ public class ChooseLaneConfig : MonoBehaviour{
 
     public Sprite dashyellowFlatSprite, solidyellowFlatSprite,
     dashwhiteFlatSprite, solidwhiteFlatSprite,
-    laneFlatSprite;
+    laneFlatSprite, fenceFlatSprite;
 
     public float buttonUnrollSpeed;
 
@@ -31,15 +31,7 @@ public class ChooseLaneConfig : MonoBehaviour{
 
 	void Start () {
         showingchoicemenu = false;
-        /*
-        Button dybutton = Instantiate(dashyellowChoicePrefab, transform.position, Quaternion.identity);
-        Button sybutton = Instantiate(solidyellowChoicePrefab, transform.position, Quaternion.identity);
-        Button dwbutton = Instantiate(dashwhiteChoicePrefab, transform.position, Quaternion.identity);
-        Button swbutton = Instantiate(solidwhiteChoicePrefab, transform.position, Quaternion.identity);
-        Button lbutton = Instantiate(laneChoicePrefab, transform.position, Quaternion.identity);
 
-        Button dlbutton = Instantiate(delelePrefab, transform.position, Quaternion.identity);
-        */
         for (int i = 1; i != transform.childCount; ++i)
         {
             Button button = transform.GetChild(i).gameObject.GetComponent<Button>();
@@ -48,39 +40,7 @@ public class ChooseLaneConfig : MonoBehaviour{
             button.onClick.AddListener(() => ShowOrHideChoiceMenu());
             buttonInstances.Add(button);
         }
-        /*
-        disableAndHide(dybutton);
-        disableAndHide(sybutton);
-        disableAndHide(dwbutton);
-        disableAndHide(swbutton);
-        disableAndHide(lbutton);
-        disableAndHide(dlbutton);
 
-        dybutton.transform.parent = transform;
-        sybutton.transform.parent = transform;
-        dwbutton.transform.parent = transform;
-        swbutton.transform.parent = transform;
-        lbutton.transform.parent = transform;
-        dlbutton.transform.parent = transform;
-
-        dybutton.onClick.AddListener(() => setChoice("dash_yellow"));
-        sybutton.onClick.AddListener(() => setChoice("solid_yellow"));
-        dwbutton.onClick.AddListener(() => setChoice("dash_white"));
-        swbutton.onClick.AddListener(() => setChoice("solid_white"));
-        lbutton.onClick.AddListener(() => setChoice("lane"));
-        dlbutton.onClick.AddListener(() => setChoice("none"));
-
-        buttonInstances.Add(dybutton);
-        buttonInstances.Add(sybutton);
-        buttonInstances.Add(dwbutton);
-        buttonInstances.Add(swbutton);
-        buttonInstances.Add(lbutton);
-        buttonInstances.Add(dlbutton);
-
-        foreach(Button b in buttonInstances){
-            b.onClick.AddListener(() => ShowOrHideChoiceMenu());
-        }
-        */
         GetComponent<Image>().sprite = addSprite;
         this.choice = "none";
     }
@@ -154,6 +114,9 @@ public class ChooseLaneConfig : MonoBehaviour{
         }
         if (choice == "solid_white"){
             this.GetComponent<Image>().sprite = solidwhiteFlatSprite;
+        }
+        if (choice == "fence"){
+            this.GetComponent<Image>().sprite = fenceFlatSprite;
         }
         if (choice == "none"){
             this.GetComponent<Image>().sprite = addSprite;

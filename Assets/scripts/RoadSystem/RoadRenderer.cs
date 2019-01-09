@@ -47,6 +47,8 @@ public class RoadRenderer : MonoBehaviour
 
     static List<string> commonTypes = new List<string> { "lane", "interval", "surface", "removal", "fence", "column", "singlefence" };
 
+    public static List<string> separatorTypes = new List<string> { "solid_yellow", "dash_yellow", "solid_white", "solid_yellow" };
+
     public void generate(Curve curve, List<string> laneConfig,
                          float indicatorMargin_0L = 0f, float indicatorMargin_0R = 0f, float indicatorMargin_1L = 0f, float indicatorMargin_1R = 0f){
 
@@ -250,19 +252,13 @@ public class RoadRenderer : MonoBehaviour
                     case "singlefence":
                     case "highbar":
                     case  "lowbar":
-
                         linear3DObjects[i].offset -= (width / 2 - fenceWidth / 2);
+                        drawLinear3DObject(curve, linear3DObjects[i]);
 
-                        if ((curve.z_start > 0 || curve.z_offset > 0))
-                        {
-                            drawLinear3DObject(curve, linear3DObjects[i]);
-                        }
                         break;
-
                 }
             }
         }
-
 
     }
 
@@ -398,4 +394,6 @@ public class RoadRenderer : MonoBehaviour
         }
         return ans;
     }
+
+
 }

@@ -155,6 +155,66 @@ public class Path
         return rtn;
     }
 
+    public int? getCorrespondingLaneOfNextSeg(int segnum, int lane){
+        if (segnum >= SegCount - 1){
+            /*this is the very last segment*/
+            return null;
+        }
+        Node refNode = EndNodes[components[segnum].First];
+
+        if (components[segnum].First.noEntity){
+            //leaving a crossing
+            int ValidLaneStart = refNode.getValidOutRoadLanes(components[segnum - 1].First, components[segnum + 1].First).First;
+            return lane + ValidLaneStart;
+        }
+        else{
+            if (components[segnum + 1].First.noEntity)
+            {
+                //entering a crossing
+                int laneNumInValidLanes = lane - refNode.getValidInRoadLanes(components[segnum].First, components[segnum + 2].First).First;
+                if (laneNumInValidLanes < 0 || (laneNumInValidLanes > components[segnum + 1].First.validLaneCount(true) - 1)){
+                    return null;
+                }
+                else{
+                    return laneNumInValidLanes;
+                }                                                              
+            }
+            else
+            {
+                return lane;
+            }
+        }
+    }
+
+    public int ? getCorrespondingLaneOfPrevSeg(int segnum, int lane){
+        if (segnum == 0){
+            /*this is the very first segment*/
+            return null;
+        }
+        Node refNode = EndNodes[components[segnum - 1].First];
+        if (components[segnum - 1].First.noEntity){
+            //at the end of prev seg, leaving a crossing
+            int laneNumInValidLanes = lane - refNode.getValidOutRoadLanes(components[segnum - 2].First, components[segnum].First).First;
+            if (laneNumInValidLanes < 0 || laneNumInValidLanes > components[segnum - 1].First.validLaneCount(true) - 1){
+                return null;
+            }
+            else{
+                return laneNumInValidLanes;
+            }
+        }
+        else{
+            if (components[segnum].First.noEntity){
+                //at the end of prev seg, entering a crossing
+                int validLaneStart = refNode.getValidInRoadLanes(components[segnum - 2].First, components[segnum].First).First;
+                return lane + validLaneStart;
+            }
+            else{
+                return lane;
+            }
+        }
+    }
+
+
     public Pair<Road, float> travelAlong(int segnum, float param, float distToTravel, int lane, out int nextseg, out int nextLane, out bool termination)
     {
         //check whether to jump at the very beginning
@@ -209,14 +269,25 @@ public class Path
         return new Pair<Road, float>(roadOn.First, newParam);
     }
 
-    public Road getRoadOfSeg(int segnum)
+    public Road GetRoadOfSeg(int segnum)
     {
         return components[segnum].First;
     }
 
-    public bool getHeadingOfCurrentSeg(int segnum)
+    public bool GetHeadingOfSeg(int segnum)
     {
         return components[segnum].Second;
+    }
+
+    public VehicleController GetVhCtrlOfSeg(int segnum){
+        return GetHeadingOfSeg(segnum) ?
+            GetRoadOfSeg(segnum).forwardVehicleController : GetRoadOfSeg(segnum).backwardVehicleController;
+    }
+
+    public int SegCount{
+        get{
+            return components.Count;
+        }
     }
 
     /* derived property */

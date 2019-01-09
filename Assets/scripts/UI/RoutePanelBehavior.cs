@@ -17,7 +17,7 @@ public class RoutePanelBehavior : MonoBehaviour {
     public GameObject indicatorPrefab;
     GameObject indicator;
 
-    GameObject vehicle;
+    List<GameObject> vehiclesOfRoute;
 
     void Start () {
         workingMode = mode.none;
@@ -25,6 +25,8 @@ public class RoutePanelBehavior : MonoBehaviour {
         start = end = null;
         indicator = Instantiate(indicatorPrefab, Vector3.zero, Quaternion.identity);
         drawing = GameObject.Find("curveIndicator").GetComponent<RoadDrawing>();
+
+        vehiclesOfRoute = new List<GameObject>();
     }
 
     // Update is called once per frame
@@ -58,7 +60,6 @@ public class RoutePanelBehavior : MonoBehaviour {
                         workingMode = mode.none;
                         setStartFlag();
                         end = position;
-                        placeVehicle();
                     }
                     else
                     {
@@ -93,13 +94,14 @@ public class RoutePanelBehavior : MonoBehaviour {
         }
     }
 
-    void placeVehicle(){
-        vehicle = Instantiate(carModelPrefab);
+    public void addVehicle(){
+        GameObject vehicle = Instantiate(carModelPrefab);
         vehicle.GetComponent<Vehicle>().SetStart(start.Value);
         vehicle.GetComponent<Vehicle>().SetDest(end.Value);
+        vehiclesOfRoute.Add(vehicle);
     }
 
     public void toggleRouteView(){
-        vehicle.GetComponent<Vehicle>().toggleRouteView();
+        vehiclesOfRoute[0].GetComponent<Vehicle>().toggleRouteView();
     }
 }

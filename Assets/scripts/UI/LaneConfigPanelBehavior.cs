@@ -89,15 +89,14 @@ public class LaneConfigPanelBehavior : MonoBehaviour
             itemInstances.Count : itemInstances.Count - 1;
 
         laneconfigresult.Clear();
-        //TODO: add UI
         for (int i = 0; i != notnonecount; ++i)
         {
-            if (i > 0 && itemInstances[i - 1].GetComponent<ChooseLaneConfig>().choice != "lane"){
+            if (i > 0 && RoadRenderer.separatorTypes.Contains(itemInstances[i - 1].GetComponent<ChooseLaneConfig>().choice)
+                && RoadRenderer.separatorTypes.Contains(itemInstances[i].GetComponent<ChooseLaneConfig>().choice)){
                 laneconfigresult.Add("interval");
             }
             laneconfigresult.Add(itemInstances[i].GetComponent<ChooseLaneConfig>().choice);
         }
-        //laneconfigresult.Add("surface");
 
         updatePanelDisplay();
 

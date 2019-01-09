@@ -40,13 +40,8 @@ public class RoadManager : MonoBehaviour
 
         allNewIntersectPoints = allNewIntersectPoints.Distinct(new IntersectPointComparator()).ToList();
         List<float> intersectParamsWithBeginAndEnd1 = interSectPoints2Fragments(allNewIntersectPoints, curve);
-
-        /*TODO: add to UI*/
-        List<string> modifiedLaneConfigure = laneConfigure.ConvertAll((input) => input);
-        modifiedLaneConfigure.Insert(0, "fence");
-        modifiedLaneConfigure.Add("fence");
-
-        addAllFragments(intersectParamsWithBeginAndEnd1, curve, modifiedLaneConfigure);
+        
+        addAllFragments(intersectParamsWithBeginAndEnd1, curve, laneConfigure);
 
         /*TODO revise*/
 
@@ -151,7 +146,7 @@ public class RoadManager : MonoBehaviour
         if (additionalInterestedLines != null){
             allInterestedRoad = new List<Road>();
             allInterestedRoad.AddRange(allroads);
-            allInterestedRoad.AddRange(additionalInterestedLines.ConvertAll<Road>((Curve input) => new Road(input, null, null)));
+            allInterestedRoad.AddRange(additionalInterestedLines.ConvertAll<Road>((Curve input) => new Road(input, null)));
         }
         else{
             allInterestedRoad = allroads;
@@ -315,10 +310,10 @@ public class RoadManager : MonoBehaviour
         foreach(Node nstart in possibleStartNodes){
             foreach(Node nend in possibleEndNodes){
                 Path p = Node2NodeSP(nstart, nend);
+
                 if (p != null){
                     p.insertAtStart(r1, param1);
                     p.insertAtEnd(r2, param2);
-                    //Debug.Log("found path between " + nstart + " " + nend + " :" + p);
                     candicatePaths.Add(p);
                 }
             }

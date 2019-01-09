@@ -5,7 +5,7 @@ using System.Linq;
 
 public class Road
 {
-    public Road(Curve _curve, List<string> _lane, GameObject _roadObj = null, bool _noEntity = false)
+    public Road(Curve _curve, List<string> _lane, bool _noEntity = false)
     {
         curve = _curve;
         laneconfigure = new List<string>();
@@ -16,7 +16,6 @@ public class Road
                 laneconfigure.Add(l);
             }
         }
-        roadObject = _roadObj;
         forwardVehicleController = new VehicleController(validLaneCount(true));
         backwardVehicleController = new VehicleController(validLaneCount(false));
 
@@ -75,7 +74,7 @@ public class Road
         }
         else{
             return direction ?
-                laneconfigure.GetRange(mainSeparatorIndex, laneconfigure.Count - mainSeparatorIndex - 1).Count(config => config == "lane") :
+                laneconfigure.GetRange(mainSeparatorIndex + 1, laneconfigure.Count - mainSeparatorIndex - 1).Count(config => config == "lane") :
                              laneconfigure.GetRange(0, mainSeparatorIndex).Count(config => config == "lane");
                             
         }
@@ -184,5 +183,10 @@ public class Road
         return curve.ToString();
     }
 
+    public float length{
+        get{
+            return curve.length;
+        }
+    }
 }
 

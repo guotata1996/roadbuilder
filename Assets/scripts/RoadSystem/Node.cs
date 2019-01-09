@@ -322,7 +322,6 @@ public class Node : MonoBehaviour
                     Vector2 P4 = r1.curve.at_ending_2d(startof(r1.curve))
                                    + Algebra.angle2dir(r1.curve.angle_ending(startof(r1.curve)) + Mathf.PI / 2) * r2.width / 2;
                     Vector2 P2 = (P1 + P3) / 2;
-                    Debug.Log(P0 + " " + P1 + " " + P2 + " " + P3 + " " + P4);
                     smootheners.Add(new Bezeir(P0, P1, P2));
                     smootheners.Add(new Bezeir(P2, P3, P4));
                     smootheners.Add(arcSmoothener);

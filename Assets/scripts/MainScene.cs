@@ -40,25 +40,7 @@ public class MainScene : MonoBehaviour
         Curve l2 = new Line(new Vector3(40f, 0f, 0f), new Vector3(40f, 0f, -40f));
         drawing.roadManager.addRoad(l2, wideLaneConfig);
 
-        //Path sp = drawing.roadManager.findPath(drawing.roadManager.allroads[0], 0.1f, drawing.roadManager.allroads[2], 0.1f);
-        //if (sp != null)
-        //{
-        //    Debug.Log(sp);
-        //}
-        //else
-        //{
-        //    Debug.LogError("path not found");
-        //}
-
         Debug.Assert(drawing.roadManager != null);
-        /*
-        for (int i = 0; i != numCar; ++i)
-        {
-            vh[i] = Instantiate(carModelPrefab);
-            vh[i].GetComponent<Vehicle>().SetStart(new Vector3(0f, 0f, 0f));
-            vh[i].GetComponent<Vehicle>().SetDest(new Vector3(50f, 0f, -40f));
-        }
-        */
 
     }
 
@@ -80,13 +62,14 @@ public class MainScene : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.J)){
             GameObject newVh = Instantiate(carModelPrefab);
-            newVh.GetComponent<Vehicle>().SetStart(new Vector3(60f, 0f, 0f));
-            newVh.GetComponent<Vehicle>().SetDest(new Vector3(0f, 0f, 0f));
+            newVh.GetComponent<Vehicle>().SetStart(new Vector3(2f, 0f, 0f));
+            newVh.GetComponent<Vehicle>().SetDest(new Vector3(40f, 0f, -37f));
             vh.Add(newVh);
         }
 
         if (Input.GetKey(KeyCode.T)){
             vh[0].GetComponent<Vehicle>().speed = 0f;
         }
+
     }
 }

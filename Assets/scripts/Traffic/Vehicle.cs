@@ -7,7 +7,7 @@ public class Vehicle : MonoBehaviour {
     float startParam;
     Road startRoad;
     /*dynamic Path info*/
-    Path pathOn;
+    public Path pathOn;
     int currentSeg;
     float currentParam;
     public float distTraveledOnSeg;  //always inc from 0->length of seg
@@ -43,7 +43,37 @@ public class Vehicle : MonoBehaviour {
     void Start () {
 
     }
+
+    bool headingOfCurrentSeg{
+        get{
+            return pathOn.GetHeadingOfSeg(currentSeg);
+        }
+    }
 	
+    Road roadOfCurrentSeg{
+        get{
+            return pathOn.GetRoadOfSeg(currentSeg);
+        }
+    }
+
+    public int? correspondingLaneOfNextSeg{
+        get{
+            return pathOn.getCorrespondingLaneOfNextSeg(currentSeg, laneOn);
+        }
+    }
+
+    public int? correspondingLaneOfPrevSeg{
+        get{
+            return pathOn.getCorrespondingLaneOfPrevSeg(currentSeg, laneOn);
+        }
+    }
+
+    public float distTowardsEndOfSeg{
+        get{
+            return roadOfCurrentSeg.length - distTraveledOnSeg;
+        }
+    }
+
 	// Update is called once per frame
 	void Update () {
         if (pathOn != null){
@@ -68,13 +98,13 @@ public class Vehicle : MonoBehaviour {
             if (termination)
             {
                 Debug.Log("termination");
-                if (pathOn.getHeadingOfCurrentSeg(currentSeg))
+                if (headingOfCurrentSeg)
                 {
-                    pathOn.getRoadOfSeg(currentSeg).forwardVehicleController.VehicleLeave(this, laneOn);
+                    roadOfCurrentSeg.forwardVehicleController.VehicleLeave(this, laneOn);
                 }
                 else
                 {
-                    pathOn.getRoadOfSeg(currentSeg).backwardVehicleController.VehicleLeave(this, laneOn);
+                    roadOfCurrentSeg.backwardVehicleController.VehicleLeave(this, laneOn);
                 }
 
                 Reset();
@@ -88,17 +118,17 @@ public class Vehicle : MonoBehaviour {
 
                 if (!firstUpdate)
                 {
-                    if (pathOn.getHeadingOfCurrentSeg(currentSeg))
+                    if (headingOfCurrentSeg)
                     {
-                        pathOn.getRoadOfSeg(currentSeg).forwardVehicleController.VehicleLeave(this, laneOn);
+                        roadOfCurrentSeg.forwardVehicleController.VehicleLeave(this, laneOn);
                     }
                     else
                     {
-                        pathOn.getRoadOfSeg(currentSeg).backwardVehicleController.VehicleLeave(this, laneOn);
+                        roadOfCurrentSeg.backwardVehicleController.VehicleLeave(this, laneOn);
                     }
                 }
 
-                if (pathOn.getHeadingOfCurrentSeg(nextSeg))
+                if (headingOfCurrentSeg)
                 {
                     roadOn.forwardVehicleController.VehicleEnter(this, nextLane);
                 }
@@ -117,15 +147,15 @@ public class Vehicle : MonoBehaviour {
             rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeed * Time.deltaTime, 0f);
 
             transform.position = roadOn.at(currentParam) +
-                roadOn.rightNormal(currentParam) * (roadOn.getLaneCenterOffset(laneOn, pathOn.getHeadingOfCurrentSeg(currentSeg)) + rightOffset);
+                roadOn.rightNormal(currentParam) * (roadOn.getLaneCenterOffset(laneOn, headingOfCurrentSeg) + rightOffset);
 
-            transform.rotation = pathOn.getHeadingOfCurrentSeg(currentSeg) ?
+            transform.rotation = headingOfCurrentSeg ?
                 Quaternion.LookRotation(roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam)) :
                 Quaternion.LookRotation(-roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam));
 
             if (rightOffset != 0f)
             {
-                if (pathOn.getHeadingOfCurrentSeg(currentSeg))
+                if (headingOfCurrentSeg)
                 {
                     transform.Rotate(roadOn.upNormal(currentParam), -Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeed / speed) * Mathf.Rad2Deg);
                 }
@@ -175,11 +205,11 @@ public class Vehicle : MonoBehaviour {
     public void ShiftLane(bool right){
         int newLane;
         newLane = right ? Mathf.Max(0, laneOn - 1) :
-                               Mathf.Min(pathOn.getRoadOfSeg(currentSeg).validLaneCount(pathOn.getHeadingOfCurrentSeg(currentSeg)) - 1, laneOn + 1);
-        Road roadOn = pathOn.getRoadOfSeg(currentSeg);
+                               Mathf.Min(roadOfCurrentSeg.validLaneCount(headingOfCurrentSeg) - 1, laneOn + 1);
+        Road roadOn = roadOfCurrentSeg;
 
-        rightOffset = roadOn.getLaneCenterOffset(laneOn, pathOn.getHeadingOfCurrentSeg(currentSeg)) -
-                            roadOn.getLaneCenterOffset(newLane, pathOn.getHeadingOfCurrentSeg(currentSeg));
+        rightOffset = roadOn.getLaneCenterOffset(laneOn, headingOfCurrentSeg) -
+                            roadOn.getLaneCenterOffset(newLane, headingOfCurrentSeg);
 
         laneOn = newLane;
     }
@@ -199,6 +229,21 @@ public class Vehicle : MonoBehaviour {
                 drawing.deHighLightRoad(c);
 
             }
+        }
+    }
+
+    public VehicleController VhCtrlOfPrevSeg
+    {
+        get
+        {
+            return currentSeg == 0 ? null : pathOn.GetVhCtrlOfSeg(currentSeg - 1);
+        }
+    }
+
+    public VehicleController VhCtrlOfNextSeg
+    {
+        get{
+            return currentSeg == pathOn.SegCount - 1 ? null : pathOn.GetVhCtrlOfSeg(currentSeg + 1);
         }
     }
 }
