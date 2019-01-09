@@ -35,18 +35,16 @@ public class MainScene : MonoBehaviour
         List<string> sampleLaneConfig = new List<string> { "lane", "dash_white", "lane", "solid_yellow", "lane" };
         List<string> wideLaneConfig = new List<string> { "lane", "dash_white", "lane", "solid_yellow", "lane", "dash_white", "lane" };
 
-        Curve l1 = new Line(new Vector3(0f, 0f, 0f), new Vector3(80f, 0f, 0f));
+        Curve l1 = new Line(new Vector3(0f, 0f, 0f), new Vector3(160f, 0f, 0f));
         drawing.roadManager.addRoad(l1, sampleLaneConfig);
-        Curve l2 = new Line(new Vector3(40f, 0f, 0f), new Vector3(40f, 0f, -40f));
+        Curve l2 = new Line(new Vector3(80f, 0f, 0f), new Vector3(80f, 0f, -160f));
         drawing.roadManager.addRoad(l2, wideLaneConfig);
-
-        Debug.Assert(drawing.roadManager != null);
 
     }
 
     private void Update()
     {
-
+        /*
         if (Input.GetKeyDown(KeyCode.N)){
             for (int i = 0; i != numCar; ++i)
             {
@@ -59,17 +57,7 @@ public class MainScene : MonoBehaviour
                 vh[i].GetComponent<Vehicle>().ShiftLane(true);
             }
         }
-
-        if (Input.GetKeyDown(KeyCode.J)){
-            GameObject newVh = Instantiate(carModelPrefab);
-            newVh.GetComponent<Vehicle>().SetStart(new Vector3(2f, 0f, 0f));
-            newVh.GetComponent<Vehicle>().SetDest(new Vector3(40f, 0f, -37f));
-            vh.Add(newVh);
-        }
-
-        if (Input.GetKey(KeyCode.T)){
-            vh[0].GetComponent<Vehicle>().speed = 0f;
-        }
+        */
 
     }
 }

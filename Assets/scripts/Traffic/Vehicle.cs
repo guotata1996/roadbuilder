@@ -11,7 +11,6 @@ public class Vehicle : MonoBehaviour {
     int currentSeg;
     float currentParam;
     public float distTraveledOnSeg;  //always inc from 0->length of seg
-    bool firstUpdate;
 
     /*lateral info
     laneOn: |   |   ||  |   |
@@ -68,9 +67,15 @@ public class Vehicle : MonoBehaviour {
         }
     }
 
+    float lengthOfCurrentSeg{
+        get{
+            return pathOn.getTotalLengthOfSeg(currentSeg);
+        }
+    }
+
     public float distTowardsEndOfSeg{
         get{
-            return roadOfCurrentSeg.length - distTraveledOnSeg;
+            return lengthOfCurrentSeg - distTraveledOnSeg;
         }
     }
 
@@ -98,14 +103,7 @@ public class Vehicle : MonoBehaviour {
             if (termination)
             {
                 Debug.Log("termination");
-                if (headingOfCurrentSeg)
-                {
-                    roadOfCurrentSeg.forwardVehicleController.VehicleLeave(this, laneOn);
-                }
-                else
-                {
-                    roadOfCurrentSeg.backwardVehicleController.VehicleLeave(this, laneOn);
-                }
+                VhCtrlOfCurrentSeg.VehicleLeave(this, laneOn);
 
                 Reset();
                 return;
@@ -114,35 +112,15 @@ public class Vehicle : MonoBehaviour {
             Road roadOn = nextInfo.First;
             currentParam = nextInfo.Second;
 
-            if (firstUpdate || currentSeg != nextSeg){
-
-                if (!firstUpdate)
-                {
-                    if (headingOfCurrentSeg)
-                    {
-                        roadOfCurrentSeg.forwardVehicleController.VehicleLeave(this, laneOn);
-                    }
-                    else
-                    {
-                        roadOfCurrentSeg.backwardVehicleController.VehicleLeave(this, laneOn);
-                    }
-                }
-
-                if (headingOfCurrentSeg)
-                {
-                    roadOn.forwardVehicleController.VehicleEnter(this, nextLane);
-                }
-                else
-                {
-                    roadOn.backwardVehicleController.VehicleEnter(this, nextLane);
-                }
+            if (currentSeg != nextSeg){
+                VhCtrlOfCurrentSeg.VehicleLeave(this, laneOn);
+                VhCtrlOfNextSeg.VehicleEnter(this, nextLane);
 
                 distTraveledOnSeg = distToTravel;
 
                 laneOn = nextLane;
-
+                currentSeg = nextSeg;
             }
-            currentSeg = nextSeg;
 
             rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeed * Time.deltaTime, 0f);
 
@@ -169,9 +147,7 @@ public class Vehicle : MonoBehaviour {
             transform.GetChild(0).GetChild(1).localRotation = transform.GetChild(0).GetChild(2).localRotation =
                 transform.GetChild(0).GetChild(3).localRotation= transform.GetChild(0).GetChild(4).localRotation = 
                     Quaternion.Euler(wheelRotation, 0f, 0f);
-
-            if (firstUpdate)
-                firstUpdate = false;
+                   
         }
 	}
 
@@ -187,7 +163,7 @@ public class Vehicle : MonoBehaviour {
         Vector3 modifiedPosition = drawing.roadManager.approxNodeToExistingRoad(position, out endRoad);
         float endParam = (float)endRoad.curve.paramOf(modifiedPosition);
         pathOn = drawing.roadManager.findPath(startRoad, startParam, endRoad, endParam);
-
+        VhCtrlOfCurrentSeg.VehicleEnter(this, laneOn);
     }
 
     private void Reset()
@@ -199,7 +175,6 @@ public class Vehicle : MonoBehaviour {
         distTraveledOnSeg = 0f;
         laneOn = 0;
         rightOffset = 0f;
-        firstUpdate = true;
     }
 
     public void ShiftLane(bool right){
@@ -244,6 +219,12 @@ public class Vehicle : MonoBehaviour {
     {
         get{
             return currentSeg == pathOn.SegCount - 1 ? null : pathOn.GetVhCtrlOfSeg(currentSeg + 1);
+        }
+    }
+
+    public VehicleController VhCtrlOfCurrentSeg{
+        get{
+            return pathOn.GetVhCtrlOfSeg(currentSeg);
         }
     }
 }

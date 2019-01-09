@@ -76,7 +76,7 @@ public class VehicleController {
             Vehicle leadingVh = nextCorrespondingLane == null ? null :
                 me.VhCtrlOfNextSeg.vehicles[me.correspondingLaneOfNextSeg.Value].Count == 0 ?
                   null : me.VhCtrlOfNextSeg.vehicles[me.correspondingLaneOfNextSeg.Value].First();
-
+                  
             leadingV = leadingVh == null ? 0f : leadingVh.speed;
             leadingS = leadingVh == null ? Mathf.Infinity : leadingVh.distTraveledOnSeg + me.distTowardsEndOfSeg - leadingVh.bodyLength;
         }
@@ -84,8 +84,9 @@ public class VehicleController {
             leadingV = targetLane[index + 1].speed;
             leadingS = targetLane[index + 1].distTraveledOnSeg - me.distTraveledOnSeg - targetLane[index + 1].bodyLength;
         }
-
+        
         float followingV, followingS;
+
         if (index == 0){
             //I am the youngest/last vehicle
             int? prevCorrespondingLane = me.correspondingLaneOfPrevSeg;

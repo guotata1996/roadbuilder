@@ -97,8 +97,6 @@ public class Node : MonoBehaviour
         Debug.Assert(position.y == Mathf.NegativeInfinity || Algebra.isclose(road.curve.at_ending(startof(road.curve)).y, position.y));
 
         connection.Add(new Pair<Road, ConnectionInfo>(road, new ConnectionInfo()));
-
-        updateCrossroads();
     }
 
     public void removeRoad(Road road)
@@ -118,9 +116,6 @@ public class Node : MonoBehaviour
         else{
             Debug.Assert(false);
         }
-
-        updateCrossroads();
-        
     }
 
     //returns one directional line for each of the road connecting to this node.
@@ -147,7 +142,7 @@ public class Node : MonoBehaviour
         return Algebra.isclose(n.position,  this.position);
     }
 
-    void updateCrossroads(){
+    public void updateMargins(){
         Destroy(smoothInstance);
         smoothPolygonEdges.Clear();
 
@@ -198,8 +193,6 @@ public class Node : MonoBehaviour
                 Debug.Assert(rmPair.Second.margins.First >= 0 && rmPair.Second.margins.Second >= 0);
             }
         }
-
-        updateDirectionLaneRange();
     }
 
     public bool startof(Curve c){
@@ -337,7 +330,6 @@ public class Node : MonoBehaviour
 
     internal List<Vector2> getNeighborDirections(Vector2 direction)
     {
-
         if (connection.Count <= 2){
             return connection.ConvertAll((input) => input.First.curve.direction_ending_2d(startof(input.First.curve)));
         }
@@ -419,12 +411,49 @@ public class Node : MonoBehaviour
 
     /*End of modelling part; 
      * Begin of traffic part*/
+    public Pair<int, int> getValidInRoadLanes(Road inRoad, Road outRoad)
+    {
+        Debug.Assert(containsRoad(inRoad));
+        Debug.Assert(containsRoad(outRoad));
+        int i1 = connection.FindIndex((obj) => obj.First == inRoad);
+        int i2 = connection.FindIndex((obj) => obj.First == outRoad);
+        return outLaneRange[i1, i2];
+    }
 
-    public Road getVirtualRoad(Road r1, Road r2){
-        Debug.Assert(containsRoad(r1) && containsRoad(r2));
+    public Pair<int, int> getValidOutRoadLanes(Road inRoad, Road outRoad)
+    {
+        Debug.Assert(containsRoad(inRoad));
+        Debug.Assert(containsRoad(outRoad));
+        int i1 = connection.FindIndex((obj) => obj.First == inRoad);
+        int i2 = connection.FindIndex((obj) => obj.First == outRoad);
+        return inLaneRange[i2, i1];
+    }
 
+    public Road getVirtualRoad(Road r1, Road r2)
+    {
         int i1 = connection.FindIndex((obj) => obj.First == r1);
         int i2 = connection.FindIndex((obj) => obj.First == r2);
+        return virtualRoads[i1, i2];
+    }
+
+    public List<Road> AllVirtualRoads{
+        get
+        {
+            List<Road> vt = new List<Road>();
+            for (int i = 0; i != connection.Count; ++i){
+                for (int j = 0; j != connection.Count; ++j){
+                    if (virtualRoads[i,j] != null){
+                        vt.Add(virtualRoads[i, j]);
+                    }
+                }
+            }
+            return vt;
+        }
+    }
+
+    Road generateVirtualRoad(int i1, int i2){
+        Road r1 = connection[i1].First;
+        Road r2 = connection[i2].First;
 
         if (outLaneRange[i1, i2] == null){
             return null;
@@ -479,39 +508,13 @@ public class Node : MonoBehaviour
                 return new Road(new Line(r1_endPos, r2_endPos), virtualRoadLaneCfg, _noEntity: true);
             }
         }
-
     }
-
-    public Pair<int, int> getValidInRoadLanes(Road inRoad, Road outRoad){
-        Debug.Assert(containsRoad(inRoad));
-        Debug.Assert(containsRoad(outRoad));
-        int i1 = connection.FindIndex((obj) => obj.First == inRoad);
-        int i2 = connection.FindIndex((obj) => obj.First == outRoad);
-        return outLaneRange[i1, i2];
-    }
-
-    public Pair<int, int> getValidOutRoadLanes(Road inRoad, Road outRoad){
-        Debug.Assert(containsRoad(inRoad));
-        Debug.Assert(containsRoad(outRoad));
-        int i1 = connection.FindIndex((obj) => obj.First == inRoad);
-        int i2 = connection.FindIndex((obj) => obj.First == outRoad);
-        return inLaneRange[i2, i1];
-    }
-
-    /*
-    private void OnDrawGizmos()
-    {
-        foreach(Vector3 p in debugPoints){
-            Gizmos.color = Color.red;
-            Gizmos.DrawSphere(p, 0.2f);
-        }
-    }
-    */
 
     Pair<int, int>[,] outLaneRange = null;
     Pair<int, int>[,] inLaneRange = null;
+    Road[,] virtualRoads = null;
 
-    void updateDirectionLaneRange(){
+    public void updateDirectionLaneRange(){
         int dirCount = connection.Count;
 
         outLaneRange = new Pair<int, int>[dirCount, dirCount];
@@ -571,7 +574,13 @@ public class Node : MonoBehaviour
                 }
 
             }
+        }
 
+        virtualRoads = new Road[dirCount, dirCount];
+        for (int i = 0; i != dirCount; ++i){
+            for (int j = 0; j != dirCount; ++j){
+                virtualRoads[i, j] = generateVirtualRoad(i, j);
+            }
         }
     }
 

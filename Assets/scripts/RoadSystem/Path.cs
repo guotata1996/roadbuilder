@@ -112,6 +112,7 @@ public class Path
         endParam = param;
     }
 
+    /*TODO:rewrite*/
     public float length
     {
         get
@@ -205,7 +206,7 @@ public class Path
         else{
             if (components[segnum].First.noEntity){
                 //at the end of prev seg, entering a crossing
-                int validLaneStart = refNode.getValidInRoadLanes(components[segnum - 2].First, components[segnum].First).First;
+                int validLaneStart = refNode.getValidInRoadLanes(components[segnum - 1].First, components[segnum + 1].First).First;
                 return lane + validLaneStart;
             }
             else{
@@ -290,6 +291,25 @@ public class Path
         }
     }
 
+    public float getTotalLengthOfSeg(int segNum){
+        if (SegCount == 1){
+            return components[0].First.curve.cutByParam(Mathf.Min(startParam, endParam), Mathf.Max(startParam, endParam)).length;
+        }
+        /*non-trivial case*/
+        if (segNum == 0){
+            return components[0].Second ?
+                                components[0].First.curve.cutByParam(startParam, components[0].First.margin1End).length :
+                                components[0].First.curve.cutByParam(components[0].First.margin0End, startParam).length;
+        }
+        if (segNum == SegCount - 1){
+            return components[SegCount - 1].Second ?
+                                           components[SegCount - 1].First.curve.cutByParam(components[SegCount - 1].First.margin0End, endParam).length :
+                                           components[SegCount - 1].First.curve.cutByParam(endParam, components[SegCount - 1].First.margin1End).length;
+        }
+
+        return components[segNum].First.marginedOutCurve.length;
+    }
+
     /* derived property */
     List<Pair<Curve, float>> curveRepresentation;
 
@@ -334,6 +354,6 @@ public class Path
         }
 
         return curveRepresentation;
-
     }
+
 }

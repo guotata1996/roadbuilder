@@ -44,11 +44,18 @@ public class RoadManager : MonoBehaviour
         addAllFragments(intersectParamsWithBeginAndEnd1, curve, laneConfigure);
 
         /*TODO revise*/
-
-        foreach(Road r in allroads.ToList()){
-            createRoadObject(r);
+        foreach (Node n in allnodes.Values)
+        {
+            n.updateMargins();
         }
 
+        foreach (Road r in allroads.ToList()){
+            createRoadObjectAndUpdateMargins(r);
+        }
+
+        foreach(Node n in allnodes.Values){
+            n.updateDirectionLaneRange();
+        }
     }
 
     private List<float> interSectPoints2Fragments(List<Vector3> intersectPoints, Curve originalCurve)
@@ -210,7 +217,7 @@ public class RoadManager : MonoBehaviour
         return p;
     }
 
-    public void createRoadObject(Road r)
+    public void createRoadObjectAndUpdateMargins(Road r)
     {
         Destroy(r.roadObject);
         GameObject roadInstance = Instantiate(road, transform);
@@ -386,6 +393,12 @@ public class RoadManager : MonoBehaviour
         foreach(Road r in allroads){
             r.forwardVehicleController.updateAccs();
             r.backwardVehicleController.updateAccs();
+        }
+        foreach(Node n in allnodes.Values){
+            foreach(Road vr in n.AllVirtualRoads){
+                vr.forwardVehicleController.updateAccs();
+                vr.backwardVehicleController.updateAccs();
+            }
         }
     }
 }

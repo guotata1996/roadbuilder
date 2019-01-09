@@ -70,7 +70,12 @@ public class RoutePanelBehavior : MonoBehaviour {
             case mode.none:
                 indicator.transform.localScale = Vector3.zero;
                 break;
-        }  
+        }
+
+        if (Input.GetKey(KeyCode.T))
+        {
+            vehiclesOfRoute[0].GetComponent<Vehicle>().speed = 0f;
+        }
     }
 
     void setStartFlag(){
