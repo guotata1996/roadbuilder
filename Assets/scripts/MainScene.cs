@@ -24,7 +24,7 @@ public class MainScene : MonoBehaviour
         List<string> wideLaneConfig = new List<string> { "lane", "dash_white", "lane", "solid_yellow", "lane", "dash_white", "lane" };
 
         Curve l1 = new Line(new Vector3(0f, 0f, 0f), new Vector3(160f, 0f, 0f));
-        drawing.roadManager.addRoad(l1, narrowLaneConfig);
+        drawing.roadManager.addRoad(l1, wideLaneConfig);
         Curve l2 = new Line(new Vector3(80f, 0f, 0f), new Vector3(80f, 0f, -160f));
         drawing.roadManager.addRoad(l2, narrowLaneConfig);
 

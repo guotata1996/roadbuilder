@@ -169,7 +169,7 @@ public class RoutePanelBehavior : MonoBehaviour
                 {
                     //Abort if there's no enough space to place
                     vehicle.Abort();
-                    Destroy(vehicle);
+                    Destroy(vehicleObj);
                 }
                 else
                 {

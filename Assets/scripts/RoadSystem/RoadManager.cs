@@ -391,11 +391,17 @@ public class RoadManager : MonoBehaviour
     private void FixedUpdate()
     {
         foreach(Road r in allroads){
+            r.forwardVehicleController.updateLanes();
+            r.backwardVehicleController.updateLanes();
+
             r.forwardVehicleController.updateAccs();
             r.backwardVehicleController.updateAccs();
         }
         foreach(Node n in allnodes.Values){
             foreach(Road vr in n.AllVirtualRoads){
+                vr.forwardVehicleController.updateLanes();
+                vr.backwardVehicleController.updateLanes();
+
                 vr.forwardVehicleController.updateAccs();
                 vr.backwardVehicleController.updateAccs();
             }

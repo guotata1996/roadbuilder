@@ -86,6 +86,38 @@ public class Vehicle : MonoBehaviour {
         }
     }
 
+    public bool onLastSeg{
+        get{
+            return currentSeg == pathOn.SegCount - 1;
+        }
+    }
+
+    public Pair<int, int> outgoingLaneRangeOfCurrentSeg{
+        get{
+            return pathOn.getOutgoingLaneRangeOfSeg(currentSeg);
+        }
+    }
+
+    /*if I can enter next seg on current lane, return 0
+    * If I have to R-shift before crossroads, return -(minimum # of shifts)
+    * If I have to L-shift before crossroads, return +(minimum # of shifts)
+    */
+    public int laneChangingPreference{
+        get{
+            if (laneOn < outgoingLaneRangeOfCurrentSeg.First){
+                return outgoingLaneRangeOfCurrentSeg.First - laneOn;
+            }
+            else{
+                if (laneOn > outgoingLaneRangeOfCurrentSeg.Second){
+                    return outgoingLaneRangeOfCurrentSeg.Second - laneOn;
+                }
+                else{
+                    return 0;
+                }
+            }
+        }
+    }
+
 	// Update is called once per frame
 	void Update () {
         if (pathOn != null){
@@ -122,12 +154,12 @@ public class Vehicle : MonoBehaviour {
 
             if (currentSeg != nextSeg){
                 VhCtrlOfCurrentSeg.VehicleLeave(this, laneOn);
-                VhCtrlOfNextSeg.VehicleEnter(this, nextLane);
-
                 distTraveledOnSeg = distToTravel;
-
                 laneOn = nextLane;
                 currentSeg = nextSeg;
+
+                VhCtrlOfCurrentSeg.VehicleEnter(this, laneOn);
+
             }
 
             rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeed * Time.deltaTime, 0f);
@@ -202,10 +234,9 @@ public class Vehicle : MonoBehaviour {
         int newLane;
         newLane = right ? Mathf.Max(0, laneOn - 1) :
                                Mathf.Min(roadOfCurrentSeg.validLaneCount(headingOfCurrentSeg) - 1, laneOn + 1);
-        Road roadOn = roadOfCurrentSeg;
 
-        rightOffset = roadOn.getLaneCenterOffset(laneOn, headingOfCurrentSeg) -
-                            roadOn.getLaneCenterOffset(newLane, headingOfCurrentSeg);
+        rightOffset += roadOfCurrentSeg.getLaneCenterOffset(laneOn, headingOfCurrentSeg) -
+                            roadOfCurrentSeg.getLaneCenterOffset(newLane, headingOfCurrentSeg);
 
         laneOn = newLane;
     }

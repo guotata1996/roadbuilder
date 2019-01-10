@@ -12,6 +12,8 @@ public class Algebra {
 
     public static float InfLength = 999f;
 
+    public static float Infinity = 999999f;
+    
     public static List<float> functionSolver(float a0, float a1, float a2, float a3 = 0, float a4 =0)
     {
         List<float> ans = new List<float>();

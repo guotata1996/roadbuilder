@@ -214,60 +214,23 @@ public class Path
             }
         }
     }
-
-
-    public Pair<Road, float> travelAlong(int segnum, float param, float distToTravel, int lane, out int nextseg, out int nextLane, out bool termination)
-    {
-        //check whether to jump at the very beginning
-        //Debug.Log(segnum + " , " + param + " , " + components[segnum].Second + " , " + components[segnum].First.margin1End);
-
-        if (components[segnum].Second && (param >= components[segnum].First.margin1End) ||
-            (!components[segnum].Second) && (param <= components[segnum].First.margin0End) ||
-            (segnum == components.Count - 1 && components[segnum].Second && param >= endParam) ||
-            (segnum == components.Count - 1 && !components[segnum].Second && param <= endParam))
+     
+    public Pair<int, int> getOutgoingLaneRangeOfSeg(int segnum){
+        if (segnum == SegCount - 1 || components[segnum].First.noEntity)
         {
-            segnum++;
-            if (segnum == components.Count)
+            return new Pair<int, int>(0, GetRoadOfSeg(segnum).validLaneCount(GetHeadingOfSeg(segnum)) - 1);
+        }
+        else{
+            Node refNode = EndNodes[components[segnum].First];
+            if (components[segnum + 1].First.noEntity)
             {
-                termination = true;
-                nextseg = segnum;
-                nextLane = 0;
-                return null;
+                return refNode.getValidInRoadLanes(GetRoadOfSeg(segnum), GetRoadOfSeg(segnum + 2));
             }
             else
             {
-                param = components[segnum].Second ? components[segnum].First.margin0End : components[segnum].First.margin1End;
-
-                Node refNode = EndNodes[components[segnum - 1].First];
-                if (components[segnum].First.noEntity){
-                    //enter a crossing
-                    int laneNumInValidLanes = lane - refNode.getValidInRoadLanes(components[segnum - 1].First, components[segnum + 1].First).First;
-                    nextLane = Mathf.Clamp(laneNumInValidLanes, 0, components[segnum].First.validLaneCount(true) - 1);
-                }
-                else{
-                    if (components[segnum - 1].First.noEntity){
-                        //leave a crossing
-                        int ValidLanesStart = refNode.getValidOutRoadLanes(components[segnum - 2].First, components[segnum].First).First;
-                        nextLane = lane + ValidLanesStart;
-                    }
-                    else{
-                        //no virtualroad at this crossing
-                        nextLane = lane;
-                    }
-                }
+                return refNode.getValidInRoadLanes(GetRoadOfSeg(segnum), GetRoadOfSeg(segnum + 1));
             }
         }
-        else{
-            nextLane = lane;
-        }
-
-        //Do not jump to second road
-        var roadOn = components[segnum];
-        float newParam = roadOn.First.curve.TravelAlong(param, distToTravel, roadOn.Second);
-        termination = false;
-        nextseg = segnum;
-
-        return new Pair<Road, float>(roadOn.First, newParam);
     }
 
     public Road GetRoadOfSeg(int segnum)
@@ -308,6 +271,65 @@ public class Path
         }
 
         return components[segNum].First.marginedOutCurve.length;
+    }
+
+    public Pair<Road, float> travelAlong(int segnum, float param, float distToTravel, int lane, out int nextseg, out int nextLane, out bool termination)
+    {
+        //check whether to jump at the very beginning
+        //Debug.Log(segnum + " , " + param + " , " + components[segnum].Second + " , " + components[segnum].First.margin1End);
+
+        if (components[segnum].Second && (param >= components[segnum].First.margin1End) ||
+            (!components[segnum].Second) && (param <= components[segnum].First.margin0End) ||
+            (segnum == components.Count - 1 && components[segnum].Second && param >= endParam) ||
+            (segnum == components.Count - 1 && !components[segnum].Second && param <= endParam))
+        {
+            segnum++;
+            if (segnum == components.Count)
+            {
+                termination = true;
+                nextseg = segnum;
+                nextLane = 0;
+                return null;
+            }
+            else
+            {
+                param = components[segnum].Second ? components[segnum].First.margin0End : components[segnum].First.margin1End;
+
+                Node refNode = EndNodes[components[segnum - 1].First];
+                if (components[segnum].First.noEntity)
+                {
+                    //enter a crossing
+                    int laneNumInValidLanes = lane - refNode.getValidInRoadLanes(components[segnum - 1].First, components[segnum + 1].First).First;
+                    nextLane = Mathf.Clamp(laneNumInValidLanes, 0, components[segnum].First.validLaneCount(true) - 1);
+                }
+                else
+                {
+                    if (components[segnum - 1].First.noEntity)
+                    {
+                        //leave a crossing
+                        int ValidLanesStart = refNode.getValidOutRoadLanes(components[segnum - 2].First, components[segnum].First).First;
+                        nextLane = lane + ValidLanesStart;
+                    }
+                    else
+                    {
+                        //no virtualroad at this crossing
+                        nextLane = lane;
+                    }
+                }
+            }
+        }
+        else
+        {
+            nextLane = lane;
+        }
+
+        //Do not jump to second road
+        var roadOn = components[segnum];
+        float newParam = roadOn.First.curve.TravelAlong(param, distToTravel, roadOn.Second);
+        termination = false;
+        nextseg = segnum;
+
+        return new Pair<Road, float>(roadOn.First, newParam);
     }
 
     /* derived property */

@@ -411,6 +411,8 @@ public class Node : MonoBehaviour
 
     /*End of modelling part; 
      * Begin of traffic part*/
+
+    /*Range of valid lanes of inRoad going to outRoad*/
     public Pair<int, int> getValidInRoadLanes(Road inRoad, Road outRoad)
     {
         Debug.Assert(containsRoad(inRoad));
@@ -420,6 +422,7 @@ public class Node : MonoBehaviour
         return outLaneRange[i1, i2];
     }
 
+    /*Range of valid lanes of outRoad accepting traffic from inRoad*/
     public Pair<int, int> getValidOutRoadLanes(Road inRoad, Road outRoad)
     {
         Debug.Assert(containsRoad(inRoad));
@@ -541,7 +544,6 @@ public class Node : MonoBehaviour
                         outLaneRange[i, target] = new Pair<int, int>(lo, hi);
                         beingAssigned += targetLaneNum;
                     }
-
                 }
             }
             else
@@ -572,7 +574,6 @@ public class Node : MonoBehaviour
                     inLaneRange[i, target] = (j == i + dirCount - 1) ? new Pair<int, int>(0, incomingCount - 1) :
                     new Pair<int, int>(myCapacity - incomingCount, myCapacity - 1);
                 }
-
             }
         }
 
