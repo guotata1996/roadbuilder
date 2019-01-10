@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-struct IDMInfo
+public struct IDMInfo
 {
     public int laneNo;
     public float leadingS, leadingV, followingS, followingV, myV;
@@ -15,7 +15,7 @@ struct IDMInfo
     }
 }
 
-struct DriverBehavior{
+public struct DriverBehavior{
     public float v0, T, s0, delta, a, b;
     public DriverBehavior(float desire_v){
         v0 = desire_v;
@@ -64,7 +64,7 @@ public class VehicleController {
     }
     */
     /*for same lane*/
-    IDMInfo GetIDMInfo(int lane, int index){
+    public IDMInfo GetIDMInfo(int lane, int index){
         Debug.Assert(0 <= lane && lane < laneNum);
         List<Vehicle> targetLane = vehicles[lane];
         Vehicle me = targetLane[index];
@@ -127,7 +127,6 @@ public class VehicleController {
             for (int i = 0; i != targetLane.Count; ++i){
                 float acc = GetIDMAcc(GetIDMInfo(l, i), new DriverBehavior(10f));
                 targetLane[i].acceleration = acc;
-
             }
         }
     }

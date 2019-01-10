@@ -17,6 +17,7 @@ public class Vehicle : MonoBehaviour {
             | 0   1 || 1  0 |
             |   |   ||  |   |
     */
+
     int laneOn;
     float rightOffset;
 
@@ -33,14 +34,20 @@ public class Vehicle : MonoBehaviour {
 
     public GameObject roadIndicatorPrefab;
 
-    private void Awake()
+    public delegate void MyDel();
+
+    public event MyDel stopEvent;
+
+    void Awake()
     {
         Reset();
         drawing = GameObject.Find("curveIndicator").GetComponent<RoadDrawing>();
     }
 
-    void Start () {
-
+    public int LaneOn{
+        get{
+            return laneOn;
+        }
     }
 
     bool headingOfCurrentSeg{
@@ -104,6 +111,7 @@ public class Vehicle : MonoBehaviour {
             {
                 Debug.Log("termination");
                 VhCtrlOfCurrentSeg.VehicleLeave(this, laneOn);
+                stopEvent.Invoke();
 
                 Reset();
                 return;
@@ -157,13 +165,22 @@ public class Vehicle : MonoBehaviour {
         laneOn = 0;
     }
 
-    public void SetDest(Vector3 position){
+    public void SetDest(Vector3 position, bool randomizeLane = false, float initialSpeed = 0f){
         Road endRoad;
         Debug.Assert(startRoad != null);
         Vector3 modifiedPosition = drawing.roadManager.approxNodeToExistingRoad(position, out endRoad);
         float endParam = (float)endRoad.curve.paramOf(modifiedPosition);
         pathOn = drawing.roadManager.findPath(startRoad, startParam, endRoad, endParam);
+
+        if (pathOn == null){
+            Debug.LogWarning("Dest not reachable !");
+            return;
+        }
+
+        laneOn = randomizeLane ? Random.Range(0, roadOfCurrentSeg.validLaneCount(headingOfCurrentSeg)) : 0;
         VhCtrlOfCurrentSeg.VehicleEnter(this, laneOn);
+
+        speed = initialSpeed;
     }
 
     private void Reset()
@@ -175,6 +192,10 @@ public class Vehicle : MonoBehaviour {
         distTraveledOnSeg = 0f;
         laneOn = 0;
         rightOffset = 0f;
+    }
+
+    public void Abort(){
+        VhCtrlOfCurrentSeg.VehicleLeave(this, LaneOn);
     }
 
     public void ShiftLane(bool right){

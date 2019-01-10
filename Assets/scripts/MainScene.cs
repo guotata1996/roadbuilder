@@ -20,25 +20,13 @@ public class MainScene : MonoBehaviour
     {
         drawing = GameObject.Find("curveIndicator").GetComponent<RoadDrawing>();
 
-        /*
-        Curve b = new Bezeir(new Vector2(0f, 0f), new Vector2(0f, 40f), new Vector2(80f, 40f), 0f, 10f);
-        List<string> sampleLaneConfig = new List<string>{ "solid_white", "lane", "dash_white", "lane", "solid_yellow", "lane" };
-
-        drawing.roadManager.addRoad(b, sampleLaneConfig);
-        Curve c = new Line(new Vector2(80f, 40f), new Vector2(80f, 0f), 10f, 0f);
-        drawing.roadManager.addRoad(c, sampleLaneConfig);
-
-        Curve d = new Line(new Vector2(40f, 0f), new Vector2(120f, 0f),0f, 0f);
-        drawing.roadManager.addRoad(d, sampleLaneConfig);
-        */
-
-        List<string> sampleLaneConfig = new List<string> { "lane", "dash_white", "lane", "solid_yellow", "lane" };
+        List<string> narrowLaneConfig = new List<string> { "lane", "solid_yellow", "lane" };
         List<string> wideLaneConfig = new List<string> { "lane", "dash_white", "lane", "solid_yellow", "lane", "dash_white", "lane" };
 
         Curve l1 = new Line(new Vector3(0f, 0f, 0f), new Vector3(160f, 0f, 0f));
-        drawing.roadManager.addRoad(l1, sampleLaneConfig);
+        drawing.roadManager.addRoad(l1, narrowLaneConfig);
         Curve l2 = new Line(new Vector3(80f, 0f, 0f), new Vector3(80f, 0f, -160f));
-        drawing.roadManager.addRoad(l2, wideLaneConfig);
+        drawing.roadManager.addRoad(l2, narrowLaneConfig);
 
     }
 

@@ -122,7 +122,9 @@ public class Arc : Curve
     {
         float parametric_t = toGlobalParam(t);
         float tanGradient = z_offset / this.length;
-        return new Vector3(Mathf.Sin(parametric_t), tanGradient, -Mathf.Cos(parametric_t)).normalized;
+
+        return counterClockwise ? -new Vector3(Mathf.Sin(parametric_t), tanGradient, -Mathf.Cos(parametric_t)).normalized :
+               new Vector3(Mathf.Sin(parametric_t), tanGradient, -Mathf.Cos(parametric_t)).normalized;
     }
 
     public override float length
@@ -137,7 +139,6 @@ public class Arc : Curve
     {
         get
         {
-            //return Mathf.Sin(t_end - t_start) > 0;
             return t_end > t_start;
         }
     }
@@ -208,10 +209,10 @@ public class Arc : Curve
     public override float TravelAlong(float currentParam, float distToTravel, bool zeroToOne)
     {
         if (zeroToOne){
-            return Mathf.Max(1f, currentParam + distToTravel / length);
+            return Mathf.Min(1f, currentParam + distToTravel / length);
         }
         else{
-            return Mathf.Min(0f, currentParam - distToTravel / length);
+            return Mathf.Max(0f, currentParam - distToTravel / length);
         }
     }
 
