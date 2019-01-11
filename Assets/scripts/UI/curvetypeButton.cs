@@ -16,7 +16,7 @@ public class curvetypeButton : MonoBehaviour
     public void Update()
     {
         if (indicator.indicatorType != IndicatorType.none && !EventSystem.current.IsPointerOverGameObject()){
-            Vector3 hitpoint = GameObject.FindWithTag("MainCamera").GetComponent<RayHit>().hitpoint3;
+            Vector3 hitpoint = GameObject.FindWithTag("MainCamera").GetComponent<MouseInteraction>().hitpoint3;
             if (Input.GetMouseButtonDown(0)){
                 indicator.fixControlPoint(hitpoint);
             }

@@ -26,7 +26,7 @@ public class Vehicle : MonoBehaviour {
     public float acceleration;
     float wheelRotation;
     readonly float wheeRadius = 0.14f;
-    readonly float lateralSpeed = 2f;
+    readonly float lateralSpeed = 3f;
     public float bodyLength = 3.9f;
 
     RoadDrawing drawing;
@@ -95,6 +95,12 @@ public class Vehicle : MonoBehaviour {
     public Pair<int, int> outgoingLaneRangeOfCurrentSeg{
         get{
             return pathOn.getOutgoingLaneRangeOfSeg(currentSeg);
+        }
+    }
+
+    public bool isChangingLane{
+        get{
+            return !Algebra.isclose(rightOffset, 0f);
         }
     }
 
@@ -250,13 +256,21 @@ public class Vehicle : MonoBehaviour {
             if (isshowingPath)
             {
                 drawing.highLightRoad(c);
+                stopEvent += delegate {
+                    drawing.deHighLightRoad(c);
+                };
             }
             else
             {
                 drawing.deHighLightRoad(c);
-
+                stopEvent = stopEvent - delegate
+                {
+                    drawing.deHighLightRoad(c);
+                };
             }
         }
+
+
     }
 
     public VehicleController VhCtrlOfPrevSeg
@@ -279,4 +293,5 @@ public class Vehicle : MonoBehaviour {
             return pathOn.GetVhCtrlOfSeg(currentSeg);
         }
     }
+
 }

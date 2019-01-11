@@ -184,7 +184,7 @@ public class VehicleController {
             var targetLane = vehicles[l];
             for (int i = 0; i < targetLane.Count; ++i){
                 Vehicle me = targetLane[i];
-                if (processed.Contains(me)){
+                if (processed.Contains(me) || me.isChangingLane){
                     continue; // avoid duplicate treatment
                 }
                 else{

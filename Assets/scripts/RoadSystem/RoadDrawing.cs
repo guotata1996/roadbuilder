@@ -402,8 +402,11 @@ public class RoadDrawing : MonoBehaviour
     }
 
     public void deHighLightRoad(Pair<Curve, float> c_offset){
-        GameObject highLighter = highLighters[c_offset];
-        Destroy(highLighter);
-        highLighters.Remove(c_offset);
+        if (highLighters.ContainsKey(c_offset))
+        {
+            GameObject highLighter = highLighters[c_offset];
+            Destroy(highLighter);
+            highLighters.Remove(c_offset);
+        }
     }
 }

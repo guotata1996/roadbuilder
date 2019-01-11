@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class RoutePanelBehavior : MonoBehaviour
+public class RouteButton : MonoBehaviour
 {
 
     // Use this for initialization
@@ -37,7 +37,7 @@ public class RoutePanelBehavior : MonoBehaviour
 
     void updateFlowDisplay()
     {
-        transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<Text>().text = _hourflow.ToString();
+        transform.GetChild(0).GetChild(0).GetComponent<Text>().text = _hourflow.ToString();
     }
 
     List<GameObject> vehiclesOfRoute;
@@ -57,8 +57,9 @@ public class RoutePanelBehavior : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        indicator.transform.position = GameObject.FindWithTag("MainCamera").GetComponent<RayHit>().hitpoint3;
-        Vector3 position = GameObject.FindWithTag("MainCamera").GetComponent<RayHit>().hitpoint3;
+        indicator.transform.position = GameObject.FindWithTag("MainCamera").GetComponent<MouseInteraction>().hitpoint3;
+        Vector3 position = GameObject.FindWithTag("MainCamera").GetComponent<MouseInteraction>().hitpoint3;
+        GameObject hitObj = GameObject.FindWithTag("MainCamera").GetComponent<MouseInteraction>().hitObject;
         Road r;
         position = drawing.roadManager.approxNodeToExistingRoad(position, out r);
         indicator.transform.position = position;
@@ -67,7 +68,7 @@ public class RoutePanelBehavior : MonoBehaviour
         {
             case mode.listenStart:
                 indicator.transform.localScale = Vector3.one;
-                if (Input.GetMouseButtonDown(1))
+                if (Input.GetMouseButtonDown(1) && hitObj.tag == "Ground")
                 {
                     if (r != null)
                     {
@@ -83,7 +84,7 @@ public class RoutePanelBehavior : MonoBehaviour
                 break;
             case mode.listenEnd:
                 indicator.transform.localScale = Vector3.one;
-                if (Input.GetMouseButtonDown(1))
+                if (Input.GetMouseButtonDown(1) && hitObj.tag == "Ground")
                 {
                     if (r != null)
                     {
@@ -115,12 +116,12 @@ public class RoutePanelBehavior : MonoBehaviour
 
     void setStartFlag()
     {
-        transform.GetChild(0).GetChild(0).GetComponent<Image>().sprite = Resources.Load<Sprite>("Textures/startflag");
+        transform.GetChild(0).GetComponent<Image>().sprite = Resources.Load<Sprite>("Textures/startflag");
     }
 
     void setFinishFlag()
     {
-        transform.GetChild(0).GetChild(0).GetComponent<Image>().sprite = Resources.Load<Sprite>("Textures/finishflag");
+        transform.GetChild(0).GetComponent<Image>().sprite = Resources.Load<Sprite>("Textures/finishflag");
     }
 
     public void enterListenMode()

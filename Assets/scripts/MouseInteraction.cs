@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class RayHit : MonoBehaviour {
+public class MouseInteraction : MonoBehaviour {
 
     public float zoomStep = 0.02f;
     public Vector3 hitpoint3;
+    public GameObject hitObject;
     float MinimumPitch = 90f, MaximumPitch = 20f;
     float MaximumHeight = 110f;
 
@@ -35,7 +36,14 @@ public class RayHit : MonoBehaviour {
         {
             hitpoint3.x = hit.point.x;
             hitpoint3.z = hit.point.z;
+            hitObject = hit.transform.gameObject;
         }
+        /*object selection*/
+        if (hitObject.tag == "Traffic/Vehicle" && Input.GetMouseButtonDown(1)){
+            hitObject.GetComponent<Vehicle>().toggleRouteView();
+        }
+
+        /*camera adjust*/
         var scrollWheel = Input.GetAxis("Mouse ScrollWheel");
 
         if (!Input.GetKey(KeyCode.LeftAlt))
@@ -97,7 +105,6 @@ public class RayHit : MonoBehaviour {
                                   Algebra.angle2dir(Mathf.Deg2Rad * (270f - transform.rotation.eulerAngles.y));
         Vector3 biasedPosition = targetPosition + new Vector3(xz_offset.x, 0f, xz_offset.y);
         transform.position = Vector3.Lerp(transform.position, biasedPosition, Time.deltaTime * 5);
-
 
         if (Input.GetKeyDown(KeyCode.P))
         {
