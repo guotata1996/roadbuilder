@@ -10,8 +10,9 @@ public class MouseInteraction : MonoBehaviour {
     public GameObject hitObject;
     float MinimumPitch = 90f, MaximumPitch = 20f;
     float MaximumHeight = 110f;
-
+    
     Vector3 targetPosition;   //intended position of camera right on top
+    Camera activeCamera;
 
     GameObject heightTextField;
 
@@ -24,14 +25,14 @@ public class MouseInteraction : MonoBehaviour {
     // Use this for initialization
     void Start () {
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
         targetPosition = transform.position;
+        activeCamera = GetComponent<Camera>();
     }
 	
 	// Update is called once per frame
 	void Update () {
         RaycastHit hit;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit))
         {
             hitpoint3.x = hit.point.x;
@@ -39,8 +40,27 @@ public class MouseInteraction : MonoBehaviour {
             hitObject = hit.transform.gameObject;
         }
         /*object selection*/
-        if (hitObject.tag == "Traffic/Vehicle" && Input.GetMouseButtonDown(1)){
-            hitObject.GetComponent<Vehicle>().toggleRouteView();
+        if (hitObject.tag == "Traffic/Vehicle"){
+            if (Input.GetMouseButtonDown(0))
+            {
+                hitObject.GetComponent<Vehicle>().toggleRouteView();
+            }
+            if (Input.GetMouseButtonDown(1)){
+                if (GetComponent<Camera>().enabled){
+                    GetComponent<Camera>().enabled = false;
+                    hitObject.transform.GetChild(1).GetComponent<Camera>().enabled = true;
+                    activeCamera = hitObject.transform.GetChild(1).GetComponent<Camera>();
+                    hitObject.GetComponent<Vehicle>().stopEvent += delegate {
+                        GetComponent<Camera>().enabled = true;
+                        activeCamera = GetComponent<Camera>();
+                    };
+                }
+                else{
+                    hitObject.transform.GetChild(1).GetComponent<Camera>().enabled = false;
+                    GetComponent<Camera>().enabled = true;
+                    activeCamera = GetComponent<Camera>();
+                }
+            }
         }
 
         /*camera adjust*/

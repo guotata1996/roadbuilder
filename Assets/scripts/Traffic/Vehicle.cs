@@ -20,20 +20,19 @@ public class Vehicle : MonoBehaviour {
 
     int laneOn;
     float rightOffset;
+    float lateralSpeedMagnitude;
 
     /*longitudinal info*/
     public float speed;
     public float acceleration;
     float wheelRotation;
     readonly float wheeRadius = 0.14f;
-    readonly float lateralSpeed = 3f;
+    readonly float lateralMaxAcc = 3f;
     public float bodyLength = 3.9f;
 
     RoadDrawing drawing;
     bool isshowingPath;
-
-    public GameObject roadIndicatorPrefab;
-
+    
     public delegate void MyDel();
 
     public event MyDel stopEvent;
@@ -127,7 +126,6 @@ public class Vehicle : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         if (pathOn != null){
-
             float distToTravel;
             if (acceleration < 0f && speed < (-acceleration) * Time.deltaTime)
             {
@@ -168,7 +166,19 @@ public class Vehicle : MonoBehaviour {
 
             }
 
-            rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeed * Time.deltaTime, 0f);
+            if (!Algebra.isclose(rightOffset, 0f))
+            {
+                float lateralAcc = (lateralSpeedMagnitude * lateralSpeedMagnitude > 2 * lateralMaxAcc * Mathf.Abs(rightOffset)) ?
+                    -0.98f*lateralMaxAcc : lateralMaxAcc;
+
+                lateralSpeedMagnitude = Mathf.Max(lateralSpeedMagnitude + lateralAcc * Time.deltaTime, 0f);
+
+                //rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeed * Time.deltaTime, 0f);
+                rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeedMagnitude * Time.deltaTime, 0f);
+            }
+            else{
+                lateralSpeedMagnitude = 0f;
+            }
 
             transform.position = roadOn.at(currentParam) +
                 roadOn.rightNormal(currentParam) * (roadOn.getLaneCenterOffset(laneOn, headingOfCurrentSeg) + rightOffset);
@@ -181,10 +191,10 @@ public class Vehicle : MonoBehaviour {
             {
                 if (headingOfCurrentSeg)
                 {
-                    transform.Rotate(roadOn.upNormal(currentParam), -Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeed / speed) * Mathf.Rad2Deg);
+                    transform.Rotate(roadOn.upNormal(currentParam), -Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeedMagnitude / Mathf.Max(speed, 0.2f)) * Mathf.Rad2Deg);
                 }
                 else{
-                    transform.Rotate(roadOn.upNormal(currentParam), Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeed / speed) * Mathf.Rad2Deg);
+                    transform.Rotate(roadOn.upNormal(currentParam), Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeedMagnitude / Mathf.Max(speed, 0.2f)) * Mathf.Rad2Deg);
                 }
             }
 
@@ -230,6 +240,7 @@ public class Vehicle : MonoBehaviour {
         distTraveledOnSeg = 0f;
         laneOn = 0;
         rightOffset = 0f;
+        lateralSpeedMagnitude = 0f;
     }
 
     public void Abort(){
@@ -269,8 +280,6 @@ public class Vehicle : MonoBehaviour {
                 };
             }
         }
-
-
     }
 
     public VehicleController VhCtrlOfPrevSeg

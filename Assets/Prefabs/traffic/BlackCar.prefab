@@ -151,13 +151,13 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1019845851451618}
-  m_LocalRotation: {x: 0.15833011, y: 0.001481233, z: -0.00023748669, w: 0.98738515}
-  m_LocalPosition: {x: -0.02, y: 2.2, z: -6.22}
+  m_LocalRotation: {x: 0.14005657, y: -0.38870287, z: 0.044870935, w: 0.9095498}
+  m_LocalPosition: {x: 3.77, y: 2.35, z: -2.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4259095386603496}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 16.838001, y: -46.521004, z: -1.6320001}
 --- !u!4 &4135515619053716
 Transform:
   m_ObjectHideFlags: 1
@@ -206,7 +206,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1158588894065510}
   m_LocalRotation: {x: -0.015707301, y: -0.0000041118633, z: -0.0002617481, w: 0.9998766}
-  m_LocalPosition: {x: -0, y: -0.03, z: -1.95}
+  m_LocalPosition: {x: -0, y: 0.061, z: 1.202}
   m_LocalScale: {x: 7.52, y: 7.52, z: 7.52}
   m_Children:
   - {fileID: 4554713919063558}
@@ -262,7 +262,7 @@ Camera:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1019845851451618}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
@@ -287,7 +287,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 1
+  m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -516,8 +516,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1.7069726, y: 1.0787811, z: 3.943996}
-  m_Center: {x: -0.006112337, y: 0.55553865, z: -1.9829786}
+  m_Size: {x: 1.7069726, y: 1.0787811, z: 3.9132347}
+  m_Center: {x: -0.006112337, y: 0.55553865, z: 1.1797698}
 --- !u!81 &81093949349585160
 AudioListener:
   m_ObjectHideFlags: 1
@@ -540,4 +540,3 @@ MonoBehaviour:
   speed: 0
   acceleration: 0
   bodyLength: 3.9
-  roadIndicatorPrefab: {fileID: 0}
