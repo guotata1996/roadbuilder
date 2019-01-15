@@ -155,7 +155,6 @@ public class RoadDrawing : MonoBehaviour
                     {
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        //Debug.Log("cp0 = " + controlPoint[0] + ";cp1 = " + controlPoint[1]);
                         roadConfigure.generate(new Line(controlPoint[0], controlPoint[1]), laneConfig);
                     }
                 }
@@ -396,7 +395,7 @@ public class RoadDrawing : MonoBehaviour
         GameObject highlighter = Instantiate(CurveRendererPrefab, transform);
         CurveRenderer renderer = highlighter.GetComponent<CurveRenderer>();
         Material normalMaterial = new Material(Shader.Find("Standard"));
-        normalMaterial.mainTexture = Resources.Load<Texture>("Textures/orange");
+        normalMaterial.mainTexture = Resources.Load<Texture>("Textures/green");
         renderer.CreateMesh(c_offset.First, 0.3f, normalMaterial, offset:c_offset.Second, z_offset: 0.03f);
         highLighters.Add(c_offset, highlighter);
     }

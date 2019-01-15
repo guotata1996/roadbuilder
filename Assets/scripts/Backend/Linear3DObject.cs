@@ -31,7 +31,7 @@ class Linear3DObject
                     Vector2 P4 = new Vector2(-0.1f, 0f);
                     cross_section = new Polygon(new List<Curve> { new Line(P0, P1), new Arc(P2, P1, Mathf.PI), new Line(P3, P4), new Line(P4, P0) });
                     dashLength = 0.2f;
-                    dashInterval = 2f;
+                    dashInterval = 3f;
                 }
                 break;
             case "lowbar":
@@ -72,7 +72,7 @@ class Linear3DObject
                 );
 
                 dashLength = 1f;
-                dashInterval = 8f;
+                dashInterval = 16f;
                 break;
             case "crossbeam":
                 linearMaterial = crossMaterial = Resources.Load<Material>("Materials/concrete");
@@ -81,7 +81,7 @@ class Linear3DObject
                     setParam(param);
                 }
                 dashLength = 1f;
-                dashInterval = 8f;
+                dashInterval = 16f;
                 break;
             case "bridgepanel":
                 linearMaterial = Resources.Load<Material>("Materials/roadsurface");

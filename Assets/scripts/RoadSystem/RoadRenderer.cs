@@ -39,8 +39,8 @@ public class RoadRenderer : MonoBehaviour
     public static float separatorInterval = 0.2f;
     public static float fenceWidth = 0.2f;
 
-    public float dashLength = 4f;
-    public float dashInterval = 6f;
+    public float dashLength = 2.5f;
+    public float dashInterval = 2.5f;
 
     public float dashIndicatorLength = 1f;
     public float dashIndicatorWidth = 2f;
@@ -279,7 +279,6 @@ public class RoadRenderer : MonoBehaviour
         }
 		if (!sep.dashed) {
 			GameObject rendins = Instantiate (rend, transform);
-            rendins.transform.parent = this.transform;
 			CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
             Material normalMaterial = new Material(Shader.Find("Standard"));
             normalMaterial.mainTexture = sep.texture;
@@ -394,6 +393,4 @@ public class RoadRenderer : MonoBehaviour
         }
         return ans;
     }
-
-
 }

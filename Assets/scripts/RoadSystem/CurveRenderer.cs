@@ -14,7 +14,7 @@ public class CurveRenderer : MonoBehaviour
     {
         Mesh mesh = CreateMesh(curve, mainMaterial, new Vector2(offset + width / 2, z_offset), new Vector2(offset - width / 2, z_offset));
         MeshFilter meshFilter = GetComponent<MeshFilter>();
-        meshFilter.mesh = mesh;
+        meshFilter.sharedMesh = mesh;
     }
 
     /*create meash for linear rendered 3D object*/
@@ -111,18 +111,25 @@ public class CurveRenderer : MonoBehaviour
         }
 
 
-        GetComponent<MeshRenderer>().materials = new Material[2]{ crossMaterial, linearMaterial };
+        GetComponent<MeshRenderer>().sharedMaterials = new Material[2] { crossMaterial, linearMaterial };
 
         MeshFilter meshFilter = GetComponent<MeshFilter>();
-        Mesh total_mesh = new Mesh();
-        total_mesh.subMeshCount = 2;
-        total_mesh.SetVertices(all_vertices.ToList());
-        total_mesh.SetTriangles(cross_triangles, 0);
-        total_mesh.SetTriangles(linear_triangles, 1);
-        total_mesh.SetUVs(0, modifiedCrossUVs.ToList());
-        //total_mesh.SetUVs(1, linearUVs.ToList());
-        meshFilter.mesh = total_mesh;
-        
+        if (meshFilter.sharedMesh == null){
+            meshFilter.sharedMesh = new Mesh();
+        }
+        //Mesh total_mesh = new Mesh();
+        //total_mesh.subMeshCount = 2;
+        //total_mesh.SetVertices(all_vertices.ToList());
+        //total_mesh.SetTriangles(cross_triangles, 0);
+        //total_mesh.SetTriangles(linear_triangles, 1);
+        //total_mesh.SetUVs(0, modifiedCrossUVs.ToList());
+        //meshFilter.sharedMesh = total_mesh;
+
+        meshFilter.sharedMesh.subMeshCount = 2;
+        meshFilter.sharedMesh.SetVertices(all_vertices.ToList());
+        meshFilter.sharedMesh.SetTriangles(cross_triangles, 0);
+        meshFilter.sharedMesh.SetTriangles(linear_triangles, 1);
+        meshFilter.sharedMesh.SetUVs(0, modifiedCrossUVs.ToList());
     }
 
     Mesh CreateMesh(Curve curve, Material mainMaterial, Vector2 offset1, Vector2 offset2)
@@ -228,10 +235,24 @@ public class CurveRenderer : MonoBehaviour
         }
 
         GetComponent<MeshRenderer>().material = mainMaterial;
-        Mesh mesh = new Mesh();
-        mesh.vertices = allVertices;
-        mesh.uv = allUVs;
-        mesh.triangles = allTriangles;
-        meshFilter.mesh = mesh;
+
+        //Mesh mesh = new Mesh();
+        //mesh.vertices = allVertices;
+        //mesh.uv = allUVs;
+        //mesh.triangles = allTriangles;
+        if (meshFilter.sharedMesh == null)
+        {
+            meshFilter.sharedMesh = new Mesh();
+        }
+        meshFilter.sharedMesh.vertices = allVertices;
+        meshFilter.sharedMesh.uv = allUVs;
+        meshFilter.sharedMesh.triangles = allTriangles;
+    }
+
+    private void OnDestroy()
+    {
+        Destroy(GetComponent<MeshFilter>().sharedMesh);
+        Resources.UnloadUnusedAssets();
+
     }
 }

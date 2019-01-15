@@ -1823,7 +1823,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: 94fb71d7632a246f5bc0301b196baf64, type: 2}
+  - {fileID: 2100000, guid: 639bdae38663ce249835e384c15d06d3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3383,7 +3383,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1936273440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3395,6 +3395,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6025385dd69f94044bd3f3eea93f7517, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rend: {fileID: 0}
   carModelPrefab: {fileID: 1782553675795574, guid: 855e8dbaf67c649139814fdc74ccbcb8,
     type: 2}
 --- !u!4 &1936273441

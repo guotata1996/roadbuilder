@@ -52,9 +52,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rend: {fileID: 1009564055489620, guid: 25e03276a1a7056459f94225d7fe6ed9, type: 2}
-  dashLength: 4
-  dashInterval: 6
-  yellow: {fileID: 2800000, guid: 7d5e925ae78f24c4ebfa9f42f22893d5, type: 3}
-  white: {fileID: 2800000, guid: 429e98d2344b0db46ab59c2360f2ade6, type: 3}
-  road: {fileID: 2800000, guid: 53c0d21faed131a42a9a9ce0ef3d791c, type: 3}
-  delete: {fileID: 2800000, guid: 18429a2adf4424f30bea39934678305c, type: 3}
+  dashLength: 2.5
+  dashInterval: 2.5
+  dashIndicatorLength: 1
+  dashIndicatorWidth: 2
