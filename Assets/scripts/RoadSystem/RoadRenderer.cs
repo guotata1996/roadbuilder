@@ -10,15 +10,6 @@ class NonLinear3DObject{
     public float interval;
 }
 
-class Separator
-{
-    public Texture texture;
-    public bool dashed;
-    public float offset = 0f;
-    public float margin_0 = 0f, margin_1 = 0f;
-    public float width = RoadRenderer.separatorWidth;
-}
-
 /*should support:
 lane 
 interval
@@ -48,7 +39,7 @@ public class RoadRenderer : MonoBehaviour
     static List<string> commonTypes = new List<string> { "lane", "interval", "surface", "removal", "fence", "column", "singlefence" };
 
     public static List<string> separatorTypes = new List<string> { "solid_yellow", "dash_yellow", "solid_white", "solid_yellow" };
-
+    
     public void generate(Curve curve, List<string> laneConfig,
                          float indicatorMargin_0L = 0f, float indicatorMargin_0R = 0f, float indicatorMargin_1L = 0f, float indicatorMargin_1R = 0f){
 
@@ -99,7 +90,7 @@ public class RoadRenderer : MonoBehaviour
     void generateSingle(Curve curve, List<string> laneConfig, 
                         float indicatorMargin_0L , float indicatorMargin_0R, float indicatorMargin_1L, float indicatorMargin_1R)
     {
-        List<Separator> separators = new List<Separator>();
+        List<Linear2DObject> separators = new List<Linear2DObject>();
         List<Linear3DObject> linear3DObjects = new List<Linear3DObject>();
         float width = getConfigureWidth(laneConfig);
 
@@ -168,8 +159,7 @@ public class RoadRenderer : MonoBehaviour
                     case "removal":
                         Debug.Assert(laneConfig.Count == 1);
                         //drawRemovalMark(curve, float.Parse(configs[1]));
-                        Separator sep = new Separator();
-                        sep.texture = Resources.Load<Texture>("Textures/orange");
+                        Linear2DObject sep = new Linear2DObject("removal");
                         sep.dashed = false;
                         sep.width = float.Parse(configs[1]);
                         sep.margin_0 = Mathf.Max(indicatorMargin_0L, indicatorMargin_0R);
@@ -183,23 +173,26 @@ public class RoadRenderer : MonoBehaviour
                 string septype, sepcolor;
                 septype = configs[0];
                 sepcolor = configs[1];
-                
-                Separator sep = new Separator();
-                sep.margin_0 = Algebra.Lerp(indicatorMargin_0L, indicatorMargin_0R, partialWidth / width);
-                sep.margin_1 = Algebra.Lerp(indicatorMargin_1L, indicatorMargin_1R, partialWidth / width);
+
+                Linear2DObject sep;
 
                 switch (sepcolor)
                 {
                     case "yellow":
-                        sep.texture = Resources.Load<Texture>("Textures/yellow");
+                        sep = new Linear2DObject("yellow");
                         break;
                     case "white":
-                        sep.texture = Resources.Load<Texture>("Textures/white");
+                        sep = new Linear2DObject("white");
                         break;
                     case "blueindi":
-                        sep.texture = Resources.Load<Texture>("Textures/blue");
+                        sep = new Linear2DObject("blueindi");
                         break;
+                    default:
+                        throw new System.Exception();
                 }
+
+                sep.margin_0 = Algebra.Lerp(indicatorMargin_0L, indicatorMargin_0R, partialWidth / width);
+                sep.margin_1 = Algebra.Lerp(indicatorMargin_1L, indicatorMargin_1R, partialWidth / width);
 
                 switch (septype)
                 {
@@ -262,7 +255,7 @@ public class RoadRenderer : MonoBehaviour
 
     }
 
-	void drawLinear2DObject(Curve curve, Separator sep){
+    void drawLinear2DObject(Curve curve, Linear2DObject sep){
         float margin_0 = sep.margin_0;
         float margin_1 = sep.margin_1;
         if (Algebra.isclose(margin_0 + margin_1, curve.length)){
@@ -280,9 +273,7 @@ public class RoadRenderer : MonoBehaviour
 		if (!sep.dashed) {
 			GameObject rendins = Instantiate (rend, transform);
 			CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
-            Material normalMaterial = new Material(Shader.Find("Standard"));
-            normalMaterial.mainTexture = sep.texture;
-            decomp.CreateMesh (curve, sep.width, normalMaterial, offset: sep.offset, z_offset:0.02f);
+            decomp.CreateMesh (curve, sep.width, sep.material, offset: sep.offset, z_offset:0.02f);
 		}
 		else {
             List<Curve> dashed = curve.segmentation (dashLength + dashInterval);
@@ -295,9 +286,7 @@ public class RoadRenderer : MonoBehaviour
                 if (vacant_and_dashed.Count == 2) {
 					GameObject rendins = Instantiate (rend, transform);
 					CurveRenderer decomp = rendins.GetComponent<CurveRenderer> ();
-                    Material normalMaterial = new Material(Shader.Find("Standard"));
-                    normalMaterial.mainTexture = sep.texture;
-                    decomp.CreateMesh (vacant_and_dashed [1], sep.width, normalMaterial, offset:sep.offset, z_offset:0.02f);
+                    decomp.CreateMesh (vacant_and_dashed [1], sep.width, sep.material, offset:sep.offset, z_offset:0.02f);
 				}
 			}
 

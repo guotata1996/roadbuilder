@@ -12,6 +12,17 @@ class Linear3DObject
     public float offset;
     public float margin_0, margin_1;
     public string tag;
+
+    static Material fenceCrossMaterial, fenceLinearMaterial, whiteMaterial, concreteMaterial, roadSurfaceMaterial;
+
+    static Linear3DObject(){
+        fenceCrossMaterial = Resources.Load<Material>("Materials/roadBarrier1");
+        fenceLinearMaterial = Resources.Load<Material>("Materials/roadBarrier2");
+        whiteMaterial = Resources.Load<Material>("Materials/white");
+        concreteMaterial = Resources.Load<Material>("Materials/concrete");
+        roadSurfaceMaterial = Resources.Load<Material>("Materials/roadsurface");
+    }
+
     public Linear3DObject(string name, float param = 0f)
     {
         //TODO: read config dynamically
@@ -22,8 +33,8 @@ class Linear3DObject
         {
             case "fence":
                 {
-                    crossMaterial = Resources.Load<Material>("Materials/roadBarrier1");
-                    linearMaterial = Resources.Load<Material>("Materials/roadBarrier2");
+                    crossMaterial = fenceCrossMaterial;
+                    linearMaterial = fenceLinearMaterial;
                     Vector2 P0 = new Vector2(0.1f, 0f);
                     Vector2 P1 = new Vector2(0.1f, 1.0f);
                     Vector2 P2 = new Vector2(0f, 1.0f);
@@ -36,7 +47,7 @@ class Linear3DObject
                 break;
             case "lowbar":
                 {
-                    crossMaterial = linearMaterial = Resources.Load<Material>("Materials/white");
+                    crossMaterial = linearMaterial = whiteMaterial;
                     Vector2 P0 = new Vector2(0f, 0.4f);
                     Vector2 P1 = new Vector2(0.1f, 0.4f);
                     Vector2 P2 = new Vector2(-0.1f, 0.4f);
@@ -46,7 +57,7 @@ class Linear3DObject
                 break;
             case "highbar":
                 {
-                    crossMaterial = linearMaterial = Resources.Load<Material>("Materials/white");
+                    crossMaterial = linearMaterial = whiteMaterial;
                     Vector2 P0 = new Vector2(0f, 0.9f);
                     Vector2 P1 = new Vector2(0.1f, 0.9f);
                     Vector2 P2 = new Vector2(-0.1f, 0.9f);
@@ -56,7 +67,7 @@ class Linear3DObject
                 break;
 
             case "squarecolumn":
-                linearMaterial = crossMaterial = Resources.Load<Material>("Materials/concrete");
+                linearMaterial = crossMaterial = concreteMaterial;
                 cross_section = new Polygon(new List<Curve>{
                     new Line(new Vector2(0.5f, -0.2f), new Vector2(-0.5f, -0.2f)),
                     new Line(new Vector2(-0.5f, -0.2f), new Vector2(-0.5f, -1f)),
@@ -75,7 +86,7 @@ class Linear3DObject
                 dashInterval = 16f;
                 break;
             case "crossbeam":
-                linearMaterial = crossMaterial = Resources.Load<Material>("Materials/concrete");
+                linearMaterial = crossMaterial = concreteMaterial;
                 if (param > 0f)
                 {
                     setParam(param);
@@ -84,8 +95,8 @@ class Linear3DObject
                 dashInterval = 16f;
                 break;
             case "bridgepanel":
-                linearMaterial = Resources.Load<Material>("Materials/roadsurface");
-                crossMaterial = Resources.Load<Material>("Materials/concrete");
+                linearMaterial = roadSurfaceMaterial;
+                crossMaterial = concreteMaterial;
                 if (param > 0f)
                 {
                     setParam(param);

@@ -28,7 +28,7 @@ public class MainScene : MonoBehaviour
 
         List<string> fencecfg = new List<string> {"fence","lane", "dash_white", "lane","fence" };
         List<string> singleLane = new List<string> { "lane" };
-
+        /*
         Vector2 P0 = new Vector2(-20f, 40f);
         Vector2 P1 = new Vector2(-20f, 20f);
         Vector2 P2 = new Vector2(-40f, 20f);
@@ -109,12 +109,14 @@ public class MainScene : MonoBehaviour
         drawing.roadManager.addRoad(new Bezeir(P29, PCT2, P30), doubledirfencecfg);
         drawing.roadManager.addRoad(new Bezeir(P30, PCT3, P31), doubledirfencecfg);
         drawing.roadManager.addRoad(new Bezeir(P31, PCT4, P32), doubledirfencecfg);
+        */
 
+        Vector2 P0 = Vector2.zero;
+        Vector2 P1 = new Vector2(0f, 20f);
+        Vector2 P2 = new Vector2(0.1f, 40f);
+        drawing.roadManager.addRoad(new Line(P0, P1), singleLane);
+        drawing.roadManager.addRoad(new Line(P1, P2), singleLane);
 
     }
 
-    void update(){
-        //GameObject rendins = Instantiate(rend, transform);
-        //CurveRenderer decomp = rendins.GetComponent<CurveRenderer>();
-    }
 }

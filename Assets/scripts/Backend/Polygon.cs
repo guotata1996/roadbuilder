@@ -49,7 +49,8 @@ public class Polygon
             else
             {
                 List<Vector2> segs = curve.segmentation(maxlen: Mathf.Max(minresolution, curve.length / maxSegmentPerCurve)).ConvertAll((Curve input) => input.at_ending_2d(true));
-                segs.RemoveAt(segs.Count - 1);
+                if (segs.Count > 0)
+                    segs.RemoveAt(segs.Count - 1);
 
                 int currentNode = components.IndexOf(curve);
                 int nextNode = (currentNode + 1) % components.Count;
@@ -59,6 +60,10 @@ public class Polygon
                 fragments.AddRange(segs);
                 v_resize_proportions.AddRange(offsetSegs);
             }
+        }
+        if (fragments.Count < 3){
+            /*degenerated*/
+            fragments.Clear();
         }
     }
 
@@ -73,18 +78,9 @@ public class Polygon
 
     public int[] createMeshTriangle(){
         List<Vector2> vertices = this.toFragments();
-
-
-        //string pr = "";
-        //foreach (Vector2 v in vertices){
-        //    pr += v.x.ToString("F3");
-        //    pr += ",";
-        //    pr += v.y.ToString("F3");
-        //    pr += "; ";
-        //}
-        //Debug.Log(pr);
-        //Debug.Log("--------");
-
+        if (vertices.Count == 0){
+            return new int[0];
+        }
 
         List<Vector2> vertices_copy_unchanged = vertices.ConvertAll((input) => input);
         List<int> triangle = new List<int>();
@@ -135,6 +131,9 @@ public class Polygon
 
     public Vector2[] createUV(){
         List<Vector2> vertices = toFragments();
+        if (vertices.Count == 0){
+            return new Vector2[0];
+        }
 
         float LM = vertices.Min(c => c.x);
         float RM = vertices.Max(c => c.x);
@@ -147,6 +146,12 @@ public class Polygon
 
     public float[] createSideUVY(){
         List<Vector2> vertices = toFragments();
+
+        if (vertices.Count == 0)
+        {
+            return new float[0];
+        }
+
         float[] rtn = new float[vertices.Count];
         rtn[0] = 0f;
         for (int i = 0; i != vertices.Count; ++i){

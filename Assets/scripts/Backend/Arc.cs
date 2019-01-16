@@ -79,7 +79,7 @@ public class Arc : Curve
         z_start = _z_start;
         z_offset = _z_end - _z_start;
 
-        Debug.Assert(!Algebra.isclose(this.length, 0f));
+        //Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
 
     private Arc deepCopy()
