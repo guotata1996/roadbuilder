@@ -40,7 +40,7 @@ class Linear3DObject
                     Vector2 P2 = new Vector2(0f, 1.0f);
                     Vector2 P3 = new Vector2(-0.1f, 1.0f);
                     Vector2 P4 = new Vector2(-0.1f, 0f);
-                    cross_section = new Polygon(new List<Curve> { new Line(P0, P1), new Arc(P2, P1, Mathf.PI), new Line(P3, P4), new Line(P4, P0) });
+                    cross_section = new Polygon(new List<Curve> { Line.TryInit(P0, P1), Arc.TryInit(P2, P1, Mathf.PI), Line.TryInit(P3, P4), Line.TryInit(P4, P0) });
                     dashLength = 0.2f;
                     dashInterval = 3f;
                 }
@@ -51,7 +51,7 @@ class Linear3DObject
                     Vector2 P0 = new Vector2(0f, 0.4f);
                     Vector2 P1 = new Vector2(0.1f, 0.4f);
                     Vector2 P2 = new Vector2(-0.1f, 0.4f);
-                    cross_section = new Polygon(new List<Curve> { new Arc(P0, P1, Mathf.PI), new Arc(P0, P2, Mathf.PI) });
+                    cross_section = new Polygon(new List<Curve> { Arc.TryInit(P0, P1, Mathf.PI), Arc.TryInit(P0, P2, Mathf.PI) });
                     dashInterval = 0f;
                 }
                 break;
@@ -61,7 +61,7 @@ class Linear3DObject
                     Vector2 P0 = new Vector2(0f, 0.9f);
                     Vector2 P1 = new Vector2(0.1f, 0.9f);
                     Vector2 P2 = new Vector2(-0.1f, 0.9f);
-                    cross_section = new Polygon(new List<Curve> { new Arc(P0, P1, Mathf.PI), new Arc(P0, P2, Mathf.PI) });
+                    cross_section = new Polygon(new List<Curve> { Arc.TryInit(P0, P1, Mathf.PI), Arc.TryInit(P0, P2, Mathf.PI) });
                     dashInterval = 0f;
                 }
                 break;
@@ -69,10 +69,10 @@ class Linear3DObject
             case "squarecolumn":
                 linearMaterial = crossMaterial = concreteMaterial;
                 cross_section = new Polygon(new List<Curve>{
-                    new Line(new Vector2(0.5f, -0.2f), new Vector2(-0.5f, -0.2f)),
-                    new Line(new Vector2(-0.5f, -0.2f), new Vector2(-0.5f, -1f)),
-                    new Line(new Vector2(-0.5f, -1f), new Vector2(0.5f, -1f)),
-                    new Line(new Vector2(0.5f, -1f), new Vector2(0.5f, -0.2f))
+                    Line.TryInit(new Vector2(0.5f, -0.2f), new Vector2(-0.5f, -0.2f)),
+                    Line.TryInit(new Vector2(-0.5f, -0.2f), new Vector2(-0.5f, -1f)),
+                    Line.TryInit(new Vector2(-0.5f, -1f), new Vector2(0.5f, -1f)),
+                    Line.TryInit(new Vector2(0.5f, -1f), new Vector2(0.5f, -0.2f))
                 },
                                             new List<float>{
                     0f,
@@ -114,21 +114,21 @@ class Linear3DObject
         {
             case "crossbeam":
                 cross_section = new Polygon(new List<Curve>{
-                        new Line(new Vector2(param/2, -0.2f), new Vector2(-param/2, -0.2f)),
-                        new Line(new Vector2(-param/2, -0.2f), new Vector2(-param/2, -1f)),
-                        new Line(new Vector2(-param/2, -1f), new Vector2(-1f, -1.3f)),
-                        new Line(new Vector2(-1f, -1.3f), new Vector2(1f, -1.3f)),
-                        new Line(new Vector2(1f, -1.3f), new Vector2(param/2, -1f)),
-                        new Line(new Vector2(param/2, -1f), new Vector2(param/2, -0.2f))
+                        Line.TryInit(new Vector2(param/2, -0.2f), new Vector2(-param/2, -0.2f)),
+                        Line.TryInit(new Vector2(-param/2, -0.2f), new Vector2(-param/2, -1f)),
+                        Line.TryInit(new Vector2(-param/2, -1f), new Vector2(-1f, -1.3f)),
+                        Line.TryInit(new Vector2(-1f, -1.3f), new Vector2(1f, -1.3f)),
+                        Line.TryInit(new Vector2(1f, -1.3f), new Vector2(param/2, -1f)),
+                        Line.TryInit(new Vector2(param/2, -1f), new Vector2(param/2, -0.2f))
                     });
                 break;
             case "bridgepanel":
                 cross_section = new Polygon(new List<Curve>
                 {
-                    new Line(new Vector2(param/2, 0f), new Vector2(-param/2, 0f)),
-                    new Line(new Vector2(-param/2, 0f), new Vector2(-param/2, -0.2f)),
-                    new Line(new Vector2(-param/2, -0.2f), new Vector2(param/2, -0.2f)),
-                    new Line(new Vector2(param/2, -0.2f), new Vector2(param/2, 0f))
+                    Line.TryInit(new Vector2(param/2, 0f), new Vector2(-param/2, 0f)),
+                    Line.TryInit(new Vector2(-param/2, 0f), new Vector2(-param/2, -0.2f)),
+                    Line.TryInit(new Vector2(-param/2, -0.2f), new Vector2(param/2, -0.2f)),
+                    Line.TryInit(new Vector2(param/2, -0.2f), new Vector2(param/2, 0f))
                 });
                 break;
         }

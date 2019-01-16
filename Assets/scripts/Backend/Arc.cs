@@ -15,10 +15,42 @@ public class Arc : Curve
     /* t_start is in range[-Pi, Pi]
      * t_end < 2 * PI + t_start*/
 
+    public static Curve TryInit(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_end = 0f){
+        Arc candidate = new Arc(_center, start, angle, _z_start, _z_end);
+        if (Algebra.isclose(candidate.length, 0f)){
+            Debug.LogWarning("try creating Arc of zero length!");
+            return null;
+        }
+        else{
+            return candidate;
+        }
+    }
+
+    public static Curve TryInit(Vector3 _center, Vector3 _start, float angle){
+        Arc candidate = new Arc(_center, _start, angle);
+        if (Algebra.isclose(candidate.length, 0f)){
+            Debug.LogWarning("try creating Arc of zero length!");
+            return null;
+        }
+        else{
+            return candidate;
+        }
+    }
+
+    public static Curve TryInit(Vector2 _start, float angle, Vector2 _end, float _z_start = 0f, float _z_end = 0f){
+        Arc candidate = new Arc(_start, angle, _end, _z_start, _z_end);
+        if (Algebra.isclose(candidate.length, 0f)){
+            return null;
+        }
+        else{
+            return candidate;
+        }
+    }
+
     /*If angle>0, 
      *angle is in radius 
      */
-    public Arc(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_end = 0f)
+    private Arc(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_end = 0f)
     {
         center = _center;
         radius = (start - _center).magnitude;
@@ -34,11 +66,9 @@ public class Arc : Curve
 
         z_start = _z_start;
         z_offset = _z_end - _z_start;
-
-        Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
 
-    public Arc(Vector3 center3, Vector3 start3, float angle)
+    private Arc(Vector3 center3, Vector3 start3, float angle)
     {
 
         Vector2 _center = Algebra.toVector2(center3);
@@ -58,19 +88,15 @@ public class Arc : Curve
         z_start = center3.y;
         z_offset = 0f;
 
-        Debug.Assert(!Algebra.isclose(this.length, 0f));
-
     }
 
-    protected Arc() { }
-
     /*start-end: clockwise*/
-    public Arc(Vector2 _start, float angle, Vector2 _end, float _z_start = 0f, float _z_end = 0f)
+    private Arc(Vector2 _start, float angle, Vector2 _end, float _z_start = 0f, float _z_end = 0f)
     {
         center = (_start + _end) / 2f + new Vector2((_end - _start).y, -(_end - _start).x).normalized * 0.5f * (_start - _end).magnitude / Mathf.Tan(angle / 2);
         radius = 0.5f * (_start - _end).magnitude / Mathf.Sin(angle / 2);
-        t_start = new Line(center, _start, 0f, 0f).angle_ending(true);
-        t_end = new Line(center, _end, 0f, 0f).angle_ending(true);
+        t_start = Line.TryInit(center, _start, 0f, 0f).angle_ending(true);
+        t_end = Line.TryInit(center, _end, 0f, 0f).angle_ending(true);
         if (t_start < t_end)
         {
             t_end -= Mathf.PI * 2;
@@ -78,9 +104,9 @@ public class Arc : Curve
         Debug.Assert(!counterClockwise);
         z_start = _z_start;
         z_offset = _z_end - _z_start;
+            }
 
-        //Debug.Assert(!Algebra.isclose(this.length, 0f));
-    }
+    private Arc() { }
 
     private Arc deepCopy()
     {
@@ -278,19 +304,19 @@ public class Arc : Curve
         Debug.Assert(b is Arc);
         if (Algebra.isclose(t_start, b.t_start))
         {
-            return new Arc(center, at_ending_2d(false), (t_start - t_end) + (b.t_end - b.t_start), z_start + z_offset, b.z_offset - z_offset);
+            return Arc.TryInit(center, at_ending_2d(false), (t_start - t_end) + (b.t_end - b.t_start), z_start + z_offset, b.z_offset - z_offset);
         }
         if (Algebra.isclose(t_start, b.t_end))
         {
-            return new Arc(center, at_ending_2d(false), (t_start - t_end) + (b.t_start - b.t_end), z_start + z_offset, -b.z_offset - z_offset);
+            return Arc.TryInit(center, at_ending_2d(false), (t_start - t_end) + (b.t_start - b.t_end), z_start + z_offset, -b.z_offset - z_offset);
         }
         if (Algebra.isclose(t_end, b.t_start))
         {
-            return new Arc(center, at_ending_2d(true), (t_end - t_start) + (b.t_end - b.t_start), z_start, z_offset + b.z_offset);
+            return Arc.TryInit(center, at_ending_2d(true), (t_end - t_start) + (b.t_end - b.t_start), z_start, z_offset + b.z_offset);
         }
         if (Algebra.isclose(t_end, b.t_end))
         {
-            return new Arc(center, at_ending_2d(true), (t_end - t_start) + (b.t_start - b.t_end), z_start, z_offset - b.z_offset);
+            return Arc.TryInit(center, at_ending_2d(true), (t_end - t_start) + (b.t_start - b.t_end), z_start, z_offset - b.z_offset);
         }
         Debug.Assert(false);
         return null;

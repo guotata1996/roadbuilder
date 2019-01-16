@@ -6,7 +6,41 @@ using System.Linq;
 public class Bezeir : Curve
 {
     public Vector2 P0, P1, P2;
-    public Bezeir(Vector2 _P0, Vector2 _P1, Vector2 _P2, float _z_start = 0f, float _z_end = 0f)
+
+    public static Curve TryInit(Vector2 _P0, Vector2 _P1, Vector2 _P2, float _z_start = 0f, float _z_end = 0f){
+        if (Geometry.Parallel(_P1 - _P0, _P2 - _P1)){
+            Debug.LogWarning("Bezeir Ctrl Point Parallel!");
+            return Line.TryInit(_P0, _P2, _z_start, _z_end);
+        }
+        Bezeir candidate = new Bezeir(_P0, _P1, _P2, _z_start, _z_end);
+        if (Algebra.isclose(candidate.length, 0f)){
+            Debug.LogWarning("try creating Bezeir of zero length!");
+            return null;
+        }
+        else{
+            return candidate;
+        }
+    }
+
+    public static Curve TryInit(Vector3 _P0, Vector3 _P1, Vector3 _P2){
+        if (Geometry.Parallel(_P1 - _P0, _P2 - _P1))
+        {
+            Debug.LogWarning("Bezeir Ctrl Point Parallel!");
+            return Line.TryInit(_P0, _P2);
+        }
+        Bezeir candidate = new Bezeir(_P0, _P1, _P2);
+        if (Algebra.isclose(candidate.length, 0f))
+        {
+            Debug.LogWarning("try creating Bezeir of zero length!");
+            return null;
+        }
+        else
+        {
+            return candidate;
+        }
+    }
+
+    private Bezeir(Vector2 _P0, Vector2 _P1, Vector2 _P2, float _z_start = 0f, float _z_end = 0f)
     {
         Debug.Assert(!Geometry.Parallel(_P1 - _P0, _P2 - _P1));
         P0 = _P0;
@@ -16,11 +50,9 @@ public class Bezeir : Curve
         z_offset = _z_end - _z_start;
         t_start = 0f;
         t_end = 1f;
-
-        Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
 
-    public Bezeir(Vector3 _P0, Vector3 _P1, Vector3 _P2)
+    private Bezeir(Vector3 _P0, Vector3 _P1, Vector3 _P2)
     {
         Debug.Assert(!Geometry.Parallel(_P1 - _P0, _P2 - _P1));
         P0 = Algebra.toVector2(_P0);
@@ -30,8 +62,6 @@ public class Bezeir : Curve
         z_offset = _P2.y - _P0.y;
         t_start = 0f;
         t_end = 1f;
-
-        Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
 
     public override Vector3 at(float t)
@@ -70,7 +100,7 @@ public class Bezeir : Curve
     {
         t = toGlobalParam(t);
         Vector2 tangentdir = (2 * (t - 1) * P0 + (2 - 4 * t) * P1 + 2 * t * P2);
-        return new Line(Vector2.zero, tangentdir, 0f, 0f).angle_2d(t);
+        return Line.TryInit(Vector2.zero, tangentdir, 0f, 0f).angle_2d(t);
     }
 
     private float lengthIntegral(float t)
@@ -144,7 +174,7 @@ public class Bezeir : Curve
             float thisEnd;
             thisEnd = Algebra.newTown(this.lengthFromZeroTo, this.lengthGradient, Mathf.Min(this.length, (float)(multipler + 1) * maxlen), Mathf.Min(1f, maxlen / this.length * (multipler + 1)));
 
-            Bezeir fragment = new Bezeir(this.P0, this.P1, this.P2, this.z_start + this.z_offset * lastEnd, this.z_start + this.z_offset * thisEnd);
+            Curve fragment = Bezeir.TryInit(this.P0, this.P1, this.P2, this.z_start + this.z_offset * lastEnd, this.z_start + this.z_offset * thisEnd);
             fragment.t_start = toGlobalParam(lastEnd);
             fragment.t_end = toGlobalParam(thisEnd);
             result.Add(fragment);
@@ -243,28 +273,28 @@ public class Bezeir : Curve
     {
         if (Algebra.isclose(t_start, b.t_start))
         {
-            Bezeir rtn = new Bezeir(P0, P1, P2, z_start + z_offset, b.z_offset - z_offset);
+            Curve rtn = Bezeir.TryInit(P0, P1, P2, z_start + z_offset, b.z_offset - z_offset);
             rtn.t_start = t_end;
             rtn.t_end = b.t_end;
             return rtn;
         }
         if (Algebra.isclose(t_start, b.t_end))
         {
-            Bezeir rtn = new Bezeir(P0, P1, P2, z_start + z_start, -b.z_offset - z_offset);
+            Curve rtn = Bezeir.TryInit(P0, P1, P2, z_start + z_start, -b.z_offset - z_offset);
             rtn.t_start = t_end;
             rtn.t_end = b.t_start;
             return rtn;
         }
         if (Algebra.isclose(t_end, b.t_start))
         {
-            Bezeir rtn = new Bezeir(P0, P1, P2, z_start, b.z_offset + z_offset);
+            Curve rtn = Bezeir.TryInit(P0, P1, P2, z_start, b.z_offset + z_offset);
             rtn.t_start = t_start;
             rtn.t_end = b.t_end;
             return rtn;
         }
         if (Algebra.isclose(t_end, b.t_end))
         {
-            Bezeir rtn = new Bezeir(P0, P1, P2, z_start, z_offset - b.z_offset);
+            Curve rtn = Bezeir.TryInit(P0, P1, P2, z_start, z_offset - b.z_offset);
             rtn.t_start = t_start;
             rtn.t_end = b.t_start;
             return rtn;

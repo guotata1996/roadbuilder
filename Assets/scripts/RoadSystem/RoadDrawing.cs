@@ -94,11 +94,11 @@ public class RoadDrawing : MonoBehaviour
 
         if (pointer >= 1)
         {
-            interestedApproxLines.Add(new Line(controlPoint[pointer - 1] + Vector3.back * Algebra.InfLength, controlPoint[pointer - 1] + Vector3.forward * Algebra.InfLength));
-            interestedApproxLines.Add(new Line(controlPoint[pointer - 1] + Vector3.left * Algebra.InfLength, controlPoint[pointer - 1] + Vector3.right * Algebra.InfLength));
+            interestedApproxLines.Add(Line.TryInit(controlPoint[pointer - 1] + Vector3.back * Algebra.InfLength, controlPoint[pointer - 1] + Vector3.forward * Algebra.InfLength));
+            interestedApproxLines.Add(Line.TryInit(controlPoint[pointer - 1] + Vector3.left * Algebra.InfLength, controlPoint[pointer - 1] + Vector3.right * Algebra.InfLength));
             if (targetRoad != null && !Algebra.isProjectionClose(controlPoint[pointer - 1], targetRoad.curve.AttouchPoint(controlPoint[pointer - 1])))
             {
-                interestedApproxLines.Add(new Line(controlPoint[pointer - 1], targetRoad.curve.AttouchPoint(controlPoint[pointer - 1])));
+                interestedApproxLines.Add(Line.TryInit(controlPoint[pointer - 1], targetRoad.curve.AttouchPoint(controlPoint[pointer - 1])));
             }
         }
 
@@ -131,8 +131,8 @@ public class RoadDrawing : MonoBehaviour
                     roadManager.approxNodeToExistingRoad(controlPoint[0], out cp0_targetRoad);
                     if (cp0_targetRoad != null){
                         //perpendicular
-                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength));
-                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength));
+                        interestedApproxLines.Add(Line.TryInit(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength));
+                        interestedApproxLines.Add(Line.TryInit(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength));
                         //extension
                         if (Algebra.isclose(cp0_targetRoad.curve.at_ending(true), controlPoint[0])){
                             Node crossingRoad;
@@ -155,13 +155,13 @@ public class RoadDrawing : MonoBehaviour
                     {
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(new Line(controlPoint[0], controlPoint[1]), laneConfig);
+                        roadConfigure.generate(Line.TryInit(controlPoint[0], controlPoint[1]), laneConfig);
                     }
                 }
 
                 if (pointer == 2)
                 {
-                    roadManager.addRoad(new Line(controlPoint[0], controlPoint[1]), laneConfig);
+                    roadManager.addRoad(Line.TryInit(controlPoint[0], controlPoint[1]), laneConfig);
                     reset();
                 }
 
@@ -172,15 +172,15 @@ public class RoadDrawing : MonoBehaviour
                     Destroy(roadIndicator);
                     addAngleDrawing(controlPoint[1], controlPoint[0]);
                     addAngleDrawing(controlPoint[0], controlPoint[1]);
-                    interestedApproxLines.Add(new Line(controlPoint[0] + Vector3.back * Algebra.InfLength, controlPoint[0] + Vector3.forward * Algebra.InfLength));
-                    interestedApproxLines.Add(new Line(controlPoint[0] + Vector3.left * Algebra.InfLength, controlPoint[0] + Vector3.right * Algebra.InfLength));
+                    interestedApproxLines.Add(Line.TryInit(controlPoint[0] + Vector3.back * Algebra.InfLength, controlPoint[0] + Vector3.forward * Algebra.InfLength));
+                    interestedApproxLines.Add(Line.TryInit(controlPoint[0] + Vector3.left * Algebra.InfLength, controlPoint[0] + Vector3.right * Algebra.InfLength));
                     
                     Road cp0_targetRoad;
                     roadManager.approxNodeToExistingRoad(controlPoint[0], out cp0_targetRoad);
                     if (cp0_targetRoad != null)
                     {
-                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength));
-                        interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength));
+                        interestedApproxLines.Add(Line.TryInit(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) + Mathf.PI / 2) * Algebra.InfLength));
+                        interestedApproxLines.Add(Line.TryInit(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d((float)cp0_targetRoad.curve.paramOf(controlPoint[0])) - Mathf.PI / 2) * Algebra.InfLength));
                         if (Algebra.isclose(cp0_targetRoad.curve.at_ending(true), controlPoint[0]))
                         {
                             Node crossingRoad;
@@ -204,7 +204,7 @@ public class RoadDrawing : MonoBehaviour
                     {
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(new Line(controlPoint[0], controlPoint[1]), laneConfig);
+                        roadConfigure.generate(Line.TryInit(controlPoint[0], controlPoint[1]), laneConfig);
                     }
                 }
 
@@ -218,7 +218,7 @@ public class RoadDrawing : MonoBehaviour
 
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(new Bezeir(controlPoint[0], controlPoint[1], controlPoint[2]), laneConfig);
+                        roadConfigure.generate(Bezeir.TryInit(controlPoint[0], controlPoint[1], controlPoint[2]), laneConfig);
                     }
 
                 }
@@ -228,7 +228,7 @@ public class RoadDrawing : MonoBehaviour
                     if (!Geometry.Parallel(controlPoint[1] - controlPoint[0], controlPoint[2] - controlPoint[1])
                         && !Algebra.isRoadNodeClose(controlPoint[2], controlPoint[1]))
                     {
-                        roadManager.addRoad(new Bezeir(controlPoint[0], controlPoint[1], controlPoint[2]), laneConfig);
+                        roadManager.addRoad(Bezeir.TryInit(controlPoint[0], controlPoint[1], controlPoint[2]), laneConfig);
                         reset();
                     }
                     else{
@@ -248,8 +248,8 @@ public class RoadDrawing : MonoBehaviour
 
                         if (Algebra.isclose(cp0_targetRoad.curve.at_ending(true), controlPoint[0]))
                         {
-                            interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d(0f) + Mathf.PI / 2) * Algebra.InfLength));
-                            interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d(0f) - Mathf.PI / 2) * Algebra.InfLength));
+                            interestedApproxLines.Add(Line.TryInit(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d(0f) + Mathf.PI / 2) * Algebra.InfLength));
+                            interestedApproxLines.Add(Line.TryInit(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d(0f) - Mathf.PI / 2) * Algebra.InfLength));
                             Node crossingRoad;
                             roadManager.findNodeAt(cp0_targetRoad.curve.at_ending(true), out crossingRoad);
                             Debug.Assert(crossingRoad != null);
@@ -259,8 +259,8 @@ public class RoadDrawing : MonoBehaviour
                         {
                             if (Algebra.isclose(cp0_targetRoad.curve.at_ending(false), controlPoint[0]))
                             {
-                                interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d(1f) + Mathf.PI / 2) * Algebra.InfLength));
-                                interestedApproxLines.Add(new Line(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d(1f) - Mathf.PI / 2) * Algebra.InfLength));
+                                interestedApproxLines.Add(Line.TryInit(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d(1f) + Mathf.PI / 2) * Algebra.InfLength));
+                                interestedApproxLines.Add(Line.TryInit(controlPoint[0], controlPoint[0] + Algebra.angle2dir_3d(cp0_targetRoad.curve.angle_2d(1f) - Mathf.PI / 2) * Algebra.InfLength));
                                 Node crossingRoad;
                                 roadManager.findNodeAt(cp0_targetRoad.curve.at_ending(false), out crossingRoad);
                                 Debug.Assert(crossingRoad != null);
@@ -275,25 +275,25 @@ public class RoadDrawing : MonoBehaviour
                     {
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(new Line(controlPoint[1], controlPoint[0]), laneConfig);
+                        roadConfigure.generate(Line.TryInit(controlPoint[1], controlPoint[0]), laneConfig);
                         if (!Algebra.isclose(controlPoint[1] , controlPoint[0]))
-                            roadConfigure.generate(new Arc(controlPoint[1], controlPoint[0], 1.999f * Mathf.PI), laneConfig);
+                            roadConfigure.generate(Arc.TryInit(controlPoint[1], controlPoint[0], 1.999f * Mathf.PI), laneConfig);
                     }
                 }
 
                 if (pointer == 2){
                     Vector3 basedir = controlPoint[0] - controlPoint[1];
                     Vector3 towardsdir = controlPoint[2] - controlPoint[1];
-                    interestedApproxLines.Add(new Arc(controlPoint[1], controlPoint[0], Mathf.PI * 1.999f));
+                    interestedApproxLines.Add(Arc.TryInit(controlPoint[1], controlPoint[0], Mathf.PI * 1.999f));
                     if (!Algebra.isProjectionClose(Vector3.zero, towardsdir) && !Algebra.isProjectionClose(controlPoint[1], controlPoint[0]) && !Geometry.Parallel(basedir, towardsdir))
                     {
                         Destroy(roadIndicator);
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(new Arc(Algebra.toVector2(controlPoint[1]), Algebra.toVector2(controlPoint[0]), 
+                        roadConfigure.generate(Arc.TryInit(Algebra.toVector2(controlPoint[1]), Algebra.toVector2(controlPoint[0]), 
                                                        Mathf.Deg2Rad * Vector2.SignedAngle(Algebra.toVector2(basedir), Algebra.toVector2(towardsdir)), 
                                                        controlPoint[0].y, controlPoint[2].y), laneConfig);
-                        roadConfigure.generate(new Arc(controlPoint[1], controlPoint[1] + Vector3.right , 1.999f * Mathf.PI), laneConfig);
+                        roadConfigure.generate(Arc.TryInit(controlPoint[1], controlPoint[1] + Vector3.right , 1.999f * Mathf.PI), laneConfig);
                     }
                 }
 
@@ -305,7 +305,7 @@ public class RoadDrawing : MonoBehaviour
                     }
                     else
                     {
-                        roadManager.addRoad(new Arc(Algebra.toVector2(controlPoint[1]), Algebra.toVector2(controlPoint[0]), Mathf.Deg2Rad * Vector2.SignedAngle(Algebra.toVector2(basedir), Algebra.toVector2(towardsdir)),
+                        roadManager.addRoad(Arc.TryInit(Algebra.toVector2(controlPoint[1]), Algebra.toVector2(controlPoint[0]), Mathf.Deg2Rad * Vector2.SignedAngle(Algebra.toVector2(basedir), Algebra.toVector2(towardsdir)),
                                                     controlPoint[0].y, controlPoint[2].y), laneConfig);
                         reset();
                     }
@@ -373,7 +373,7 @@ public class RoadDrawing : MonoBehaviour
 
             GameObject indicatorObj = Instantiate(roadIndicatorPrefab, transform);
             RoadRenderer indicatorConfigure = indicatorObj.GetComponent<RoadRenderer>();
-            indicatorConfigure.generate(new Line(positionMaybeOnRoad, positionMaybeOnRoad + Algebra.toVector3(dir) * textDistance * 2), new List<string> { "solid_blueindi"});
+            indicatorConfigure.generate(Line.TryInit(positionMaybeOnRoad, positionMaybeOnRoad + Algebra.toVector3(dir) * textDistance * 2), new List<string> { "solid_blueindi"});
             neighborIndicatorInstance.Add(indicatorObj);
 
         }

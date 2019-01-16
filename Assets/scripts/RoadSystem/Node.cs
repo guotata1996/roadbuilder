@@ -55,6 +55,10 @@ public class Node : MonoBehaviour
 
     List<Vector3> debugPoints = new List<Vector3>();
 
+    Action<List<Curve>, Curve> addIfNotNull = (lst, c) => { if (c != null) lst.Add(c); };
+
+    Func<Curve, List<string>, Road> createNoEntityRoadIfNotNull = (c, cfg) => { if (c != null) { return new Road(c, cfg, true); } else return null; };
+
     public void Awake()
     {
         indicatorInst = GameObject.FindWithTag("Road/curveIndicator").GetComponent<RoadDrawing>();
@@ -126,7 +130,7 @@ public class Node : MonoBehaviour
             if (reverse){
                 direction = -direction;
             }
-            rtn.Add(new Line(twodPosition, twodPosition + direction * Algebra.InfLength, 0f, 0f));
+            rtn.Add(Line.TryInit(twodPosition, twodPosition + direction * Algebra.InfLength, 0f, 0f));
         }
         return rtn;
     }
@@ -157,8 +161,7 @@ public class Node : MonoBehaviour
         if (connection.Count > 1)
         {
             smoothInstance = Instantiate(indicatorInst.roadIndicatorPrefab, transform);
-
-
+            
             for (int i = 0; i != connection.Count; ++i)
             {
                 int i_hat = (i == connection.Count - 1) ? 0 : i + 1;
@@ -166,7 +169,7 @@ public class Node : MonoBehaviour
                 var margins = smoothenCrossing(connection[i].First, connection[i_hat].First, out localSmootheners);
                 if (smoothPolygonEdges.Count > 0 && localSmootheners.Count > 0)
                 {
-                    smoothPolygonEdges.Add(new Line(smoothPolygonEdges.Last().at_ending_2d(false), localSmootheners.First().at_ending_2d(true)));
+                    addIfNotNull(smoothPolygonEdges, Line.TryInit(smoothPolygonEdges.Last().at_ending_2d(false), localSmootheners.First().at_ending_2d(true)));
                 }
                 smoothPolygonEdges.AddRange(localSmootheners);
 
@@ -182,8 +185,8 @@ public class Node : MonoBehaviour
 
             if (smoothPolygonEdges.Count > 0)
             {
-                Debug.Assert(smoothPolygonEdges.Count > 1);
-                smoothPolygonEdges.Add(new Line(smoothPolygonEdges.Last().at_ending_2d(false), smoothPolygonEdges.First().at_ending_2d(true)));
+                //Debug.Assert(smoothPolygonEdges.Count > 1);
+                addIfNotNull(smoothPolygonEdges, Line.TryInit(smoothPolygonEdges.Last().at_ending_2d(false), smoothPolygonEdges.First().at_ending_2d(true)));
                 RoadRenderer smoothObjConfig = smoothInstance.GetComponent<RoadRenderer>();
                 smoothObjConfig.generate(new Polygon(smoothPolygonEdges), position.y, "roadsurface");
             }
@@ -216,7 +219,7 @@ public class Node : MonoBehaviour
                 if (c1_offset > 0f && c2_offset > 0f){
                     /*c1,c2>0*/
                     float extraSmoothingLength = arcSmoothingRadius / Mathf.Tan(delta_angle / 2);
-                    smootheners.Add(new Arc(r1.curve.at_ending_2d(startof(r1.curve), c1_offset + extraSmoothingLength) +
+                    addIfNotNull(smootheners, Arc.TryInit(r1.curve.at_ending_2d(startof(r1.curve), c1_offset + extraSmoothingLength) +
                                             Algebra.angle2dir(r1.curve.angle_ending(startof(r1.curve), c1_offset + extraSmoothingLength) + Mathf.PI / 2) * r1.width / 2,
                                             Mathf.PI - delta_angle,
                                             r2.curve.at_ending_2d(startof(r2.curve), c2_offset + extraSmoothingLength) +
@@ -226,7 +229,7 @@ public class Node : MonoBehaviour
                 if (c1_offset > 0f){
                     /*c1>0, c2<=0*/
                     float smoothRadius = -c2_offset;
-                    smootheners.Add(new Arc(r1.curve.at_ending_2d(startof(r1.curve), c1_offset + smoothRadius) +
+                    addIfNotNull(smootheners, Arc.TryInit(r1.curve.at_ending_2d(startof(r1.curve), c1_offset + smoothRadius) +
                                             Algebra.angle2dir(r1.curve.angle_ending(startof(r1.curve), c1_offset + smoothRadius) + Mathf.PI / 2) * r1.width / 2,
                                             Mathf.PI - delta_angle,
                                             r2.curve.at_ending_2d(startof(r2.curve)) +
@@ -237,12 +240,12 @@ public class Node : MonoBehaviour
                 if (c2_offset > 0f){
                     /*c1<0, c2>0*/
                     float smoothRadius = -c1_offset;
-                    Curve smoothener = new Arc(r1.curve.at_ending_2d(startof(r1.curve)) +
+                    Curve smoothener = Arc.TryInit(r1.curve.at_ending_2d(startof(r1.curve)) +
                                                Algebra.angle2dir(r1.curve.angle_ending(startof(r1.curve)) + Mathf.PI / 2) * r1.width / 2,
                                                Mathf.PI - delta_angle,
                                                r2.curve.at_ending_2d(startof(r2.curve), c2_offset + smoothRadius) +
                                                Algebra.angle2dir(r2.curve.angle_ending(startof(r2.curve), c2_offset + smoothRadius) - Mathf.PI / 2) * r2.width / 2);
-                    smootheners.Add(smoothener);
+                    addIfNotNull(smootheners, smoothener);
                     return new Pair<float, float>(0, c2_offset + smoothRadius);
                 }
                 Debug.Assert(false);
@@ -262,8 +265,8 @@ public class Node : MonoBehaviour
                     Vector2 P3 = r2.curve.at_ending_2d(startof(r2.curve), widthDiff * bezeirSmoothingScale * 0.75f) +
                                    Algebra.angle2dir(r2.curve.angle_ending(startof(r2.curve), widthDiff * bezeirSmoothingScale * 0.75f) - Mathf.PI / 2) * r2.width / 2;
                     Vector2 P2 = (P1 + P3) / 2;
-                    smootheners.Add(new Bezeir(P0, P1, P2));
-                    smootheners.Add(new Bezeir(P2, P3, P4));
+                    addIfNotNull(smootheners, Bezeir.TryInit(P0, P1, P2));
+                    addIfNotNull(smootheners, Bezeir.TryInit(P2, P3, P4));
                     return new Pair<float, float>(0f, widthDiff * bezeirSmoothingScale);
                 }
                 else{
@@ -276,18 +279,18 @@ public class Node : MonoBehaviour
                     Vector2 P4 = r2.curve.at_ending_2d(startof(r2.curve)) +
                                    Algebra.angle2dir(r2.curve.angle_ending(startof(r2.curve)) - Mathf.PI / 2) * r2.width / 2;
                     Vector2 P2 = (P1 + P3) / 2;
-                    smootheners.Add(new Bezeir(P0, P1, P2));
-                    smootheners.Add(new Bezeir(P2, P3, P4));
+                    addIfNotNull(smootheners, Bezeir.TryInit(P0, P1, P2));
+                    addIfNotNull(smootheners, Bezeir.TryInit(P2, P3, P4));
                     return new Pair<float, float>(widthDiff * bezeirSmoothingScale, 0f);
                 }
             case angleType.Reflex:
                 float arcRadius = Mathf.Max(r1.width / 2, r2.width / 2);
                 float bWidthDiff = Mathf.Abs(r1.width - r2.width) / 2;
-                Curve arcSmoothener = new Arc(twodPosition,
+                Curve arcSmoothener = Arc.TryInit(twodPosition,
                                         twodPosition + Algebra.angle2dir(r1.curve.angle_ending(startof(r1.curve)) + Mathf.PI / 2) * arcRadius,
                                         delta_angle - Mathf.PI);
                 if (r1.width == r2.width){
-                    smootheners.Add(arcSmoothener);
+                    addIfNotNull(smootheners, arcSmoothener);
                     return new Pair<float, float>(0f, 0f);
                 }
                 if (r1.width > r2.width){
@@ -300,9 +303,9 @@ public class Node : MonoBehaviour
                     Vector2 P3 = r2.curve.at_ending_2d(startof(r2.curve), bWidthDiff * bezeirSmoothingScale * 0.75f)
                                    + Algebra.angle2dir(r2.curve.angle_ending(startof(r2.curve), bWidthDiff * bezeirSmoothingScale * 0.75f) - Mathf.PI / 2) * r2.width / 2;
                     Vector2 P2 = (P1 + P3) / 2;
-                    smootheners.Add(arcSmoothener);
-                    smootheners.Add(new Bezeir(P0, P1, P2));
-                    smootheners.Add(new Bezeir(P2, P3, P4));
+                    addIfNotNull(smootheners, arcSmoothener);
+                    addIfNotNull(smootheners, Bezeir.TryInit(P0, P1, P2));
+                    addIfNotNull(smootheners, Bezeir.TryInit(P2, P3, P4));
                     return new Pair<float, float>(0f, bWidthDiff * bezeirSmoothingScale);
                 }
                 else{
@@ -315,9 +318,9 @@ public class Node : MonoBehaviour
                     Vector2 P4 = r1.curve.at_ending_2d(startof(r1.curve))
                                    + Algebra.angle2dir(r1.curve.angle_ending(startof(r1.curve)) + Mathf.PI / 2) * r2.width / 2;
                     Vector2 P2 = (P1 + P3) / 2;
-                    smootheners.Add(new Bezeir(P0, P1, P2));
-                    smootheners.Add(new Bezeir(P2, P3, P4));
-                    smootheners.Add(arcSmoothener);
+                    addIfNotNull(smootheners, Bezeir.TryInit(P0, P1, P2));
+                    addIfNotNull(smootheners, Bezeir.TryInit(P2, P3, P4));
+                    addIfNotNull(smootheners, arcSmoothener);
                     return new Pair<float, float>(bWidthDiff * bezeirSmoothingScale, 0f);
                 }
 
@@ -496,19 +499,22 @@ public class Node : MonoBehaviour
                 /*exact same lane config for neighbors, just go straight*/
                 return null;
             }
-            return new Road(new Line(r1_endPos, r2_endPos), virtualRoadLaneCfg, _noEntity: true);
+            //return new Road(Line.TryInit(r1_endPos, r2_endPos), virtualRoadLaneCfg, _noEntity: true);
+            return createNoEntityRoadIfNotNull(Line.TryInit(r1_endPos, r2_endPos), virtualRoadLaneCfg);
         }
         else
         {
-            Line l1 = new Line(Algebra.toVector2(r1_endPos), Algebra.toVector2(r1_endPos) + Algebra.InfLength * r1_direction, r1_endPos.y, r1_endPos.y);
-            Line l2 = new Line(Algebra.toVector2(r2_endPos), Algebra.toVector2(r2_endPos) + Algebra.InfLength * r2_direction, r2_endPos.y, r2_endPos.y);
+            Curve l1 = Line.TryInit(Algebra.toVector2(r1_endPos), Algebra.toVector2(r1_endPos) + Algebra.InfLength * r1_direction, r1_endPos.y, r1_endPos.y);
+            Curve l2 = Line.TryInit(Algebra.toVector2(r2_endPos), Algebra.toVector2(r2_endPos) + Algebra.InfLength * r2_direction, r2_endPos.y, r2_endPos.y);
             List<Vector3> intereSectionPoint = Geometry.curveIntersect(l1, l2);
             if (intereSectionPoint.Count == 1)
             {
-                return new Road(new Bezeir(r1_endPos, intereSectionPoint.First(), r2_endPos), virtualRoadLaneCfg, _noEntity: true);
+                //return new Road(Bezeir.TryInit(r1_endPos, intereSectionPoint.First(), r2_endPos), virtualRoadLaneCfg, _noEntity: true);
+                return createNoEntityRoadIfNotNull(Bezeir.TryInit(r1_endPos, intereSectionPoint.First(), r2_endPos), virtualRoadLaneCfg);
             }
             else{
-                return new Road(new Line(r1_endPos, r2_endPos), virtualRoadLaneCfg, _noEntity: true);
+                //return new Road(Line.TryInit(r1_endPos, r2_endPos), virtualRoadLaneCfg, _noEntity: true);
+                return createNoEntityRoadIfNotNull(Line.TryInit(r1_endPos, r2_endPos), virtualRoadLaneCfg);
             }
         }
     }
@@ -552,7 +558,7 @@ public class Node : MonoBehaviour
                 for (int j = i + 1; j <= i + dirCount; ++j){
                     int target = j % dirCount;
                     int targetLaneNum = connection[target].First.validLaneCount(startof(connection[target].First.curve));
-                    if (incomingLanesNum > 0&& targetLaneNum > 0){
+                    if (incomingLanesNum > 0 && targetLaneNum > 0){
                         outLaneRange[i, target] = new Pair<int, int>(beingAssigned, beingAssigned + targetLaneNum - 1);
                         beingAssigned += targetLaneNum;
                     }

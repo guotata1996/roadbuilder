@@ -6,7 +6,29 @@ public class Line : Curve
 {
     public Vector2 start, end;
 
-    public Line(Vector2 _start, Vector2 _end, float _z_start = 0f, float _z_end = 0f)
+    public static Curve TryInit(Vector2 _start, Vector2 _end, float _z_start = 0f, float _z_end = 0f){
+        Line candidate = new Line(_start, _end, _z_start, _z_end);
+        if (Algebra.isclose(candidate.length, 0f)){
+            Debug.LogWarning("try creating Line of zero length!");
+            return null;
+        }
+        else{
+            return candidate;
+        }
+    }
+
+    public static Curve TryInit(Vector3 _start, Vector3 _end){
+        Line candidate = new Line(_start, _end);
+        if (Algebra.isclose(candidate.length, 0f)){
+            Debug.LogWarning("try creating Line of zero length!");
+            return null;
+        }
+        else{
+            return candidate;
+        }
+    }
+
+    private Line(Vector2 _start, Vector2 _end, float _z_start = 0f, float _z_end = 0f)
     {
         start = _start;
         end = _end;
@@ -14,11 +36,9 @@ public class Line : Curve
         z_offset = _z_end - _z_start;
         t_start = 0f;
         t_end = 1f;
-
-        Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
 
-    public Line(Vector3 _start, Vector3 _end)
+    private Line(Vector3 _start, Vector3 _end)
     {
         start = Algebra.toVector2(_start);
         end = Algebra.toVector2(_end);
@@ -26,8 +46,6 @@ public class Line : Curve
         z_offset = _end.y - _start.y;
         t_start = 0f;
         t_end = 1f;
-
-        Debug.Assert(!Algebra.isclose(this.length, 0f));
     }
 
     public override Vector3 at(float t)
@@ -119,7 +137,7 @@ public class Line : Curve
             end_frac = toGlobalParam(end_frac);
             if (!Algebra.isclose(start_frac * (end - start) + start, end_frac * (end - start) + start))
             {
-                Line l2 = new Line(start_frac * (end - start) + start, end_frac * (end - start) + start, z_start + start_frac * z_offset, z_start + end_frac * z_offset);
+                Curve l2 = Line.TryInit(start_frac * (end - start) + start, end_frac * (end - start) + start, z_start + start_frac * z_offset, z_start + end_frac * z_offset);
                 result.Add(l2);
             }
         }
@@ -192,19 +210,19 @@ public class Line : Curve
         Debug.Assert(b is Line);
         if (Algebra.isclose(at_ending_2d(true), b.at_ending_2d(true)))
         {
-            return new Line(at_ending_2d(false), b.at_ending_2d(false), at(1f).y, b.at(1f).y - at(1f).y);
+            return Line.TryInit(at_ending_2d(false), b.at_ending_2d(false), at(1f).y, b.at(1f).y - at(1f).y);
         }
         if (Algebra.isclose(at_ending_2d(true), b.at_ending_2d(false)))
         {
-            return new Line(at_ending_2d(false), b.at_ending_2d(true), at(0f).y, b.at(1f).y - at(0f).y);
+            return Line.TryInit(at_ending_2d(false), b.at_ending_2d(true), at(0f).y, b.at(1f).y - at(0f).y);
         }
         if (Algebra.isclose(at_ending_2d(false), b.at_ending_2d(true)))
         {
-            return new Line(at_ending_2d(true), b.at_ending_2d(false), at(1f).y, b.at(0f).y - at(1f).y);
+            return Line.TryInit(at_ending_2d(true), b.at_ending_2d(false), at(1f).y, b.at(0f).y - at(1f).y);
         }
         if (Algebra.isclose(at_ending_2d(false), b.at_ending_2d(false)))
         {
-            return new Line(at_ending_2d(true), b.at_ending_2d(true), at(0f).y, b.at(0f).y - at(0f).y);
+            return Line.TryInit(at_ending_2d(true), b.at_ending_2d(true), at(0f).y, b.at(0f).y - at(0f).y);
         }
         Debug.Assert(false);
         return null;

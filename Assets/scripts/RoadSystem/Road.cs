@@ -103,13 +103,13 @@ public class Road
         float indicatorMargin1Bound = Mathf.Max(_margin1L, _margin1R);
         renderingFragements = RoadRenderer.splitByMargin(curve, indicatorMargin0Bound, indicatorMargin1Bound);
         if (renderingFragements[0] != null){
-            margin0End = (float)curve.paramOf(renderingFragements[0].at(1f));
+            margin0End = curve.paramOf(renderingFragements[0].at(1f)) ?? 0f;
         }
         else{
             margin0End = 0;
         }
         if (renderingFragements[2] != null){
-            margin1End = (float)curve.paramOf(renderingFragements[2].at(0f));
+            margin1End = curve.paramOf(renderingFragements[2].at(0f)) ?? 0f;
         }
         else{
             margin1End = 1;
