@@ -101,6 +101,8 @@ public class Node : MonoBehaviour
         Debug.Assert(position.y == Mathf.NegativeInfinity || Algebra.isclose(road.curve.at_ending(startof(road.curve)).y, position.y));
 
         connection.Add(new Pair<Road, ConnectionInfo>(road, new ConnectionInfo()));
+
+        updateMargins();
     }
 
     public void removeRoad(Road road)
@@ -116,10 +118,22 @@ public class Node : MonoBehaviour
         if (target != null)
         {
             connection.Remove(target);
+            updateMargins();
         }
         else{
             Debug.Assert(false);
         }
+    }
+
+    public void reEstablishConnections(List<Road> allroads){
+        connection.Clear();
+        foreach(Road r in allroads){
+            if (Algebra.isclose(r.curve.at_ending(false), position) || Algebra.isclose(r.curve.at_ending(true), position))
+            {
+                connection.Add(new Pair<Road, ConnectionInfo>(r, new ConnectionInfo()));
+            }
+        }
+        updateMargins();
     }
 
     //returns one directional line for each of the road connecting to this node.
@@ -383,8 +397,9 @@ public class Node : MonoBehaviour
     Vector2 approxStreetCorner(){
         c1_offset = 0f;
         c2_offset = 0f;
+        int loopCount = 0;
 
-        while (true){
+        while (loopCount < 20){
             float c1_new_offset = Algebra.minArg(C1sidepointToC2Sidepoint, c1_offset);
             float c1_diff = Mathf.Abs(c1_offset - c1_new_offset);
             c1_offset = c1_new_offset;
@@ -395,6 +410,10 @@ public class Node : MonoBehaviour
             if (c1_diff + c2_diff < 1e-3)
                 break;
         }
+        if (loopCount == 20){
+            throw new Exception();
+        }
+
         float c2_tan_angle = r2.curve.angle_ending(startof(r2.curve), offset: c2_offset);
         Vector2 c2_normDir = new Vector2(Mathf.Cos(c2_tan_angle - Mathf.PI / 2), Mathf.Sin(c2_tan_angle - Mathf.PI / 2));
 

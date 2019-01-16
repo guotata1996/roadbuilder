@@ -21,6 +21,8 @@ public class RoadManager : MonoBehaviour
 
     public void addRoad(Curve curve, List<string> laneConfigure)
     {
+        List<Road> allroadsBackup = allroads.ConvertAll(input => input);
+
         List<Vector3> allNewIntersectPoints = new List<Vector3>();
 
         foreach (Road oldroad in allroads.ToList())
@@ -40,22 +42,48 @@ public class RoadManager : MonoBehaviour
 
         allNewIntersectPoints = allNewIntersectPoints.Distinct(new IntersectPointComparator()).ToList();
         List<float> intersectParamsWithBeginAndEnd1 = interSectPoints2Fragments(allNewIntersectPoints, curve);
-        
-        addAllFragments(intersectParamsWithBeginAndEnd1, curve, laneConfigure);
 
-        /*TODO revise*/
-        foreach (Node n in allnodes.Values)
+        try
         {
-            n.updateMargins();
+            addAllFragments(intersectParamsWithBeginAndEnd1, curve, laneConfigure);
+
+            /*TODO revise*/
+            foreach (Road r in allroads.ToList())
+            {
+                createRoadObjectAndUpdateMargins(r);
+            }
+
+            foreach (Node n in allnodes.Values)
+            {
+                n.updateDirectionLaneRange();
+            }
+        }
+        catch{
+            GameObject.FindWithTag("Logger").GetComponent<MessageLogger>().LogMessage("Intersections too close!");
+
+            allroads = allroadsBackup;
+
+            foreach(Node n in allnodes.Values){
+                n.reEstablishConnections(allroads);
+            }
+
+            foreach (var item in allnodes.Where(kvp => kvp.Value.connection.Count == 0).ToList())
+            {
+                allnodes.Remove(item.Key);
+            }
+
+            foreach (Road r in allroads.ToList())
+            {
+                createRoadObjectAndUpdateMargins(r);
+            }
+
+            foreach (Node n in allnodes.Values)
+            {
+                n.updateDirectionLaneRange();
+            }
         }
 
-        foreach (Road r in allroads.ToList()){
-            createRoadObjectAndUpdateMargins(r);
-        }
 
-        foreach(Node n in allnodes.Values){
-            n.updateDirectionLaneRange();
-        }
     }
 
     private List<float> interSectPoints2Fragments(List<Vector3> intersectPoints, Curve originalCurve)

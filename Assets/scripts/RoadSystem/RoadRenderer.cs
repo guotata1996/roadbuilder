@@ -42,11 +42,13 @@ public class RoadRenderer : MonoBehaviour
     
     public void generate(Curve curve, List<string> laneConfig,
                          float indicatorMargin_0L = 0f, float indicatorMargin_0R = 0f, float indicatorMargin_1L = 0f, float indicatorMargin_1R = 0f){
-
-        Debug.Assert(indicatorMargin_0L < curve.length - indicatorMargin_1L);
-        Debug.Assert(indicatorMargin_0R < curve.length - indicatorMargin_1R);
+                         
         float indicatorMargin_0Bound = Mathf.Max(indicatorMargin_0L, indicatorMargin_0R);
         float indicatorMargin_1Bound = Mathf.Max(indicatorMargin_1L, indicatorMargin_1R);
+        if (indicatorMargin_0Bound + indicatorMargin_1Bound >= curve.length)
+        {
+            throw new System.Exception();
+        }
 
         Curve[] fragments = splitByMargin(curve, indicatorMargin_0Bound, indicatorMargin_1Bound);
         if (fragments[0] != null){
