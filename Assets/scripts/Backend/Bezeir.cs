@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
 
+[Serializable]
 public class Bezeir : Curve
 {
     public Vector2 P0, P1, P2;
@@ -215,15 +217,47 @@ public class Bezeir : Curve
     {
         return string.Format("Beizier: t_start={0}, t_end={1}，P0 = {2}, P2 = {3}, ZS = {4}, ZO={5}", t_start, t_end, P0, P2, z_start, z_offset);
     }
-
-    public Vector2 targetP;
-
+    
     public override Vector3 AttouchPoint(Vector3 p)
     {
+        Vector2 targetP = new Vector2(p.x, p.z);
+        Algebra.Del deriveOfDistance = delegate(float t) {
+            float a2_x = P0.x - 2 * P1.x + P2.x;
+            float a1_x = -2 * P0.x + 2 * P1.x;
+            float a0_x = P0.x - targetP.x;
 
-        targetP = new Vector2(p.x, p.z);
-        float t1 = Algebra.newTown(this.DeriveOfDistance, this.DeriveOfDeriveOfDistance, 0f, t_start);
-        float t2 = Algebra.newTown(this.DeriveOfDistance, this.DeriveOfDeriveOfDistance, 0f, t_end);
+            float a2_y = P0.y - 2 * P1.y + P2.y;
+            float a1_y = -2 * P0.y + 2 * P1.y;
+            float a0_y = P0.y - targetP.y;
+
+            float[] distParams = new float[5];
+            distParams[4] = Mathf.Pow(a2_x, 2f) + Mathf.Pow(a2_y, 2f);
+            distParams[3] = 2 * (a1_x * a2_x + a1_y * a2_y);
+            distParams[2] = Mathf.Pow(a1_x, 2f) + Mathf.Pow(a1_y, 2f) + 2 * (a0_x * a2_x + a0_y * a2_y);
+            distParams[1] = 2 * (a0_x * a1_x + a0_y * a1_y);
+            distParams[0] = Mathf.Pow(a0_x, 2f) + Mathf.Pow(a0_y, 2f);
+
+            return 4 * Mathf.Pow(t, 3) * distParams[4] + 3 * Mathf.Pow(t, 2) * distParams[3] + 2 * t * distParams[2] + distParams[1];
+        };
+
+        Algebra.Del deriveOfDeriveOfDistance = delegate (float t){
+            float a2_x = P0.x - 2 * P1.x + P2.x;
+            float a1_x = -2 * P0.x + 2 * P1.x;
+            float a0_x = P0.x - targetP.x;
+
+            float a2_y = P0.y - 2 * P1.y + P2.y;
+            float a1_y = -2 * P0.y + 2 * P1.y;
+            float a0_y = P0.y - targetP.y;
+
+            float[] distParams = new float[5];
+            distParams[4] = Mathf.Pow(a2_x, 2f) + Mathf.Pow(a2_y, 2f);
+            distParams[3] = 2 * (a1_x * a2_x + a1_y * a2_y);
+            distParams[2] = Mathf.Pow(a1_x, 2f) + Mathf.Pow(a1_y, 2f) + 2 * (a0_x * a2_x + a0_y * a2_y);
+            return 4 * 3 * Mathf.Pow(t, 2) * distParams[4] + 3 * 2 * t * distParams[3] + 2 * distParams[2];
+        };
+
+        float t1 = Algebra.newTown(deriveOfDistance, deriveOfDeriveOfDistance, 0f, t_start);
+        float t2 = Algebra.newTown(deriveOfDistance, deriveOfDeriveOfDistance, 0f, t_end);
         t1 = toLocalParam(t1);
         t2 = toLocalParam(t2);
         List<float> candidateParams = new List<float>();
@@ -236,37 +270,6 @@ public class Bezeir : Curve
 
         var sortedParams = candidateParams.OrderBy((param) => (this.at_2d(param) - targetP).magnitude);
         return this.at(sortedParams.First());
-    }
-
-    public float[] DistanceParams()
-    {
-        float a2_x = P0.x - 2 * P1.x + P2.x;
-        float a1_x = -2 * P0.x + 2 * P1.x;
-        float a0_x = P0.x - targetP.x;
-
-        float a2_y = P0.y - 2 * P1.y + P2.y;
-        float a1_y = -2 * P0.y + 2 * P1.y;
-        float a0_y = P0.y - targetP.y;
-
-        float[] res = new float[5];
-        res[4] = Mathf.Pow(a2_x, 2f) + Mathf.Pow(a2_y, 2f);
-        res[3] = 2 * (a1_x * a2_x + a1_y * a2_y);
-        res[2] = Mathf.Pow(a1_x, 2f) + Mathf.Pow(a1_y, 2f) + 2 * (a0_x * a2_x + a0_y * a2_y);
-        res[1] = 2 * (a0_x * a1_x + a0_y * a1_y);
-        res[0] = Mathf.Pow(a0_x, 2f) + Mathf.Pow(a0_y, 2f);
-        return res;
-    }
-
-    private float DeriveOfDistance(float t)
-    {
-        float[] distParams = DistanceParams();
-        return 4 * Mathf.Pow(t, 3) * distParams[4] + 3 * Mathf.Pow(t, 2) * distParams[3] + 2 * t * distParams[2] + distParams[1];
-    }
-
-    private float DeriveOfDeriveOfDistance(float t)
-    {
-        float[] distParams = DistanceParams();
-        return 4 * 3 * Mathf.Pow(t, 2) * distParams[4] + 3 * 2 * t * distParams[3] + 2 * distParams[2];
     }
 
     public override Curve concat(Curve b)

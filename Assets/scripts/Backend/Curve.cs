@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-[System.Serializable]
+[Serializable]
 public abstract class Curve
 {
     public float z_start, z_offset;

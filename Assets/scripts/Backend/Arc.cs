@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
 
+[Serializable]
 public class Arc : Curve
 {
     /* Radius only calculated by center and start
      * If start==end, represents a circle
      */
-    public float curveslope = 0.1f;
 
     public Vector2 center;
     public float radius;

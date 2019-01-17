@@ -407,4 +407,12 @@ public class RoadDrawing : MonoBehaviour
             highLighters.Remove(c_offset);
         }
     }
+
+    public void SerializeRoad(){
+        roadManager.serializeRoad();
+    }
+
+    public void DeSerializeRoad(){
+        roadManager.deserializeRoad();
+    }
 }

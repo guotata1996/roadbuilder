@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 using System;
 using MoreLinq;
+using Newtonsoft.Json;
+using System.IO;
 
 public class RoadManager : MonoBehaviour
 {
@@ -82,8 +84,6 @@ public class RoadManager : MonoBehaviour
                 n.updateDirectionLaneRange();
             }
         }
-
-
     }
 
     private List<float> interSectPoints2Fragments(List<Vector3> intersectPoints, Curve originalCurve)
@@ -432,6 +432,65 @@ public class RoadManager : MonoBehaviour
 
                 vr.forwardVehicleController.updateAccs();
                 vr.backwardVehicleController.updateAccs();
+            }
+        }
+    }
+
+    public void serializeRoad(){
+        List<Pair<string, List<string>>> allSerializedRoads = new List<Pair<string, List<string>>>();
+
+        foreach(Road r in allroads){
+            string serializedCurve = JsonUtility.ToJson(r.curve);
+            List<string> laneConfigurePlusCurveType = r.laneconfigure.ConvertAll((input) => input);
+            laneConfigurePlusCurveType.Add(r.curve.GetType().ToString());
+
+            Pair<string, List<string>> serializedRoad = 
+                new Pair<string, List<string>>(serializedCurve, laneConfigurePlusCurveType);
+            allSerializedRoads.Add(serializedRoad);
+        }
+
+        using (StreamWriter streamWriter = File.CreateText("Saves/roadbuildersave.txt"))
+        {
+            streamWriter.Write(JsonConvert.SerializeObject(allSerializedRoads));
+        }
+    }
+
+    private void Reset()
+    {
+        foreach(Road r in allroads){
+            Destroy(r.roadObject);
+        }
+        foreach(Node n in allnodes.Values){
+            Destroy(n.gameObject);
+        }
+        allroads.Clear();
+        allnodes.Clear();
+    }
+
+    public void deserializeRoad(){
+        Reset();
+
+        using (StreamReader streamReader = File.OpenText("Saves/roadbuildersave.txt")){
+            string allSerializedRoads = streamReader.ReadToEnd();
+            List<Pair<string, List<string>>> deserializedRoads = JsonConvert.DeserializeObject<List<Pair<string, List<string>>>>(allSerializedRoads);
+            foreach(var pair in deserializedRoads){
+                string curveType = pair.Second[pair.Second.Count - 1];
+                Curve c;
+                switch (curveType){
+                    case "Line":
+                        c = JsonUtility.FromJson<Line>(pair.First);
+                        break;
+                    case "Bezeir":
+                        c = JsonUtility.FromJson<Bezeir>(pair.First);
+                        break;
+                    case "Arc":
+                        c = JsonUtility.FromJson<Arc>(pair.First);
+                        break;
+                    default:
+                        throw new Exception();
+                }
+
+                addRoad(c, pair.Second.GetRange(0, pair.Second.Count - 1));
             }
         }
     }

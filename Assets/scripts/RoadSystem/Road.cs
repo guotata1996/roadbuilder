@@ -24,6 +24,7 @@ public class Road
     }
     public Curve curve;
     public List<string> laneconfigure;
+
     public GameObject roadObject;
     internal bool virtualRoad
     {
@@ -174,7 +175,6 @@ public class Road
     Vector3 rightNormal_finder(int id, float p){
         return renderingFragements[id].rightNormal(p);
     }
-
 
     public VehicleController forwardVehicleController, backwardVehicleController;
 
