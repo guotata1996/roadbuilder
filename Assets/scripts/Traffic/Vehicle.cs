@@ -147,6 +147,7 @@ public class Vehicle : MonoBehaviour {
             {
                 Debug.Log("termination");
                 VhCtrlOfCurrentSeg.VehicleLeave(this, laneOn);
+
                 stopEvent.Invoke();
 
                 Reset();
@@ -207,28 +208,49 @@ public class Vehicle : MonoBehaviour {
         }
 	}
 
-    public void SetStart(Vector3 position){
+    public bool SetStart(Vector3 position){
         Vector3 modifiedPosition = drawing.roadManager.approxNodeToExistingRoad(position, out startRoad);
-        startParam = currentParam = (float)startRoad.curve.paramOf(modifiedPosition);
-        laneOn = 0;
+        if (startRoad == null){
+            return false;
+        }
+        float? param = startRoad.curve.paramOf(modifiedPosition);
+        if (param == null)
+        {
+            return false;
+        }
+        else
+        {
+            startParam = currentParam = param.Value;
+            laneOn = 0;
+            return true;
+        }
     }
 
-    public void SetDest(Vector3 position, bool randomizeLane = false, float initialSpeed = 0f){
+    public bool SetDest(Vector3 position, bool randomizeLane = false, float initialSpeed = 0f){
         Road endRoad;
         Debug.Assert(startRoad != null);
         Vector3 modifiedPosition = drawing.roadManager.approxNodeToExistingRoad(position, out endRoad);
-        float endParam = (float)endRoad.curve.paramOf(modifiedPosition);
-        pathOn = drawing.roadManager.findPath(startRoad, startParam, endRoad, endParam);
+        if (endRoad == null){
+            return false;
+        }
+        float? endParam = endRoad.curve.paramOf(modifiedPosition);
+        if (endParam == null){
+            return false;
+        }
+
+        pathOn = drawing.roadManager.findPath(startRoad, startParam, endRoad, endParam.Value);
 
         if (pathOn == null){
             Debug.LogWarning("Dest not reachable !");
-            return;
+            Destroy(gameObject);
+            return false;
         }
 
         laneOn = randomizeLane ? Random.Range(0, roadOfCurrentSeg.validLaneCount(headingOfCurrentSeg)) : 0;
         VhCtrlOfCurrentSeg.VehicleEnter(this, laneOn);
 
         speed = initialSpeed;
+        return true;
     }
 
     private void Reset()

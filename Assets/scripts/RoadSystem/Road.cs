@@ -26,6 +26,7 @@ public class Road
     public List<string> laneconfigure;
 
     public GameObject roadObject;
+
     internal bool virtualRoad
     {
         get

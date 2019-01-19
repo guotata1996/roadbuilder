@@ -322,7 +322,7 @@ public class RoadDrawing : MonoBehaviour
                     {
                         roadIndicator = Instantiate(roadIndicatorPrefab, transform);
                         RoadRenderer roadConfigure = roadIndicator.GetComponent<RoadRenderer>();
-                        roadConfigure.generate(targetRoad.curve, new List<string> { "removal_" + targetRoad.width });
+                        roadConfigure.generate(targetRoad.marginedOutCurve, new List<string> { "removal_" + targetRoad.width });
                     }
                 }
                 else{

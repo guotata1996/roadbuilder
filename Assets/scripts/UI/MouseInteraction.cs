@@ -18,7 +18,7 @@ public class MouseInteraction : MonoBehaviour {
 
     private void Awake()
     {
-        heightTextField = GameObject.Find("Canvas/Height");
+        heightTextField = GameObject.Find("Canvas/StatePanel/Height");
         heightTextField.GetComponent<Text>().text = "0";
     }
 

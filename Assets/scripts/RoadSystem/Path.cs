@@ -112,39 +112,15 @@ public class Path
         endParam = param;
     }
 
-    /*TODO:rewrite*/
     public float length
     {
         get
         {
-            float NNLength = components.GetRange(1, components.Count - 2).Sum((Pair<Road, bool> arg1) => arg1.First.curve.length);
-
-            if (components[0].First != components[components.Count - 1].First)
-            {
-                float startLength, endLength;
-                if (components[0].Second)
-                {
-                    startLength = (startParam == 1) ? components[0].First.curve.split(startParam).Last().length : 0f;
-                }
-                else
-                {
-                    startLength = (startParam == 0) ? components[0].First.curve.split(startParam).First().length : 0f;
-                }
-
-                if (components[components.Count - 1].Second)
-                {
-                    endLength = (endParam == 0) ? components[components.Count - 1].First.curve.split(endParam).First().length : 0f;
-                }
-                else
-                {
-                    endLength = (endParam == 1) ? components[components.Count - 1].First.curve.split(endParam).Last().length : 0f;
-                }
-                return NNLength + startLength + endLength;
+            float len = 0f;
+            for (int i = 0; i != SegCount; ++i){
+                len += getTotalLengthOfSeg(i);
             }
-            else
-            {
-                return components[0].First.curve.cut(startParam, endParam).length;
-            }
+            return len;
         }
     }
 
@@ -273,11 +249,24 @@ public class Path
         return components[segNum].First.marginedOutCurve.length;
     }
 
+    public bool Valid{
+        get{
+            return !(EndNodes != null && EndNodes.Any((n) => n.Value == null) ||
+                     components.Any(c => !c.First.noEntity && c.First.roadObject == null));
+        }
+    }
+
     public Pair<Road, float> travelAlong(int segnum, float param, float distToTravel, int lane, out int nextseg, out int nextLane, out bool termination)
     {
-        //check whether to jump at the very beginning
-        //Debug.Log(segnum + " , " + param + " , " + components[segnum].Second + " , " + components[segnum].First.margin1End);
+        //chech validity of path in case any seg is deleted
+        if (!Valid){
+            termination = true;
+            nextseg = segnum;
+            nextLane = 0;
+            return null;
+        }
 
+        //check whether to jump segs
         if (components[segnum].Second && (param >= components[segnum].First.margin1End) ||
             (!components[segnum].Second) && (param <= components[segnum].First.margin0End) ||
             (segnum == components.Count - 1 && components[segnum].Second && param >= endParam) ||
@@ -323,7 +312,7 @@ public class Path
             nextLane = lane;
         }
 
-        //Do not jump to second road
+        //Do not jump to seg 
         var roadOn = components[segnum];
         float newParam = roadOn.First.curve.TravelAlong(param, distToTravel, roadOn.Second);
         termination = false;
@@ -341,32 +330,7 @@ public class Path
         if (curveRepresentation == null)
         {
             curveRepresentation = new List<Pair<Curve, float>>();
-            /*
-            if (components.Count == 1)
-            {
-                Curve p = components.First().First.curve.cutByParam(Mathf.Min(startParam, endParam), Mathf.Max(startParam, endParam));
-                curveRepresentation = new List<Curve> { p };
-            }
-            else
-            {
-                List<Curve> allcurves = new List<Curve>();
-                Curve ps = components.First().Second ?
-                                     components.First().First.curve.cutByParam(startParam, components.First().First.margin1End) :
-                                     components.First().First.curve.cutByParam(components.First().First.margin0End, startParam);
-                allcurves.Add(ps);
 
-                foreach (var c in components.GetRange(1, components.Count - 2))
-                {
-                    allcurves.Add(c.First.marginedOutCurve);
-                }
-
-                Curve pe = components.Last().Second ?
-                                     components.Last().First.curve.cutByParam(components.Last().First.margin0End, endParam) :
-                                     components.Last().First.curve.cutByParam(endParam, components.Last().First.margin1End);
-                allcurves.Add(pe);
-
-                curveRepresentation = allcurves;
-            }*/
             foreach(var c in components){
                 Curve mainCurve = c.First.marginedOutCurve;
                 for (int i = 0; i != c.First.validLaneCount(c.Second); ++i){

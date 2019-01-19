@@ -148,7 +148,7 @@ public class RouteButton : MonoBehaviour
 
     public void decreaseVehicleflow()
     {
-        HourFlow = Mathf.Max(0, HourFlow - 100);
+        HourFlow = Mathf.Max(100, HourFlow - 100);
     }
 
     public void toggleRouteView()
@@ -157,13 +157,11 @@ public class RouteButton : MonoBehaviour
     }
 
     void generateVehicle(){
-        if (end != null)
+        if (start != null && end != null)
         {
-            GameObject vehicleObj = Instantiate(carModelPrefab);
+            GameObject vehicleObj = Instantiate(carModelPrefab, start.Value, Quaternion.identity);
             Vehicle vehicle = vehicleObj.GetComponent<Vehicle>();
-            vehicle.SetStart(start.Value);
-            vehicle.SetDest(end.Value, randomizeLane: true, initialSpeed: 10f);
-            if (vehicle.pathOn != null)
+            if (vehicle.SetStart(start.Value) && vehicle.SetDest(end.Value, randomizeLane: true, initialSpeed: 10f))
             {
                 float leadingS = vehicle.VhCtrlOfCurrentSeg.GetIDMInfo(vehicle.LaneOn, 0).leadingS;
                 if (leadingS < vehicle.bodyLength + new DriverBehavior().s0)
@@ -181,10 +179,20 @@ public class RouteButton : MonoBehaviour
                     };
                     vehiclesOfRoute.Add(vehicleObj);
                 }
+                return;
             }
+
+            Destroy(vehicleObj);
+            start = end = null;
         }
     }
 
-
+    public void Reset()
+    {
+        foreach(GameObject vehicleObj in vehiclesOfRoute){
+            vehicleObj.GetComponent<Vehicle>().Abort();
+            Destroy(vehicleObj);
+        }
+    }
 
 }

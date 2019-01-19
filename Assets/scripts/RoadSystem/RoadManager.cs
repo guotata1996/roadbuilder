@@ -23,9 +23,16 @@ public class RoadManager : MonoBehaviour
 
     public void addRoad(Curve curve, List<string> laneConfigure)
     {
+        if (laneConfigure.Count == 0){
+            GameObject.FindWithTag("Logger").GetComponent<MessageLogger>().LogMessage("Please configure lanes first!");
+            return;
+        }
+
         List<Road> allroadsBackup = allroads.ConvertAll(input => input);
 
-        List<Vector3> allNewIntersectPoints = new List<Vector3>();
+        List<Vector3> newIntersectPoints = new List<Vector3>();
+
+        List<Vector3> affectedPoints = new List<Vector3>();
 
         foreach (Road oldroad in allroads.ToList())
         {
@@ -33,29 +40,48 @@ public class RoadManager : MonoBehaviour
 
             if (intersectPoints.Count > 0)
             {
-                allNewIntersectPoints.AddRange(intersectPoints);
+                newIntersectPoints.AddRange(intersectPoints);
                 //remove oldroad
-                removeRoadWithoutChangingNodes(oldroad);
+                removeRoad(oldroad);
                 //Add new fragments
-                List<float> intersectParamsWithBeginAndEnd = interSectPoints2Fragments(intersectPoints, oldroad.curve);
-                addAllFragments(intersectParamsWithBeginAndEnd, oldroad.curve, oldroad.laneconfigure);
+                List<float> intersectParams = interSectPoints2Fragments(intersectPoints, oldroad.curve);
+                addAllFragments(intersectParams, oldroad.curve, oldroad.laneconfigure);
+
+                affectedPoints.AddRange(intersectPoints);
+                affectedPoints.Add(oldroad.curve.at(0f));
+                affectedPoints.Add(oldroad.curve.at(1f));
             }
         }
 
-        allNewIntersectPoints = allNewIntersectPoints.Distinct(new IntersectPointComparator()).ToList();
-        List<float> intersectParamsWithBeginAndEnd1 = interSectPoints2Fragments(allNewIntersectPoints, curve);
+        newIntersectPoints = newIntersectPoints.Distinct(new IntersectPointComparator()).ToList();
+        List<float> intersectParamsWithBeginAndEnd1 = interSectPoints2Fragments(newIntersectPoints, curve);
+
+        addAllFragments(intersectParamsWithBeginAndEnd1, curve, laneConfigure);
+
+        affectedPoints.Add(curve.at(0f));
+        affectedPoints.Add(curve.at(1f));
+        affectedPoints = affectedPoints.Distinct(new IntersectPointComparator()).ToList();
+
+        List<Node> affectedNodes = affectedPoints.ConvertAll(delegate (Vector3 pos)
+        {
+            Node n;
+            findNodeAt(pos, out n);
+            return n;
+        });
 
         try
         {
-            addAllFragments(intersectParamsWithBeginAndEnd1, curve, laneConfigure);
-
-            /*TODO revise*/
-            foreach (Road r in allroads.ToList())
-            {
-                createRoadObjectAndUpdateMargins(r);
+            foreach(Node n in affectedNodes){
+                n.updateMargins();
             }
 
-            foreach (Node n in allnodes.Values)
+            foreach (Node n in affectedNodes){
+                foreach (var r in n.connection){
+                    createRoadObjectAndUpdateMargins(r.First);
+                }
+            }
+            
+            foreach (Node n in affectedNodes)
             {
                 n.updateDirectionLaneRange();
             }
@@ -65,21 +91,26 @@ public class RoadManager : MonoBehaviour
 
             allroads = allroadsBackup;
 
-            foreach(Node n in allnodes.Values){
+            foreach(Node n in affectedNodes){
                 n.reEstablishConnections(allroads);
             }
 
-            foreach (var item in allnodes.Where(kvp => kvp.Value.connection.Count == 0).ToList())
+            foreach (var item in affectedNodes.Where(n => n.connection.Count == 0).ToList())
             {
-                allnodes.Remove(item.Key);
+                affectedNodes.Remove(item);
+                var nodepos = allnodes.First(kvp => kvp.Value == item).Key;
+                Debug.Assert(allnodes.Remove(nodepos));
             }
 
-            foreach (Road r in allroads.ToList())
+            foreach (Node n in affectedNodes)
             {
-                createRoadObjectAndUpdateMargins(r);
+                foreach (var r in n.connection)
+                {
+                    createRoadObjectAndUpdateMargins(r.First);
+                }
             }
 
-            foreach (Node n in allnodes.Values)
+            foreach (Node n in affectedNodes)
             {
                 n.updateDirectionLaneRange();
             }
@@ -102,6 +133,7 @@ public class RoadManager : MonoBehaviour
         {
             intersectParams1.Add(1f);
         }
+
         return intersectParams1;
     }
 
@@ -123,10 +155,7 @@ public class RoadManager : MonoBehaviour
         return newRoad;
     }
 
-    /* only destroys road obj, and remove it from record/nodes
-     * not changing other properties of node
-     */ 
-    private void removeRoadWithoutChangingNodes(Road road)
+    private void removeRoad(Road road)
     {
         allroads.Remove(road);
         Node startNode, endNode;
@@ -138,8 +167,6 @@ public class RoadManager : MonoBehaviour
         endNode.removeRoad(road);
 
         Destroy(road.roadObject);
-        //Debug.Log(road.curve + " removed!");
-
     }
 
     private void createOrAddtoNode(Road road)
@@ -248,6 +275,7 @@ public class RoadManager : MonoBehaviour
     public void createRoadObjectAndUpdateMargins(Road r)
     {
         Destroy(r.roadObject);
+
         GameObject roadInstance = Instantiate(road, transform);
         RoadRenderer roadConfigure = roadInstance.GetComponent<RoadRenderer>();
         r.roadObject = roadInstance;
@@ -275,7 +303,7 @@ public class RoadManager : MonoBehaviour
     }
 
     public void deleteRoad(Road r){
-        removeRoadWithoutChangingNodes(r);
+        removeRoad(r);
         Node nstart, nend;
         findNodeAt(r.curve.at(0f), out nstart);
         findNodeAt(r.curve.at(1f), out nend);
@@ -287,6 +315,7 @@ public class RoadManager : MonoBehaviour
                 allnodes.Remove(Algebra.approximate(n.position));
             }
             else{
+                /*
                 if (n.connection.Count == 2){
                     if (Geometry.sameMotherCurveUponIntersect(n.connection[0].First.curve, n.connection[1].First.curve)){
                         Road r1 = n.connection[0].First;
@@ -299,7 +328,17 @@ public class RoadManager : MonoBehaviour
                         addPureRoad(c2, r1.laneconfigure); //TODO: deal with different lane configure
                     }
                 }
+                */
+                n.updateMargins();
+
+                foreach (var r1 in n.connection)
+                {
+                    createRoadObjectAndUpdateMargins(r1.First);
+                }
+
+                n.updateDirectionLaneRange();
             }
+
         }
     }
 
@@ -449,16 +488,22 @@ public class RoadManager : MonoBehaviour
             allSerializedRoads.Add(serializedRoad);
         }
 
-        using (StreamWriter streamWriter = File.CreateText("Saves/roadbuildersave.txt"))
+        using (StreamWriter streamWriter = File.CreateText("roadbuildersave.txt"))
         {
             streamWriter.Write(JsonConvert.SerializeObject(allSerializedRoads));
         }
     }
 
+    /*clear everything on board*/
     private void Reset()
     {
+        foreach(GameObject vehicleCtrl in GameObject.FindGameObjectsWithTag("Traffic/RouteController")){
+            vehicleCtrl.GetComponent<RouteButton>().Reset();
+        }
+
         foreach(Road r in allroads){
             Destroy(r.roadObject);
+            r.forwardVehicleController = r.backwardVehicleController = null;
         }
         foreach(Node n in allnodes.Values){
             Destroy(n.gameObject);
@@ -468,30 +513,38 @@ public class RoadManager : MonoBehaviour
     }
 
     public void deserializeRoad(){
-        Reset();
+        try
+        {
+            using (StreamReader streamReader = File.OpenText("roadbuildersave.txt"))
+            {
+                Reset();
+                string allSerializedRoads = streamReader.ReadToEnd();
+                List<Pair<string, List<string>>> deserializedRoads = JsonConvert.DeserializeObject<List<Pair<string, List<string>>>>(allSerializedRoads);
+                foreach (var pair in deserializedRoads)
+                {
+                    string curveType = pair.Second[pair.Second.Count - 1];
+                    Curve c;
+                    switch (curveType)
+                    {
+                        case "Line":
+                            c = JsonUtility.FromJson<Line>(pair.First);
+                            break;
+                        case "Bezeir":
+                            c = JsonUtility.FromJson<Bezeir>(pair.First);
+                            break;
+                        case "Arc":
+                            c = JsonUtility.FromJson<Arc>(pair.First);
+                            break;
+                        default:
+                            throw new Exception();
+                    }
 
-        using (StreamReader streamReader = File.OpenText("Saves/roadbuildersave.txt")){
-            string allSerializedRoads = streamReader.ReadToEnd();
-            List<Pair<string, List<string>>> deserializedRoads = JsonConvert.DeserializeObject<List<Pair<string, List<string>>>>(allSerializedRoads);
-            foreach(var pair in deserializedRoads){
-                string curveType = pair.Second[pair.Second.Count - 1];
-                Curve c;
-                switch (curveType){
-                    case "Line":
-                        c = JsonUtility.FromJson<Line>(pair.First);
-                        break;
-                    case "Bezeir":
-                        c = JsonUtility.FromJson<Bezeir>(pair.First);
-                        break;
-                    case "Arc":
-                        c = JsonUtility.FromJson<Arc>(pair.First);
-                        break;
-                    default:
-                        throw new Exception();
+                    addRoad(c, pair.Second.GetRange(0, pair.Second.Count - 1));
                 }
-
-                addRoad(c, pair.Second.GetRange(0, pair.Second.Count - 1));
             }
+        }
+        catch(Exception){
+            GameObject.FindWithTag("Logger").GetComponent<MessageLogger>().LogMessage("No game save found!");
         }
     }
 }
