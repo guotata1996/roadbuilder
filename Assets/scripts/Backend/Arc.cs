@@ -142,7 +142,8 @@ public class Arc : Curve
     {
         float parametric_t = toGlobalParam(t);
         float tanGradient = z_offset / this.length;
-        return new Vector3(Mathf.Sin(parametric_t) * tanGradient, 1, -Mathf.Cos(parametric_t) * tanGradient).normalized;
+        return counterClockwise ? new Vector3(-Mathf.Sin(parametric_t) * tanGradient, 1, Mathf.Cos(parametric_t) * tanGradient).normalized :
+                                  new Vector3(Mathf.Sin(parametric_t) * tanGradient, 1, -Mathf.Cos(parametric_t) * tanGradient).normalized;
     }
 
     public override Vector3 frontNormal(float t)
@@ -150,7 +151,7 @@ public class Arc : Curve
         float parametric_t = toGlobalParam(t);
         float tanGradient = z_offset / this.length;
 
-        return counterClockwise ? -new Vector3(Mathf.Sin(parametric_t), tanGradient, -Mathf.Cos(parametric_t)).normalized :
+        return counterClockwise ? new Vector3(-Mathf.Sin(parametric_t), tanGradient, Mathf.Cos(parametric_t)).normalized :
                new Vector3(Mathf.Sin(parametric_t), tanGradient, -Mathf.Cos(parametric_t)).normalized;
     }
 
