@@ -334,7 +334,13 @@ public class Path
             foreach(var c in components){
                 Curve mainCurve = c.First.marginedOutCurve;
                 for (int i = 0; i != c.First.validLaneCount(c.Second); ++i){
-                    curveRepresentation.Add(new Pair<Curve, float>(mainCurve, c.First.getLaneCenterOffset(i, c.Second)));
+                    if (c.Second)
+                    {
+                        curveRepresentation.Add(new Pair<Curve, float>(mainCurve, c.First.getLaneCenterOffset(i, c.Second)));
+                    }
+                    else{
+                        curveRepresentation.Add(new Pair<Curve, float>(mainCurve.reversed(), -c.First.getLaneCenterOffset(i, c.Second)));
+                    }
                 }
             }
         }

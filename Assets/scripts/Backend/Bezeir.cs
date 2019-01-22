@@ -136,6 +136,8 @@ public class Bezeir : Curve
         return Mathf.Abs(lengthIntegral(temp_t_end) - lengthIntegral(temp_t_start));
     }
 
+
+
     private float lengthGradient(float t)
     {
         t = toGlobalParam(t);
@@ -163,13 +165,17 @@ public class Bezeir : Curve
     {
         t = t_start + (t_end - t_start) * t;
         Vector2 tangentdir = (2 * (t - 1) * P0 + (2 - 4 * t) * P1 + 2 * t * P2).normalized;
-        return new Vector3(tangentdir.y, 0f, -tangentdir.x);
+        if (t_end > t_start)
+            return new Vector3(tangentdir.y, 0f, -tangentdir.x);
+        else{
+            return new Vector3(-tangentdir.y, 0f, tangentdir.x);
+        }
     }
 
     public override List<Curve> segmentation(float maxlen)
     {
         List<Curve> result = new List<Curve>();
-        float lastEnd = 0;
+        float lastEnd = 0f;
         int fragCount = Mathf.CeilToInt(this.length / maxlen);
         for (int multipler = 0; multipler < fragCount; multipler++)
         {

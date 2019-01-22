@@ -152,6 +152,12 @@ public abstract class Curve
         z_offset = -z_offset;
     }
 
+    public Curve reversed(){
+        Curve cc = deepCopy();
+        cc.reverse();
+        return cc;
+    }
+
     protected float toGlobalParam(float t)
     {
         return t_start + t * (t_end - t_start);

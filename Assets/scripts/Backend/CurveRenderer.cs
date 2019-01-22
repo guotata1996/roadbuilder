@@ -54,7 +54,7 @@ public class CurveRenderer : MonoBehaviour
             for (int j = i * cross_vcount, local_j = 0; j != i * cross_vcount + cross_vcount; ++j, ++local_j)
             {
                 all_vertices[j] = localFragments[local_j];
-                linearUVs[j] = new Vector2(partial_diameter / cross_diameter, i * 1.0f / segmentCount);
+                linearUVs[j] = new Vector2(partial_diameter / cross_diameter, i * 1.0f / segmentCount * curve.length / cross_diameter);
                 partial_diameter += fragments[local_j].magnitude;
             }
         }
@@ -139,10 +139,10 @@ public class CurveRenderer : MonoBehaviour
 
         for (int i = -1; i <= segmentCount; ++i)
         {
-            float curveParam = Mathf.Clamp(i * 1.0f / (segmentCount - 1), 0f, 1f);
+            float curveParam = Mathf.Clamp01(i * 1.0f / (segmentCount - 1));
             vertices[i + 1] = (i == - 1 || i % 2 == 1) ? curve.at(curveParam) + curve.rightNormal(curveParam) * offset1.x + Vector3.up * offset1.y :
                                                   curve.at(curveParam) + curve.rightNormal(curveParam) * offset2.x + Vector3.up * offset2.y;
-            uvs[i + 1] = (i % 2 == 1) ? new Vector2(0f, curveParam * curve.length / (offset1.x - offset2.x)) :
+            uvs[i + 1] = (i == -1 || i % 2 == 1) ? new Vector2(0f, curveParam * curve.length / (offset1.x - offset2.x)) :
                 new Vector2(1f, curveParam * curve.length / (offset1.x - offset2.x));
         }
 

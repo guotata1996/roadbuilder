@@ -1519,12 +1519,6 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 555337642}
   m_CullTransparentMesh: 0
---- !u!114 &575011543 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 114865301055349830, guid: a92acaae07d2e4d0495260f644792940,
-    type: 2}
-  m_PrefabInternal: {fileID: 302335726}
-  m_Script: {fileID: 11500000, guid: d19dbe38456584115bf79fcc8a069742, type: 3}
 --- !u!1 &732336176
 GameObject:
   m_ObjectHideFlags: 0
@@ -3140,7 +3134,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 575011543}
+      - m_Target: {fileID: 0}
         m_MethodName: DeSerializeRoad
         m_Mode: 1
         m_Arguments:
@@ -4116,7 +4110,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 575011543}
+      - m_Target: {fileID: 0}
         m_MethodName: SerializeRoad
         m_Mode: 1
         m_Arguments:

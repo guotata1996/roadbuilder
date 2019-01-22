@@ -92,7 +92,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1009564055489620}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57f3088f58103c94286045b61509d7ff, type: 3}
+  m_Script: {fileID: 11500000, guid: ac71786a396194123be56410dbdddfcb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAngleDiff: 0.01

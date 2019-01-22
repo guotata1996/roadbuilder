@@ -394,7 +394,7 @@ public class RoadDrawing : MonoBehaviour
     public void highLightRoad(Pair<Curve, float> c_offset){
         GameObject highlighter = Instantiate(CurveRendererPrefab, transform);
         CurveRenderer renderer = highlighter.GetComponent<CurveRenderer>();
-        Material normalMaterial = Resources.Load<Material>("Materials/green");
+        Material normalMaterial = Resources.Load<Material>("Materials/Rolling");
         renderer.CreateMesh(c_offset.First, 0.3f, normalMaterial, offset:c_offset.Second, z_offset: 0.03f);
         highLighters.Add(c_offset, highlighter);
     }
