@@ -265,7 +265,9 @@ public static class Geometry {
     }
 
     public static angleType getAngleType(float angle){
-        Debug.Assert(0f < angle && angle < Mathf.PI * 2);
+        if (angle <= 0f || angle >= Mathf.PI * 2){
+            Debug.LogError("invalid angle:" + angle);
+        }
         if (angle <= Mathf.PI/2){
             return angleType.Sharp;
         }

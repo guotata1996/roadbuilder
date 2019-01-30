@@ -102,7 +102,8 @@ public class Bezeir : Curve
     {
         t = toGlobalParam(t);
         Vector2 tangentdir = (2 * (t - 1) * P0 + (2 - 4 * t) * P1 + 2 * t * P2);
-        return Line.TryInit(Vector2.zero, tangentdir, 0f, 0f).angle_2d(t);
+        return t_end > t_start ? Line.TryInit(Vector2.zero, tangentdir).angle_2d(t) :
+                                     Line.TryInit(tangentdir, Vector2.zero).angle_2d(t);
     }
 
     private float lengthIntegral(float t)

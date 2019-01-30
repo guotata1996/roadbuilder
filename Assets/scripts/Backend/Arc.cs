@@ -194,11 +194,7 @@ public class Arc : Curve
         {
             ans_candidate -= Mathf.PI * 2;
         }
-        Debug.Assert(0 <= ans_candidate && ans_candidate < 2 * Mathf.PI);
-        if (ans_candidate < 0 || ans_candidate >= 2 * Mathf.PI)
-        {
-            Debug.Log(t + "'s ans = " + ans_candidate + "(tstart=) " + t_start + " (tend=) " + t_end);
-        }
+
         return ans_candidate;
     }
 

@@ -162,12 +162,13 @@ public class Node : MonoBehaviour
         }
         return rtn;
     }
-
+    /*
     public override int GetHashCode()
     {
         return position.GetHashCode();
     }
-
+    */
+    public override int GetHashCode() => position.GetHashCode();
     public override bool Equals(object obj)
     {
         Node n = obj as Node;
@@ -193,8 +194,8 @@ public class Node : MonoBehaviour
             for (int i = 0; i != connection.Count; ++i)
             {
                 int i_hat = (i == connection.Count - 1) ? 0 : i + 1;
-                List<Curve> localSmootheners;
-                var margins = smoothenCrossing(connection[i].First, connection[i_hat].First, out localSmootheners);
+                //List<Curve> localSmootheners;
+                var margins = smoothenCrossing(connection[i].First, connection[i_hat].First, out List<Curve> localSmootheners);
                 if (smoothPolygonEdges.Count > 0 && localSmootheners.Count > 0)
                 {
                     addIfNotNull(smoothPolygonEdges, Line.TryInit(smoothPolygonEdges.Last().at_ending_2d(false), localSmootheners.First().at_ending_2d(true)));
