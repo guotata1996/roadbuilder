@@ -198,8 +198,8 @@ public abstract class Curve
             Curve rtn;
             if (start < 0f && !Algebra.isclose(start, 0f) || end > 1f && !Algebra.isclose(end, 1f))
             {
-                Debug.Assert(false);
                 Debug.Log("Abnormal cut, start:" + start + "end:" + end);
+                throw new InvalidOperationException();
             }
             Curve secondAndThird = Algebra.isclose(start, 0f) ? this : split(start).Last();
             if (!Algebra.isclose(end, 1f))

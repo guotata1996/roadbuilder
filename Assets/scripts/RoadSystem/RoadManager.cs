@@ -77,13 +77,8 @@ public class RoadManager : MonoBehaviour
 
             foreach (Node n in affectedNodes){
                 foreach (var r in n.connection){
-                    createRoadObjectAndUpdateMargins(r.First);
+                    createRoadObject(r);
                 }
-            }
-            
-            foreach (Node n in affectedNodes)
-            {
-                n.updateDirectionLaneRange();
             }
         }
         catch{
@@ -106,14 +101,13 @@ public class RoadManager : MonoBehaviour
             {
                 foreach (var r in n.connection)
                 {
-                    createRoadObjectAndUpdateMargins(r.First);
+                    createRoadObject(r);
                 }
             }
+        }
 
-            foreach (Node n in affectedNodes)
-            {
-                n.updateDirectionLaneRange();
-            }
+        foreach(Road r in allroads){
+            Debug.Assert(r.marginedOutCurve != null);
         }
     }
 
@@ -272,13 +266,16 @@ public class RoadManager : MonoBehaviour
         return p;
     }
 
-    public void createRoadObjectAndUpdateMargins(Road r)
+    public void createRoadObject(Road r)
     {
         Destroy(r.roadObject);
 
         GameObject roadInstance = Instantiate(road, transform);
         RoadRenderer roadConfigure = roadInstance.GetComponent<RoadRenderer>();
         r.roadObject = roadInstance;
+        roadConfigure.generate(r);
+
+        /*
         Node n0, n1, startNode, endNode;
         findNodeAt(r.curve.at(0f), out n0);
         findNodeAt(r.curve.at(1f), out n1);
@@ -291,15 +288,13 @@ public class RoadManager : MonoBehaviour
             startNode = n1;
             endNode = n0;
         }
-        /*
-        Debug.Log(r.curve + " 0L= " + startNode.getMargin(r).First + " 0R= " + startNode.getMargin(r).Second + "\n1L="
-                  + endNode.getMargin(r).First + " 1R= " + endNode.getMargin(r).Second);
         */
-
+        /*
         roadConfigure.generate(r.curve, r.laneconfigure,
                                startNode.getMargin(r).First, startNode.getMargin(r).Second,
                                endNode.getMargin(r).First, endNode.getMargin(r).Second);
         r.setMargins(startNode.getMargin(r).First, startNode.getMargin(r).Second, endNode.getMargin(r).First, endNode.getMargin(r).Second);
+        */
     }
 
     public void deleteRoad(Road r){
@@ -333,12 +328,9 @@ public class RoadManager : MonoBehaviour
 
                 foreach (var r1 in n.connection)
                 {
-                    createRoadObjectAndUpdateMargins(r1.First);
+                    createRoadObject(r1);
                 }
-
-                n.updateDirectionLaneRange();
             }
-
         }
     }
 
@@ -414,8 +406,7 @@ public class RoadManager : MonoBehaviour
         while (distances.Count > 0){
             Node closestNode = distances.MinBy((KeyValuePair<Node, float> arg1) => arg1.Value).Key;
 
-            foreach(Pair<Road, ConnectionInfo> rcin in closestNode.connection){
-                Road r1 = rcin.First;
+            foreach(Road r1 in closestNode.connection){
                 Node neighbor = null;
                 if (Algebra.isclose(r1.curve.at(0f), closestNode.position) && r1.validLaneCount(true) > 0){
                     findNodeAt(r1.curve.at(1f), out neighbor);
@@ -430,7 +421,7 @@ public class RoadManager : MonoBehaviour
 
                 if (neighbor != null && distances.ContainsKey(neighbor) && distances[neighbor] > distances[closestNode] + w1){
                     distances[neighbor] = distances[closestNode] + w1;
-                    parentness[neighbor] = new Pair<Road, Node>(rcin.First, closestNode);
+                    parentness[neighbor] = new Pair<Road, Node>(r1, closestNode);
                 }
             }
             distances.Remove(closestNode);

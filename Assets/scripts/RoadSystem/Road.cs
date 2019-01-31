@@ -19,7 +19,8 @@ public class Road
         forwardVehicleController = new VehicleController(validLaneCount(true));
         backwardVehicleController = new VehicleController(validLaneCount(false));
 
-        setMargins(0f, 0f, 0f, 0f);
+        _margin0LLength = _margin0RLength = _margin1LLength = _margin1RLength = 0f;
+        calculateParamMargins();
         noEntity = _noEntity;
     }
     public Curve curve;
@@ -97,24 +98,87 @@ public class Road
 
     /*actual render info for vehicle*/
 
-    public float margin0End, margin1End;
+    float _margin0LLength, _margin0RLength, _margin1LLength, _margin1RLength;
+    float _margin0Param, _margin1Param;
+
+    public float margin0LLength{
+        get{
+            return _margin0LLength;
+        }
+        set{
+            _margin0LLength = value;
+            calculateParamMargins();
+        }
+    }
+
+    public float margin0RLength
+    {
+        get
+        {
+            return _margin0RLength;
+        }
+        set
+        {
+            _margin0RLength = value;
+            calculateParamMargins();
+        }
+    }
+
+    public float margin1LLength
+    {
+        get
+        {
+            return _margin1LLength;
+        }
+        set
+        {
+            _margin1LLength = value;
+            calculateParamMargins();
+        }
+    }
+
+    public float margin1RLength
+    {
+        get
+        {
+            return _margin1RLength;
+        }
+        set
+        {
+            _margin1RLength = value;
+            calculateParamMargins();
+        }
+    }
+
+    public float margin0Param{
+        get{
+            return _margin0Param;
+        }
+    }
+
+    public float margin1Param{
+        get{
+            return _margin1Param;
+        }
+    }
+
     Curve[] renderingFragements;
 
-    public void setMargins(float _margin0L, float _margin0R, float _margin1L, float _margin1R){
-        float indicatorMargin0Bound = Mathf.Max(_margin0L, _margin0R);
-        float indicatorMargin1Bound = Mathf.Max(_margin1L, _margin1R);
+    void calculateParamMargins(){
+        float indicatorMargin0Bound = Mathf.Max(_margin0LLength, _margin0RLength);
+        float indicatorMargin1Bound = Mathf.Max(_margin1LLength, _margin1RLength);
         renderingFragements = RoadRenderer.splitByMargin(curve, indicatorMargin0Bound, indicatorMargin1Bound);
         if (renderingFragements[0] != null){
-            margin0End = curve.paramOf(renderingFragements[0].at(1f)) ?? 0f;
+            _margin0Param = curve.paramOf(renderingFragements[0].at(1f)) ?? 0f;
         }
         else{
-            margin0End = 0;
+            _margin0Param = 0;
         }
         if (renderingFragements[2] != null){
-            margin1End = curve.paramOf(renderingFragements[2].at(0f)) ?? 0f;
+            _margin1Param = curve.paramOf(renderingFragements[2].at(0f)) ?? 0f;
         }
         else{
-            margin1End = 1;
+            _margin1Param = 1;
         }
     }
 
@@ -122,19 +186,19 @@ public class Road
 
     Vector3 renderingCurveSolver(float param, curveValueFinder finder){
         Debug.Assert(renderingFragements != null);
-        if (param < margin0End && renderingFragements[0] != null)
+        if (param < margin0Param && renderingFragements[0] != null)
         {
-            return finder(0, param / margin0End);
+            return finder(0, param / margin0Param);
         }
         else
         {
-            if (param > margin1End && renderingFragements[2] != null)
+            if (param > margin1Param && renderingFragements[2] != null)
             {
-                return finder(2, (param - margin1End) / (1f - margin1End));
+                return finder(2, (param - margin1Param) / (1f - margin1Param));
             }
             else
             {
-                return finder(1, (param - margin0End) / (margin1End - margin0End));
+                return finder(1, (param - margin0Param) / (margin1Param - margin0Param));
             }
         }
     }

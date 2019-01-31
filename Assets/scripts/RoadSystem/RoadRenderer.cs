@@ -39,7 +39,11 @@ public class RoadRenderer : MonoBehaviour
     static List<string> commonTypes = new List<string> { "lane", "interval", "surface", "removal", "fence", "column", "singlefence" };
 
     public static List<string> separatorTypes = new List<string> { "solid_yellow", "dash_yellow", "solid_white", "solid_yellow" };
-    
+
+    public void generate(Road r){
+        generate(r.curve, r.laneconfigure, r.margin0LLength, r.margin0RLength, r.margin1LLength, r.margin1RLength);
+    }
+
     public void generate(Curve curve, List<string> laneConfig,
                          float indicatorMargin_0L = 0f, float indicatorMargin_0R = 0f, float indicatorMargin_1L = 0f, float indicatorMargin_1R = 0f){
                          

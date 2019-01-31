@@ -237,13 +237,13 @@ public class Path
         /*non-trivial case*/
         if (segNum == 0){
             return components[0].Second ?
-                                components[0].First.curve.cutByParam(startParam, components[0].First.margin1End).length :
-                                components[0].First.curve.cutByParam(components[0].First.margin0End, startParam).length;
+                                components[0].First.curve.cutByParam(startParam, components[0].First.margin1Param).length :
+                                components[0].First.curve.cutByParam(components[0].First.margin0Param, startParam).length;
         }
         if (segNum == SegCount - 1){
             return components[SegCount - 1].Second ?
-                                           components[SegCount - 1].First.curve.cutByParam(components[SegCount - 1].First.margin0End, endParam).length :
-                                           components[SegCount - 1].First.curve.cutByParam(endParam, components[SegCount - 1].First.margin1End).length;
+                                           components[SegCount - 1].First.curve.cutByParam(components[SegCount - 1].First.margin0Param, endParam).length :
+                                           components[SegCount - 1].First.curve.cutByParam(endParam, components[SegCount - 1].First.margin1Param).length;
         }
 
         return components[segNum].First.marginedOutCurve.length;
@@ -267,8 +267,8 @@ public class Path
         }
 
         //check whether to jump segs
-        if (components[segnum].Second && (param >= components[segnum].First.margin1End) ||
-            (!components[segnum].Second) && (param <= components[segnum].First.margin0End) ||
+        if (components[segnum].Second && (param >= components[segnum].First.margin1Param) ||
+            (!components[segnum].Second) && (param <= components[segnum].First.margin0Param) ||
             (segnum == components.Count - 1 && components[segnum].Second && param >= endParam) ||
             (segnum == components.Count - 1 && !components[segnum].Second && param <= endParam))
         {
@@ -282,7 +282,7 @@ public class Path
             }
             else
             {
-                param = components[segnum].Second ? components[segnum].First.margin0End : components[segnum].First.margin1End;
+                param = components[segnum].Second ? components[segnum].First.margin0Param : components[segnum].First.margin1Param;
 
                 Node refNode = EndNodes[components[segnum - 1].First];
                 if (components[segnum].First.noEntity)
