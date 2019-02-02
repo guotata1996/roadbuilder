@@ -149,7 +149,7 @@ public class Path
             {
                 //entering a crossing
                 int laneNumInValidLanes = lane - refNode.getValidInRoadLanes(components[segnum].First, components[segnum + 2].First).First;
-                if (laneNumInValidLanes < 0 || (laneNumInValidLanes > components[segnum + 1].First.validLaneCount(true) - 1)){
+                if (laneNumInValidLanes < 0 || (laneNumInValidLanes > components[segnum + 1].First.directionalLaneCount(true) - 1)){
                     return null;
                 }
                 else{
@@ -172,7 +172,7 @@ public class Path
         if (components[segnum - 1].First.noEntity){
             //at the end of prev seg, leaving a crossing
             int laneNumInValidLanes = lane - refNode.getValidOutRoadLanes(components[segnum - 2].First, components[segnum].First).First;
-            if (laneNumInValidLanes < 0 || laneNumInValidLanes > components[segnum - 1].First.validLaneCount(true) - 1){
+            if (laneNumInValidLanes < 0 || laneNumInValidLanes > components[segnum - 1].First.directionalLaneCount(true) - 1){
                 return null;
             }
             else{
@@ -194,7 +194,7 @@ public class Path
     public Pair<int, int> getOutgoingLaneRangeOfSeg(int segnum){
         if (segnum == SegCount - 1 || components[segnum].First.noEntity)
         {
-            return new Pair<int, int>(0, GetRoadOfSeg(segnum).validLaneCount(GetHeadingOfSeg(segnum)) - 1);
+            return new Pair<int, int>(0, GetRoadOfSeg(segnum).directionalLaneCount(GetHeadingOfSeg(segnum)) - 1);
         }
         else{
             Node refNode = EndNodes[components[segnum].First];
@@ -289,7 +289,7 @@ public class Path
                 {
                     //enter a crossing
                     int laneNumInValidLanes = lane - refNode.getValidInRoadLanes(components[segnum - 1].First, components[segnum + 1].First).First;
-                    nextLane = Mathf.Clamp(laneNumInValidLanes, 0, components[segnum].First.validLaneCount(true) - 1);
+                    nextLane = Mathf.Clamp(laneNumInValidLanes, 0, components[segnum].First.directionalLaneCount(true) - 1);
                 }
                 else
                 {
@@ -333,7 +333,7 @@ public class Path
 
             foreach(var c in components){
                 Curve mainCurve = c.First.marginedOutCurve;
-                for (int i = 0; i != c.First.validLaneCount(c.Second); ++i){
+                for (int i = 0; i != c.First.directionalLaneCount(c.Second); ++i){
                     if (c.Second)
                     {
                         curveRepresentation.Add(new Pair<Curve, float>(mainCurve, c.First.getLaneCenterOffset(i, c.Second)));

@@ -145,7 +145,6 @@ public class Vehicle : MonoBehaviour {
 
             if (termination)
             {
-                Debug.Log("termination");
                 VhCtrlOfCurrentSeg.VehicleLeave(this, laneOn);
 
                 stopEvent.Invoke();
@@ -246,7 +245,7 @@ public class Vehicle : MonoBehaviour {
             return false;
         }
 
-        laneOn = randomizeLane ? Random.Range(0, roadOfCurrentSeg.validLaneCount(headingOfCurrentSeg)) : 0;
+        laneOn = randomizeLane ? Random.Range(0, roadOfCurrentSeg.directionalLaneCount(headingOfCurrentSeg)) : 0;
         VhCtrlOfCurrentSeg.VehicleEnter(this, laneOn);
 
         speed = initialSpeed;
@@ -272,7 +271,7 @@ public class Vehicle : MonoBehaviour {
     public void ShiftLane(bool right){
         int newLane;
         newLane = right ? Mathf.Max(0, laneOn - 1) :
-                               Mathf.Min(roadOfCurrentSeg.validLaneCount(headingOfCurrentSeg) - 1, laneOn + 1);
+                               Mathf.Min(roadOfCurrentSeg.directionalLaneCount(headingOfCurrentSeg) - 1, laneOn + 1);
 
         rightOffset += roadOfCurrentSeg.getLaneCenterOffset(laneOn, headingOfCurrentSeg) -
                             roadOfCurrentSeg.getLaneCenterOffset(newLane, headingOfCurrentSeg);

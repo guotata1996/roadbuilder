@@ -16,15 +16,15 @@ public class Road
                 laneconfigure.Add(l);
             }
         }
-        forwardVehicleController = new VehicleController(validLaneCount(true));
-        backwardVehicleController = new VehicleController(validLaneCount(false));
+        forwardVehicleController = new VehicleController(directionalLaneCount(true));
+        backwardVehicleController = new VehicleController(directionalLaneCount(false));
 
         _margin0LLength = _margin0RLength = _margin1LLength = _margin1RLength = 0f;
         calculateParamMargins();
         noEntity = _noEntity;
     }
     public Curve curve;
-    public List<string> laneconfigure;
+    public List<string> laneconfigure { get; private set; }
 
     public GameObject roadObject;
 
@@ -46,46 +46,68 @@ public class Road
         }
     }
 
+    float[] forwardLaneCenterOffsetBackend;
     public float getLaneCenterOffset(int laneNum, bool direction){
-        if (laneNum < 0 || laneNum >= validLaneCount(direction))
+        if (laneNum < 0 || laneNum >= directionalLaneCount(direction))
         {
             Debug.Assert(false);
             return 0;
         }
 
-        laneNum = direction ? totalLaneCount - 1 - laneNum : laneNum;
-        for (int foundLanes = 0, j = 0; foundLanes <= laneNum; j++){
-            if (laneconfigure[j] == "lane"){
-                foundLanes++;
-            }
-            if (foundLanes == laneNum + 1){
-                return RoadRenderer.getConfigureWidth(laneconfigure.GetRange(0, j)) +
-                                   0.5f * RoadRenderer.getConfigureWidth(laneconfigure.GetRange(j, 1)) -
-                                   0.5f * width;
-            }
+        if (forwardLaneCenterOffsetBackend == null)
+        {
+            updateLaneCenterOffsetBackend();
         }
 
-        Debug.Assert(false);
-        return 0;
-    }
-
-    public int validLaneCount(bool direction){
-        int mainSeparatorIndex = laneconfigure.FindIndex((obj) => obj.EndsWith("yellow"));
-        if (mainSeparatorIndex == -1){
-            /*if no yellow line, suppose road's dir is same with curve*/
-            return direction ? totalLaneCount : 0;
+        if (!direction){
+            return forwardLaneCenterOffsetBackend[laneNum];
         }
         else{
-            return direction ?
-                laneconfigure.GetRange(mainSeparatorIndex + 1, laneconfigure.Count - mainSeparatorIndex - 1).Count(config => config == "lane") :
-                             laneconfigure.GetRange(0, mainSeparatorIndex).Count(config => config == "lane");
-                            
+            return forwardLaneCenterOffsetBackend[totalLaneCount - laneNum - 1];
         }
     }
 
+    void updateLaneCenterOffsetBackend(){
+        forwardLaneCenterOffsetBackend = new float[totalLaneCount];
+
+        for (int foundLanes = 0, j = 0; foundLanes != totalLaneCount; ++j){
+            if (laneconfigure[j] == "lane"){
+                forwardLaneCenterOffsetBackend[foundLanes] = RoadRenderer.getConfigureWidth(laneconfigure.GetRange(0, j)) +
+                                   0.5f * RoadRenderer.getConfigureWidth(laneconfigure.GetRange(j, 1)) -
+                                   0.5f * width;
+                foundLanes++;
+            }
+        }
+    }
+
+    int _forwardLaneCount = -1, _backwardLaneCount = -1;
+
+    public int directionalLaneCount(bool direction){
+        if (_forwardLaneCount == -1)
+        {
+            int mainSeparatorIndex = laneconfigure.FindIndex((obj) => obj.EndsWith("yellow"));
+            if (mainSeparatorIndex == -1)
+            {
+                _forwardLaneCount = totalLaneCount;
+                _backwardLaneCount = 0;
+            }
+            else
+            {
+                _forwardLaneCount = laneconfigure.GetRange(mainSeparatorIndex + 1, laneconfigure.Count - mainSeparatorIndex - 1).Count(config => config == "lane");
+                _backwardLaneCount = laneconfigure.GetRange(0, mainSeparatorIndex).Count(config => config == "lane");
+
+            }
+        }
+        return direction ? _forwardLaneCount : _backwardLaneCount;
+    }
+
+    int _totalLaneCount = -1;
     int totalLaneCount{
         get{
-            return laneconfigure.Count(config => config == "lane");
+            if (_totalLaneCount == -1){
+                _totalLaneCount = laneconfigure.Count(config => config == "lane");
+            }
+            return _totalLaneCount;
         }
     }
 

@@ -8,16 +8,16 @@ Build road just like in a simcity game.
 - Round and smooth intersections
 - Intelligent and easy drawing
 - Support elevated road and 3D objects on road side
+- Input validity check
 
 ## Traffic Simulation
 - Navigation from source to sink with auto lane selection
 - Longitudinal and lane-changing behavior based on IDM and BOMIL models
 
 ## Major Todos
-- Optimize memory use
+- Optimize vehicle simulation efficiency
 - Configuration panel for each road and crossroads
-- Input validity check
-- Avoid lane-changing deadlocks
+- Handle lane-changing deadlocks
 
 ## Demo
 [![Vehicle](https://img.youtube.com/vi/m6vOuXqUa0A/0.jpg)](https://www.youtube.com/watch?v=m6vOuXqUa0A)

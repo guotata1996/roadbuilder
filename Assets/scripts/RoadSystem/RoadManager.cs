@@ -81,7 +81,9 @@ public class RoadManager : MonoBehaviour
                 }
             }
         }
-        catch{
+        catch(Exception ex){
+            Debug.Log(ex.StackTrace);
+
             GameObject.FindWithTag("Logger").GetComponent<MessageLogger>().LogMessage("Intersections too close!");
 
             allroads = allroadsBackup;
@@ -274,27 +276,6 @@ public class RoadManager : MonoBehaviour
         RoadRenderer roadConfigure = roadInstance.GetComponent<RoadRenderer>();
         r.roadObject = roadInstance;
         roadConfigure.generate(r);
-
-        /*
-        Node n0, n1, startNode, endNode;
-        findNodeAt(r.curve.at(0f), out n0);
-        findNodeAt(r.curve.at(1f), out n1);
-
-        if (n0.startof(r.curve)){
-            startNode = n0;
-            endNode = n1;
-        }
-        else{
-            startNode = n1;
-            endNode = n0;
-        }
-        */
-        /*
-        roadConfigure.generate(r.curve, r.laneconfigure,
-                               startNode.getMargin(r).First, startNode.getMargin(r).Second,
-                               endNode.getMargin(r).First, endNode.getMargin(r).Second);
-        r.setMargins(startNode.getMargin(r).First, startNode.getMargin(r).Second, endNode.getMargin(r).First, endNode.getMargin(r).Second);
-        */
     }
 
     public void deleteRoad(Road r){
@@ -343,25 +324,25 @@ public class RoadManager : MonoBehaviour
 
         List<Node> possibleStartNodes = new List<Node>();
         List<Node> possibleEndNodes = new List<Node>();
-        if (r1.validLaneCount(false) > 0){
+        if (r1.directionalLaneCount(false) > 0){
             Node r10;
             findNodeAt(r1.curve.at(0f), out r10);
             possibleStartNodes.Add(r10);
         }
 
-        if (r1.validLaneCount(true) > 0){
+        if (r1.directionalLaneCount(true) > 0){
             Node r11;
             findNodeAt(r1.curve.at(1f), out r11);
             possibleStartNodes.Add(r11);
         }
 
-        if (r2.validLaneCount(true) > 0){
+        if (r2.directionalLaneCount(true) > 0){
             Node r20;
             findNodeAt(r2.curve.at(0f), out r20);
             possibleEndNodes.Add(r20);
         }
 
-        if (r2.validLaneCount(false) > 0)
+        if (r2.directionalLaneCount(false) > 0)
         {
             Node r21;
             findNodeAt(r2.curve.at(1f), out r21);
@@ -408,11 +389,11 @@ public class RoadManager : MonoBehaviour
 
             foreach(Road r1 in closestNode.connection){
                 Node neighbor = null;
-                if (Algebra.isclose(r1.curve.at(0f), closestNode.position) && r1.validLaneCount(true) > 0){
+                if (Algebra.isclose(r1.curve.at(0f), closestNode.position) && r1.directionalLaneCount(true) > 0){
                     findNodeAt(r1.curve.at(1f), out neighbor);
                 }
                 else{
-                    if (Algebra.isclose(r1.curve.at(1f), closestNode.position) && r1.validLaneCount(false) > 0)
+                    if (Algebra.isclose(r1.curve.at(1f), closestNode.position) && r1.directionalLaneCount(false) > 0)
                     {
                         findNodeAt(r1.curve.at(0f), out neighbor);
                     }
@@ -446,7 +427,7 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         foreach(Road r in allroads){
             r.forwardVehicleController.updateLanes();
@@ -464,25 +445,29 @@ public class RoadManager : MonoBehaviour
                 vr.backwardVehicleController.updateAccs();
             }
         }
+        
     }
 
     public void serializeRoad(){
-        List<Pair<string, List<string>>> allSerializedRoads = new List<Pair<string, List<string>>>();
+        List<Pair<object, List<string>>> allSerializedRoads = new List<Pair<object, List<string>>>();
 
         foreach(Road r in allroads){
-            string serializedCurve = JsonUtility.ToJson(r.curve);
+            string serializedCurve = JsonUtility.ToJson(r.curve, prettyPrint:true);
+
             List<string> laneConfigurePlusCurveType = r.laneconfigure.ConvertAll((input) => input);
             laneConfigurePlusCurveType.Add(r.curve.GetType().ToString());
 
-            Pair<string, List<string>> serializedRoad = 
-                new Pair<string, List<string>>(serializedCurve, laneConfigurePlusCurveType);
+            Pair<object, List<string>> serializedRoad = 
+                new Pair<object, List<string>>(JsonConvert.DeserializeObject(serializedCurve), laneConfigurePlusCurveType);
             allSerializedRoads.Add(serializedRoad);
+
         }
 
         using (StreamWriter streamWriter = File.CreateText("roadbuildersave.txt"))
         {
-            streamWriter.Write(JsonConvert.SerializeObject(allSerializedRoads));
+            streamWriter.Write(JsonConvert.SerializeObject(allSerializedRoads, Formatting.Indented));
         }
+
     }
 
     /*clear everything on board*/
@@ -510,7 +495,7 @@ public class RoadManager : MonoBehaviour
             {
                 Reset();
                 string allSerializedRoads = streamReader.ReadToEnd();
-                List<Pair<string, List<string>>> deserializedRoads = JsonConvert.DeserializeObject<List<Pair<string, List<string>>>>(allSerializedRoads);
+                List<Pair<object, List<string>>> deserializedRoads = JsonConvert.DeserializeObject<List<Pair<object, List<string>>>>(allSerializedRoads);
                 foreach (var pair in deserializedRoads)
                 {
                     string curveType = pair.Second[pair.Second.Count - 1];
@@ -518,13 +503,13 @@ public class RoadManager : MonoBehaviour
                     switch (curveType)
                     {
                         case "Line":
-                            c = JsonUtility.FromJson<Line>(pair.First);
+                            c = JsonUtility.FromJson<Line>(JsonConvert.SerializeObject(pair.First));
                             break;
                         case "Bezeir":
-                            c = JsonUtility.FromJson<Bezeir>(pair.First);
+                            c = JsonUtility.FromJson<Bezeir>(JsonConvert.SerializeObject(pair.First));
                             break;
                         case "Arc":
-                            c = JsonUtility.FromJson<Arc>(pair.First);
+                            c = JsonUtility.FromJson<Arc>(JsonConvert.SerializeObject(pair.First));
                             break;
                         default:
                             throw new Exception();
@@ -538,4 +523,5 @@ public class RoadManager : MonoBehaviour
             GameObject.FindWithTag("Logger").GetComponent<MessageLogger>().LogMessage("No game save found!");
         }
     }
+
 }

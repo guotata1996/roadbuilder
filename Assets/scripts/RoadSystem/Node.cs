@@ -549,8 +549,8 @@ public class Node : MonoBehaviour
 
         outLaneRange = new Pair<int, int>[dirCount, dirCount];
         for (int i = 0; i != dirCount; ++i){
-            int incomingLanesNum = connection[i].validLaneCount(!startof(connection[i].curve));
-            int outgoingLaneNum = connection.Sum(r => r.validLaneCount(startof(r.curve)));
+            int incomingLanesNum = connection[i].directionalLaneCount(!startof(connection[i].curve));
+            int outgoingLaneNum = connection.Sum(r => r.directionalLaneCount(startof(r.curve)));
             //Debug.Log("for road # " + connection[i].First.curve + " ,incoming= " + incomingLanesNum + " outgoing= " + outgoingLaneNum);
 
             int beingAssigned = 0;
@@ -561,7 +561,7 @@ public class Node : MonoBehaviour
                 for (int j = i + 1; j <= i + dirCount; ++j)
                 {
                     int target = j % dirCount;
-                    int targetLaneNum = connection[target].validLaneCount(startof(connection[target].curve));
+                    int targetLaneNum = connection[target].directionalLaneCount(startof(connection[target].curve));
 
                     if (incomingLanesNum > 0 && targetLaneNum > 0)
                     {
@@ -578,7 +578,7 @@ public class Node : MonoBehaviour
                 //supply satisfies demand
                 for (int j = i + 1; j <= i + dirCount; ++j){
                     int target = j % dirCount;
-                    int targetLaneNum = connection[target].validLaneCount(startof(connection[target].curve));
+                    int targetLaneNum = connection[target].directionalLaneCount(startof(connection[target].curve));
                     if (incomingLanesNum > 0 && targetLaneNum > 0){
                         outLaneRange[i, target] = new Pair<int, int>(beingAssigned, beingAssigned + targetLaneNum - 1);
                         beingAssigned += targetLaneNum;
@@ -589,7 +589,7 @@ public class Node : MonoBehaviour
 
         inLaneRange = new Pair<int, int>[dirCount, dirCount];
         for (int i = 0; i != dirCount; ++i){
-            int myCapacity = connection[i].validLaneCount(startof(connection[i].curve));
+            int myCapacity = connection[i].directionalLaneCount(startof(connection[i].curve));
 
             for (int j = i + 1; j <= i + dirCount; ++j){
                 int target = j % dirCount;
