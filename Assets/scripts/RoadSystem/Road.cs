@@ -23,6 +23,8 @@ public class Road
         calculateParamMargins();
         noEntity = _noEntity;
     }
+
+    private Road() { }
     public Curve curve;
     public List<string> laneconfigure { get; private set; }
 
@@ -121,7 +123,6 @@ public class Road
     /*actual render info for vehicle*/
 
     float _margin0LLength, _margin0RLength, _margin1LLength, _margin1RLength;
-    float _margin0Param, _margin1Param;
 
     public float margin0LLength{
         get{
@@ -172,17 +173,9 @@ public class Road
         }
     }
 
-    public float margin0Param{
-        get{
-            return _margin0Param;
-        }
-    }
+    public float margin0Param { get; private set; }
 
-    public float margin1Param{
-        get{
-            return _margin1Param;
-        }
-    }
+    public float margin1Param { get; private set; }
 
     Curve[] renderingFragements;
 
@@ -191,36 +184,46 @@ public class Road
         float indicatorMargin1Bound = Mathf.Max(_margin1LLength, _margin1RLength);
         renderingFragements = RoadRenderer.splitByMargin(curve, indicatorMargin0Bound, indicatorMargin1Bound);
         if (renderingFragements[0] != null){
-            _margin0Param = curve.paramOf(renderingFragements[0].at(1f)) ?? 0f;
+            margin0Param = curve.paramOf(renderingFragements[0].At(1f)) ?? 0f;
         }
         else{
-            _margin0Param = 0;
+            margin0Param = 0;
         }
         if (renderingFragements[2] != null){
-            _margin1Param = curve.paramOf(renderingFragements[2].at(0f)) ?? 0f;
+            margin1Param = curve.paramOf(renderingFragements[2].At(0f)) ?? 0f;
         }
         else{
-            _margin1Param = 1;
+            margin1Param = 1;
+        }
+
+        if (!virtualRoad){
+            for (int i = 0; i != 3; ++i){
+                if (renderingFragements[i] != null)
+                {
+                    renderingFragements[i].InitAllBuffers();
+                }
+                curve.InitAllBuffers();
+            }
         }
     }
 
-    delegate Vector3 curveValueFinder(int id, float p);
+    delegate Vector3 curveValueFinder(int id, float p, bool usebuff);
 
-    Vector3 renderingCurveSolver(float param, curveValueFinder finder){
+    Vector3 renderingCurveSolver(float param, curveValueFinder finder, bool usebuff){
         Debug.Assert(renderingFragements != null);
         if (param < margin0Param && renderingFragements[0] != null)
         {
-            return finder(0, param / margin0Param);
+            return finder(0, param / margin0Param, usebuff);
         }
         else
         {
             if (param > margin1Param && renderingFragements[2] != null)
             {
-                return finder(2, (param - margin1Param) / (1f - margin1Param));
+                return finder(2, (param - margin1Param) / (1f - margin1Param), usebuff);
             }
             else
             {
-                return finder(1, (param - margin0Param) / (margin1Param - margin0Param));
+                return finder(1, (param - margin0Param) / (margin1Param - margin0Param), usebuff);
             }
         }
     }
@@ -231,36 +234,36 @@ public class Road
         }
     }
 
-    public Vector3 at(float param){
-        return renderingCurveSolver(param, at_finder);
+    public Vector3 at(float param, bool usebuff = false){
+        return renderingCurveSolver(param, at_finder, usebuff);
     }
 
-    public Vector3 frontNormal(float param){
-        return renderingCurveSolver(param, frontNormal_finder);
+    public Vector3 frontNormal(float param, bool usebuff = false){
+        return renderingCurveSolver(param, frontNormal_finder, usebuff);
     }
 
-    public Vector3 upNormal(float param){
-        return renderingCurveSolver(param, upNormal_finder);
+    public Vector3 upNormal(float param, bool usebuff = false){
+        return renderingCurveSolver(param, upNormal_finder, usebuff);
     }
 
-    public Vector3 rightNormal(float param){
-        return renderingCurveSolver(param, rightNormal_finder);
+    public Vector3 rightNormal(float param, bool usebuff = false){
+        return renderingCurveSolver(param, rightNormal_finder, usebuff);
     }
 
-    Vector3 at_finder(int id, float p){
-        return renderingFragements[id].at(p);
+    Vector3 at_finder(int id, float p, bool usebuff){
+        return renderingFragements[id].At(p, usebuff);
     }
 
-    Vector3 frontNormal_finder(int id, float p){
-        return renderingFragements[id].frontNormal(p);
+    Vector3 frontNormal_finder(int id, float p, bool usebuff){
+        return renderingFragements[id].FrontNormal(p, usebuff);
     }
 
-    Vector3 upNormal_finder(int id, float p){
-        return renderingFragements[id].upNormal(p);
+    Vector3 upNormal_finder(int id, float p, bool usebuff){
+        return renderingFragements[id].UpNormal(p, usebuff);
     }
 
-    Vector3 rightNormal_finder(int id, float p){
-        return renderingFragements[id].rightNormal(p);
+    Vector3 rightNormal_finder(int id, float p, bool usebuff){
+        return renderingFragements[id].RightNormal(p, usebuff);
     }
 
     public VehicleController forwardVehicleController, backwardVehicleController;

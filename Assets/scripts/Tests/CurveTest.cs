@@ -26,10 +26,10 @@
             Curve c = Arc.TryInit(roadPoints[0], roadPoints[1], Mathf.PI/2);
             Curve cr = c.reversed();
 
-            Assert.True(Algebra.isclose(c.at(0f), cr.at(1f)));
+            Assert.True(Algebra.isclose(c.At(0f), cr.At(1f)));
 
-            float a1 = c.angle_2d(1f);
-            float a2 = cr.angle_2d(0f);
+            float a1 = c.Angle_2d(1f);
+            float a2 = cr.Angle_2d(0f);
             //float angleDiff = (a2 - a1) / Mathf.PI;
             Debug.Log(a1);
             Debug.Log(a2);

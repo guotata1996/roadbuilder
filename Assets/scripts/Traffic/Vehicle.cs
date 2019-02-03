@@ -173,28 +173,27 @@ public class Vehicle : MonoBehaviour {
 
                 lateralSpeedMagnitude = Mathf.Max(lateralSpeedMagnitude + lateralAcc * Time.deltaTime, 0f);
 
-                //rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeed * Time.deltaTime, 0f);
                 rightOffset = Mathf.Sign(rightOffset) * Mathf.Max(Mathf.Abs(rightOffset) - lateralSpeedMagnitude * Time.deltaTime, 0f);
             }
             else{
                 lateralSpeedMagnitude = 0f;
             }
 
-            transform.position = roadOn.at(currentParam) +
-                roadOn.rightNormal(currentParam) * (roadOn.getLaneCenterOffset(laneOn, headingOfCurrentSeg) + rightOffset);
+            transform.position = roadOn.at(currentParam, usebuff:true) +
+                roadOn.rightNormal(currentParam, usebuff:true) * (roadOn.getLaneCenterOffset(laneOn, headingOfCurrentSeg) + rightOffset);
 
             transform.rotation = headingOfCurrentSeg ?
-                Quaternion.LookRotation(roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam)) :
-                Quaternion.LookRotation(-roadOn.frontNormal(currentParam), roadOn.upNormal(currentParam));
+                Quaternion.LookRotation(roadOn.frontNormal(currentParam, usebuff:true), roadOn.upNormal(currentParam, usebuff:true)) :
+                Quaternion.LookRotation(-roadOn.frontNormal(currentParam, usebuff:true), roadOn.upNormal(currentParam, usebuff:true));
 
             if (rightOffset != 0f)
             {
                 if (headingOfCurrentSeg)
                 {
-                    transform.Rotate(roadOn.upNormal(currentParam), -Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeedMagnitude / Mathf.Max(speed, 0.2f)) * Mathf.Rad2Deg);
+                    transform.Rotate(roadOn.upNormal(currentParam, usebuff:true), -Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeedMagnitude / Mathf.Max(speed, 0.2f)) * Mathf.Rad2Deg);
                 }
                 else{
-                    transform.Rotate(roadOn.upNormal(currentParam), Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeedMagnitude / Mathf.Max(speed, 0.2f)) * Mathf.Rad2Deg);
+                    transform.Rotate(roadOn.upNormal(currentParam, usebuff:true), Mathf.Sign(rightOffset) * Mathf.Atan(lateralSpeedMagnitude / Mathf.Max(speed, 0.2f)) * Mathf.Rad2Deg);
                 }
             }
 

@@ -9,22 +9,165 @@ public abstract class Curve
 {
     public float z_start, z_offset;
     public float t_start, t_end;
-    /*
-	 * Normal of the road surface
-	 */
-    public abstract Vector3 upNormal(float t);
 
-    public abstract Vector3 rightNormal(float t);
+    /*=======================================================*/
+    const float bufferResolution = 0.05f;
 
-    public abstract Vector3 frontNormal(float t);
+    public void InitAllBuffers()
+    {
+        int bufferLength = Mathf.CeilToInt(length / bufferResolution) + 1;
 
-    public abstract Vector3 at(float t);
+        upNormalBuffer = new Vector3[bufferLength];
+        rightNormalBuffer = new Vector3[bufferLength];
+        frontNormalBuffer = new Vector3[bufferLength];
+        atBuffer = new Vector3[bufferLength];
+        at2dBuffer = new Vector2[bufferLength];
+        angle2dBuffer = new float[bufferLength];
+        lengthByParamBuffer = new float[bufferLength];
+        paramByLengthBuffer = new float[bufferLength];
 
-    public abstract Vector2 at_2d(float t);
+        for (int i = 0; i != bufferLength; ++i)
+        {
+            float pointLength = i * length / (bufferLength - 1);
+            float param = i * 1f / (bufferLength - 1);
 
-    public abstract float length { get; }
+            upNormalBuffer[i] = upNormal(param);
+            rightNormalBuffer[i] = rightNormal(param);
+            frontNormalBuffer[i] = frontNormal(param);
+            atBuffer[i] = at(param);
+            at2dBuffer[i] = at_2d(param);
+            angle2dBuffer[i] = angle_2d(param);
+            lengthByParamBuffer[i] = lengthByParam(param);
+            paramByLengthBuffer[i] = paramByLength(pointLength);
+        }
+    }
 
-    public abstract float TravelAlong(float currentParam, float distToTravel, bool zeroToOne);
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    public Vector3 UpNormal(float t, bool usebuff = false){
+        if (usebuff && 0 <= t && t <= 1)
+        {
+            return upNormalBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+        }
+        else{
+            return upNormal(t);
+        }
+    }
+    protected abstract Vector3 upNormal(float t);
+    protected Vector3[] upNormalBuffer;
+
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    public Vector3 RightNormal(float t, bool usebuff = false){
+        if (usebuff && 0 <= t && t <= 1){
+            return rightNormalBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+        }
+        else{
+            return rightNormal(t);
+        }
+    }
+    protected abstract Vector3 rightNormal(float t);
+    protected Vector3[] rightNormalBuffer;
+
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    public Vector3 FrontNormal(float t, bool usebuff = false){
+        if (usebuff && 0 <= t && t <= 1){
+            return frontNormalBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+        }
+        else{
+            return frontNormal(t);
+        }
+    }
+    protected abstract Vector3 frontNormal(float t);
+    public Vector3[] frontNormalBuffer;
+
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    public Vector3 At(float t, bool usebuff = false){
+        if (usebuff && 0 <= t && t <= 1){
+            if (atBuffer == null){
+                Debug.Log(this);
+            }
+            return atBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+        }
+        else{
+            return at(t);
+        }
+    }
+    protected abstract Vector3 at(float t);
+    protected Vector3[] atBuffer;
+
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    public Vector2 At_2d(float t, bool usebuff = false){
+        if (usebuff && 0 <= t && t <= 1){
+            return at2dBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+        }
+        else{
+            return at_2d(t);
+        }
+    }
+    protected abstract Vector2 at_2d(float t);
+    protected Vector2[] at2dBuffer;
+
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    public float Angle_2d(float t, bool usebuff = false){
+        if (usebuff && 0 <= t && t <= 1){
+            return angle2dBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+        }
+        else{
+            return angle_2d(t);
+        }
+    }
+    protected abstract float angle_2d(float t);
+    protected float[] angle2dBuffer;
+
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    /*curve's length from param 0 to param t*/
+    public float LengthByParam(float t, bool usebuff = false){
+        if (usebuff && 0 <= t && t <= 1){
+            return lengthByParamBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+        }
+        else{
+            return lengthByParam(t);
+        }
+    }
+    protected abstract float lengthByParam(float t);
+    protected float[] lengthByParamBuffer;
+
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    /*inverse of lengthByParam*/
+    public float ParamByLength(float l, bool usebuff = false){
+        if (usebuff)
+        {
+            return paramByLengthBuffer[Mathf.CeilToInt(l / bufferResolution)];
+        }
+        else{
+            return paramByLength(l);
+        }
+    }
+
+    protected virtual float paramByLength(float l){
+        return l / length;
+    }
+    protected float[] paramByLengthBuffer;
+    /*=======================================================*/
+
+    public abstract float? paramOf(Vector2 point);
+
+    public abstract List<Curve> segmentation(float maxlen);
+
+    public float length {
+        get{
+            return lengthByParam(1f);
+        } 
+    }
+
+    public float TravelAlong(float currentParam, float distToTravel, bool zeroToOne, bool usebuff = false)
+    {
+        //Debug.Log(distToTravel);
+        float currentLength = LengthByParam(currentParam, usebuff);
+        float targetLength = zeroToOne ? currentLength + distToTravel : currentLength - distToTravel;
+        targetLength = Mathf.Clamp(targetLength, 0f, length);
+        float newParam = ParamByLength(targetLength, usebuff);
+        return Algebra.approximateTo01(newParam, 1f);
+    }
 
     public abstract float maximumCurvature { get; }
 
@@ -66,7 +209,6 @@ public abstract class Curve
             return raw_angle >= Mathf.PI ? raw_angle - Mathf.PI : raw_angle + Mathf.PI;
         }
     }
-
 
     public Vector2 at_ending_2d(bool start, float offset = 0f)
     {
@@ -114,8 +256,6 @@ public abstract class Curve
         }
     }
 
-    public abstract float angle_2d(float t);
-
     public Vector2 direction_ending_2d(bool start,float offset = 0f)
     {
         return Algebra.angle2dir(angle_ending(start, offset));
@@ -130,8 +270,7 @@ public abstract class Curve
 	 * if keep_length, 
 	 * 
 	 */
-    public abstract List<Curve> segmentation(float maxlen);
-    
+
     /* split curve into two parts: 1:0~t 2:t~1
      */
 
@@ -253,8 +392,6 @@ public abstract class Curve
             return rtn;
         }
     }
-
-    public abstract float? paramOf(Vector2 point);
 
     public float? paramOf(Vector3 point){
         return paramOf(new Vector2(point.x, point.z));

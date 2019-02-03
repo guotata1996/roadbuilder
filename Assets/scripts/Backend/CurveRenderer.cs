@@ -37,8 +37,8 @@ public class CurveRenderer : MonoBehaviour
 
         for (int i = 0; i != segmentCount + 1; ++i)
         {
-            Vector3 roadPoint = curve.at(1.0f / segmentCount * i);
-            float direction = curve.angle_2d(1.0f / segmentCount * i) - Mathf.PI / 2;
+            Vector3 roadPoint = curve.At(1.0f / segmentCount * i);
+            float direction = curve.Angle_2d(1.0f / segmentCount * i) - Mathf.PI / 2;
             List<Vector3> localFragments = fragments.ConvertAll((input) => roadPoint +
                                                                 Algebra.toVector3(Algebra.twodRotate(Vector2.right * (offset + input.x), direction)) +
                                                                 Vector3.up * input.y);
@@ -140,8 +140,8 @@ public class CurveRenderer : MonoBehaviour
         for (int i = -1; i <= segmentCount; ++i)
         {
             float curveParam = Mathf.Clamp01(i * 1.0f / (segmentCount - 1));
-            vertices[i + 1] = (i == - 1 || i % 2 == 1) ? curve.at(curveParam) + curve.rightNormal(curveParam) * offset1.x + Vector3.up * offset1.y :
-                                                  curve.at(curveParam) + curve.rightNormal(curveParam) * offset2.x + Vector3.up * offset2.y;
+            vertices[i + 1] = (i == - 1 || i % 2 == 1) ? curve.At(curveParam) + curve.RightNormal(curveParam) * offset1.x + Vector3.up * offset1.y :
+                                                  curve.At(curveParam) + curve.RightNormal(curveParam) * offset2.x + Vector3.up * offset2.y;
             uvs[i + 1] = (i == -1 || i % 2 == 1) ? new Vector2(0f, curveParam * curve.length / (offset1.x - offset2.x)) :
                 new Vector2(1f, curveParam * curve.length / (offset1.x - offset2.x));
         }

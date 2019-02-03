@@ -88,7 +88,6 @@ public class Arc : Curve
 
         z_start = center3.y;
         z_offset = 0f;
-
     }
 
     /*start-end: clockwise*/
@@ -105,7 +104,7 @@ public class Arc : Curve
         Debug.Assert(!counterClockwise);
         z_start = _z_start;
         z_offset = _z_end - _z_start;
-            }
+    }
 
     private Arc() { }
 
@@ -121,7 +120,7 @@ public class Arc : Curve
         return copy;
     }
 
-    public override Vector3 at(float t)
+    protected override Vector3 at(float t)
     {
         float parametric_t = toGlobalParam(t);
         float _x = center.x + radius * Mathf.Cos(parametric_t);
@@ -130,7 +129,7 @@ public class Arc : Curve
         return new Vector3(_x, _y, _z);
     }
 
-    public override Vector2 at_2d(float t)
+    protected override Vector2 at_2d(float t)
     {
         float parametric_t = toGlobalParam(t);
         float _x = center.x + radius * Mathf.Cos(parametric_t);
@@ -138,7 +137,7 @@ public class Arc : Curve
         return new Vector2(_x, _y);
     }
 
-    public override Vector3 upNormal(float t)
+    protected override Vector3 upNormal(float t)
     {
         float parametric_t = toGlobalParam(t);
         float tanGradient = z_offset / this.length;
@@ -146,21 +145,13 @@ public class Arc : Curve
                                   new Vector3(Mathf.Sin(parametric_t) * tanGradient, 1, -Mathf.Cos(parametric_t) * tanGradient).normalized;
     }
 
-    public override Vector3 frontNormal(float t)
+    protected override Vector3 frontNormal(float t)
     {
         float parametric_t = toGlobalParam(t);
         float tanGradient = z_offset / this.length;
 
         return counterClockwise ? new Vector3(-Mathf.Sin(parametric_t), tanGradient, Mathf.Cos(parametric_t)).normalized :
                new Vector3(Mathf.Sin(parametric_t), tanGradient, -Mathf.Cos(parametric_t)).normalized;
-    }
-
-    public override float length
-    {
-        get
-        {
-            return Mathf.Abs(t_end - t_start) * radius;
-        }
     }
 
     bool counterClockwise
@@ -179,7 +170,7 @@ public class Arc : Curve
         }
     }
 
-    public override float angle_2d(float t)
+    protected override float angle_2d(float t)
     {
         float ans_candidate;
         t = toGlobalParam(t);
@@ -198,7 +189,7 @@ public class Arc : Curve
         return ans_candidate;
     }
 
-    public override Vector3 rightNormal(float t)
+    protected override Vector3 rightNormal(float t)
     {
         float parametric_t = toGlobalParam(t);
         if (t_end > t_start)
@@ -230,6 +221,11 @@ public class Arc : Curve
         return segments;
     }
 
+    protected override float lengthByParam(float t){
+        return Mathf.Abs(toGlobalParam(t) - t_start) * radius;
+    }
+
+    /*
     public override float TravelAlong(float currentParam, float distToTravel, bool zeroToOne)
     {
         if (zeroToOne){
@@ -239,6 +235,7 @@ public class Arc : Curve
             return Mathf.Max(0f, currentParam - distToTravel / length);
         }
     }
+    */
 
     public override float? paramOf(Vector2 point)
     {

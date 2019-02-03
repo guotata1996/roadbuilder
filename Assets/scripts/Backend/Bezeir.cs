@@ -66,7 +66,7 @@ public class Bezeir : Curve
         t_end = 1f;
     }
 
-    public override Vector3 at(float t)
+    protected override Vector3 at(float t)
     {
         float local_t = t;
         t = toGlobalParam(t);
@@ -75,18 +75,10 @@ public class Bezeir : Curve
         return new Vector3(x_z.x, _y, x_z.y);
     }
 
-    public override Vector2 at_2d(float t)
+    protected override Vector2 at_2d(float t)
     {
         t = toGlobalParam(t);
         return (1 - t) * (1 - t) * P0 + 2 * t * (1 - t) * P1 + t * t * P2;
-    }
-
-    public override float length
-    {
-        get
-        {
-            return lengthFromZeroTo(1f);
-        }
     }
 
     /*https://math.stackexchange.com/questions/220900/bezier-curvature*/
@@ -98,12 +90,12 @@ public class Bezeir : Curve
         }
     }
 
-    public override float angle_2d(float t)
+    protected override float angle_2d(float t)
     {
         t = toGlobalParam(t);
         Vector2 tangentdir = (2 * (t - 1) * P0 + (2 - 4 * t) * P1 + 2 * t * P2);
-        return t_end > t_start ? Line.TryInit(Vector2.zero, tangentdir).angle_2d(t) :
-                                     Line.TryInit(tangentdir, Vector2.zero).angle_2d(t);
+        return t_end > t_start ? Line.TryInit(Vector2.zero, tangentdir).Angle_2d(t) :
+                                     Line.TryInit(tangentdir, Vector2.zero).Angle_2d(t);
     }
 
     private float lengthIntegral(float t)
@@ -130,14 +122,16 @@ public class Bezeir : Curve
         }
     }
 
-    private float lengthFromZeroTo(float t)
+    protected override float lengthByParam(float t)
     {
         float temp_t_end = toGlobalParam(t);
         float temp_t_start = toGlobalParam(0);
         return Mathf.Abs(lengthIntegral(temp_t_end) - lengthIntegral(temp_t_start));
     }
 
-
+    protected override float paramByLength(float l){
+        return Algebra.newTown(this.lengthByParam, lengthGradient, l, 0f);
+    }
 
     private float lengthGradient(float t)
     {
@@ -146,7 +140,7 @@ public class Bezeir : Curve
         return dxy_dt.magnitude / Mathf.Abs(t_end - t_start);
     }
 
-    public override Vector3 upNormal(float t)
+    protected override Vector3 upNormal(float t)
     {
         t = t_start + (t_end - t_start) * t;
         Vector2 tangentdir = (2 * (t - 1) * P0 + (2 - 4 * t) * P1 + 2 * t * P2).normalized;
@@ -154,7 +148,7 @@ public class Bezeir : Curve
         return new Vector3(tangentdir.x * tanGradient, 1f, tangentdir.y * tanGradient);
     }
 
-    public override Vector3 frontNormal(float t)
+    protected override Vector3 frontNormal(float t)
     {
         t = t_start + (t_end - t_start) * t;
         Vector2 tangentdir = (2 * (t - 1) * P0 + (2 - 4 * t) * P1 + 2 * t * P2).normalized;
@@ -162,7 +156,7 @@ public class Bezeir : Curve
         return new Vector3(tangentdir.x ,tanGradient, tangentdir.y );
     }
 
-    public override Vector3 rightNormal(float t)
+    protected override Vector3 rightNormal(float t)
     {
         t = t_start + (t_end - t_start) * t;
         Vector2 tangentdir = (2 * (t - 1) * P0 + (2 - 4 * t) * P1 + 2 * t * P2).normalized;
@@ -181,7 +175,7 @@ public class Bezeir : Curve
         for (int multipler = 0; multipler < fragCount; multipler++)
         {
             float thisEnd;
-            thisEnd = Algebra.newTown(this.lengthFromZeroTo, this.lengthGradient, Mathf.Min(this.length, (float)(multipler + 1) * maxlen), Mathf.Min(1f, maxlen / this.length * (multipler + 1)));
+            thisEnd = Algebra.newTown(this.lengthByParam, this.lengthGradient, Mathf.Min(this.length, (float)(multipler + 1) * maxlen), Mathf.Min(1f, maxlen / this.length * (multipler + 1)));
 
             Curve fragment = Bezeir.TryInit(this.P0, this.P1, this.P2, this.z_start + this.z_offset * lastEnd, this.z_start + this.z_offset * thisEnd);
             fragment.t_start = toGlobalParam(lastEnd);
@@ -191,7 +185,7 @@ public class Bezeir : Curve
         }
         return result;
     }
-
+    /*
     public override float TravelAlong(float currentParam, float distToTravel, bool zeroToOne)
     {
         float currentLength = lengthFromZeroTo(currentParam);
@@ -200,6 +194,8 @@ public class Bezeir : Curve
         float newParam = Algebra.newTown(this.lengthFromZeroTo, lengthGradient, targetLength, currentParam);
         return Algebra.approximateTo01(newParam, 1f);
     }
+    */
+
 
     public override float? paramOf(Vector2 point)
     {

@@ -73,20 +73,20 @@ public class RoadRenderer : MonoBehaviour
         if (indicatorMargin_0Bound > 0)
         {
             Curve margin0Curve = curve.cut(0f, indicatorMargin_0Bound / curve.length);
-            margin0Curve.z_start = curve.at(0f).y;
+            margin0Curve.z_start = curve.At(0f).y;
             margin0Curve.z_offset = 0f;
             rtn[0] = margin0Curve;
         }
 
         Curve middleCurve = curve.cut(indicatorMargin_0Bound / curve.length, 1f - indicatorMargin_1Bound / curve.length);
-        middleCurve.z_start = curve.at(0f).y;
-        middleCurve.z_offset = curve.at(1f).y - curve.at(0f).y;
+        middleCurve.z_start = curve.At(0f).y;
+        middleCurve.z_offset = curve.At(1f).y - curve.At(0f).y;
         rtn[1] = middleCurve;
 
         if (indicatorMargin_1Bound > 0)
         {
             Curve margin1Curve = curve.cut(1f - indicatorMargin_1Bound / curve.length, 1f);
-            margin1Curve.z_start = curve.at(1f).y;
+            margin1Curve.z_start = curve.At(1f).y;
             margin1Curve.z_offset = 0f;
             rtn[2] = margin1Curve;
         }

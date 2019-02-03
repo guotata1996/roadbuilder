@@ -50,7 +50,7 @@ public class Line : Curve
         t_end = 1f;
     }
 
-    public override Vector3 at(float t)
+    protected override Vector3 at(float t)
     {
         t = toGlobalParam(t);
         float _x = start.x * (1 - t) + end.x * t;
@@ -59,18 +59,10 @@ public class Line : Curve
         return new Vector3(_x, _y, _z);
     }
 
-    public override Vector2 at_2d(float t)
+    protected override Vector2 at_2d(float t)
     {
         t = toGlobalParam(t);
         return start * (1 - t) + end * t;
-    }
-
-    public override float length
-    {
-        get
-        {
-            return (start - end).magnitude;
-        }
     }
 
     public override float maximumCurvature
@@ -81,7 +73,7 @@ public class Line : Curve
         }
     }
 
-    public override float angle_2d(float t)
+    protected override float angle_2d(float t)
     {
         if (Algebra.isclose(at_2d(0f).x, at_2d(1f).x))
         {
@@ -107,23 +99,28 @@ public class Line : Curve
         }
     }
 
-    public override Vector3 upNormal(float t)
+    protected override Vector3 upNormal(float t)
     {
         Vector2 tangentdir = (at_2d(1f) - at_2d(0f)).normalized;
         float tanGradient = z_offset / this.length;
         return new Vector3(tangentdir.x * tanGradient, 1f, tangentdir.y * tanGradient);
     }
 
-    public override Vector3 frontNormal(float t){
+    protected override Vector3 frontNormal(float t){
         Vector2 tangentdir = (at_2d(1f) - at_2d(0f)).normalized;
         float tanGradient = z_offset / this.length;
         return new Vector3(tangentdir.x, tanGradient, tangentdir.y);
     }
 
-    public override Vector3 rightNormal(float t)
+    protected override Vector3 rightNormal(float t)
     {
         Vector2 tangentdir = (at_2d(1f) - at_2d(0f)).normalized;
         return new Vector3(tangentdir.y, 0f, -tangentdir.x);
+    }
+
+    protected override float lengthByParam(float t)
+    {
+        return (at_2d(t) - start).magnitude;
     }
 
     public override List<Curve> segmentation(float maxlen)
@@ -146,6 +143,7 @@ public class Line : Curve
         return result;
     }
 
+    /*
     public override float TravelAlong(float currentParam, float distToTravel, bool zeroToOne){
         if (zeroToOne){
             return Mathf.Min(1f, currentParam + distToTravel / length);
@@ -154,7 +152,7 @@ public class Line : Curve
             return Mathf.Max(0f, currentParam - distToTravel / length);
         }
     }
-
+    */
 
     public override float? paramOf(Vector2 point)
     {
@@ -212,19 +210,19 @@ public class Line : Curve
         Debug.Assert(b is Line);
         if (Algebra.isclose(at_ending_2d(true), b.at_ending_2d(true)))
         {
-            return Line.TryInit(at_ending_2d(false), b.at_ending_2d(false), at(1f).y, b.at(1f).y - at(1f).y);
+            return Line.TryInit(at_ending_2d(false), b.at_ending_2d(false), at(1f).y, b.At(1f).y - At(1f).y);
         }
         if (Algebra.isclose(at_ending_2d(true), b.at_ending_2d(false)))
         {
-            return Line.TryInit(at_ending_2d(false), b.at_ending_2d(true), at(0f).y, b.at(1f).y - at(0f).y);
+            return Line.TryInit(at_ending_2d(false), b.at_ending_2d(true), At(0f).y, b.At(1f).y - At(0f).y);
         }
         if (Algebra.isclose(at_ending_2d(false), b.at_ending_2d(true)))
         {
-            return Line.TryInit(at_ending_2d(true), b.at_ending_2d(false), at(1f).y, b.at(0f).y - at(1f).y);
+            return Line.TryInit(at_ending_2d(true), b.at_ending_2d(false), At(1f).y, b.At(0f).y - At(1f).y);
         }
         if (Algebra.isclose(at_ending_2d(false), b.at_ending_2d(false)))
         {
-            return Line.TryInit(at_ending_2d(true), b.at_ending_2d(true), at(0f).y, b.at(0f).y - at(0f).y);
+            return Line.TryInit(at_ending_2d(true), b.at_ending_2d(true), At(0f).y, b.At(0f).y - At(0f).y);
         }
         Debug.Assert(false);
         return null;

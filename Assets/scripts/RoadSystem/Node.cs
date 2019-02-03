@@ -55,7 +55,8 @@ public class Node : MonoBehaviour
 
     Action<List<Curve>, Curve> addIfNotNull = (lst, c) => { if (c != null) lst.Add(c); };
 
-    Func<Curve, List<string>, Road> createNoEntityRoadIfNotNull = (c, cfg) => { if (c != null) { return new Road(c, cfg, true); } else return null; };
+    Func<Curve, List<string>, Road> createNoEntityRoadIfNotNull = (c, cfg) => 
+    { if (c != null) { Road r = new Road(c, cfg, true); return r; } else return null; };
 
     public void Awake()
     {
@@ -219,7 +220,7 @@ public class Node : MonoBehaviour
     }
 
     public bool startof(Curve c){
-        return (c.at(0f) - position).magnitude < (c.at(1f) - position).magnitude;
+        return (c.At(0f) - position).magnitude < (c.At(1f) - position).magnitude;
     }
 
     Pair<float, float> smoothenCrossing(Road r1, Road r2, out List<Curve> smootheners)

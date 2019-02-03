@@ -85,17 +85,17 @@ public static class Geometry {
             }
         }
 
-        if (c1.contains(c2.at(0))){
-            specialcase.Add(c2.at(0));
+        if (c1.contains(c2.At(0))){
+            specialcase.Add(c2.At(0));
         }
-        if (c1.contains(c2.at(1))){
-            specialcase.Add(c2.at(1));
+        if (c1.contains(c2.At(1))){
+            specialcase.Add(c2.At(1));
         }
-        if (c2.contains(c1.at(0))){
-            specialcase.Add(c1.at(0));
+        if (c2.contains(c1.At(0))){
+            specialcase.Add(c1.At(0));
         }
-        if (c2.contains(c1.at(1))){
-            specialcase.Add(c1.at(1));
+        if (c2.contains(c1.At(1))){
+            specialcase.Add(c1.At(1));
         }
 
         commoncase.AddRange(specialcase);
@@ -227,8 +227,8 @@ public static class Geometry {
     {
         var valids =
                 from point in points
-                where c2.contains_2d(point) && c1.contains(c2.at((float)c2.paramOf(point)))
-                select new Vector3(point.x, c2.at((float)c2.paramOf(point)).y, point.y);
+                where c2.contains_2d(point) && c1.contains(c2.At((float)c2.paramOf(point)))
+                select new Vector3(point.x, c2.At((float)c2.paramOf(point)).y, point.y);
 
         return valids.ToList();
     }

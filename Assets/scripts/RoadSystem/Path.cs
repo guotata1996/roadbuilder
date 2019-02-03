@@ -61,13 +61,13 @@ public class Path
     {
         Debug.Assert(float.IsPositiveInfinity(startParam));
 
-        if (Algebra.isclose(road.curve.at(0f), sourceNode.position))
+        if (Algebra.isclose(road.curve.At(0f), sourceNode.position))
         {
             components.Insert(0, new Pair<Road, bool>(road, false));
         }
         else
         {
-            Debug.Assert(Algebra.isclose(road.curve.at(1f), sourceNode.position));
+            Debug.Assert(Algebra.isclose(road.curve.At(1f), sourceNode.position));
             components.Insert(0, new Pair<Road, bool>(road, true));
         }
         EndNodes[road] = sourceNode;
@@ -89,13 +89,13 @@ public class Path
     {
         Debug.Assert(float.IsPositiveInfinity(endParam));
 
-        if (Algebra.isclose(road.curve.at(0f), destNode.position))
+        if (Algebra.isclose(road.curve.At(0f), destNode.position))
         {
             components.Add(new Pair<Road, bool>(road, true));
         }
         else
         {
-            Debug.Assert(Algebra.isclose(road.curve.at(1f), destNode.position));
+            Debug.Assert(Algebra.isclose(road.curve.At(1f), destNode.position));
             components.Add(new Pair<Road, bool>(road, false));
         }
 
@@ -314,7 +314,8 @@ public class Path
 
         //Do not jump to seg 
         var roadOn = components[segnum];
-        float newParam = roadOn.First.curve.TravelAlong(param, distToTravel, roadOn.Second);
+        float newParam = roadOn.First.curve.TravelAlong(param, distToTravel, roadOn.Second, usebuff:true);
+
         termination = false;
         nextseg = segnum;
 

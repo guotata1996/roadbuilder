@@ -48,8 +48,8 @@ public class RoadManager : MonoBehaviour
                 addAllFragments(intersectParams, oldroad.curve, oldroad.laneconfigure);
 
                 affectedPoints.AddRange(intersectPoints);
-                affectedPoints.Add(oldroad.curve.at(0f));
-                affectedPoints.Add(oldroad.curve.at(1f));
+                affectedPoints.Add(oldroad.curve.At(0f));
+                affectedPoints.Add(oldroad.curve.At(1f));
             }
         }
 
@@ -58,8 +58,8 @@ public class RoadManager : MonoBehaviour
 
         addAllFragments(intersectParamsWithBeginAndEnd1, curve, laneConfigure);
 
-        affectedPoints.Add(curve.at(0f));
-        affectedPoints.Add(curve.at(1f));
+        affectedPoints.Add(curve.At(0f));
+        affectedPoints.Add(curve.At(1f));
         affectedPoints = affectedPoints.Distinct(new IntersectPointComparator()).ToList();
 
         List<Node> affectedNodes = affectedPoints.ConvertAll(delegate (Vector3 pos)
@@ -155,10 +155,10 @@ public class RoadManager : MonoBehaviour
     {
         allroads.Remove(road);
         Node startNode, endNode;
-        findNodeAt(road.curve.at(0f), out startNode);
+        findNodeAt(road.curve.At(0f), out startNode);
         startNode.removeRoad(road);
 
-        findNodeAt(road.curve.at(1f), out endNode);
+        findNodeAt(road.curve.At(1f), out endNode);
 
         endNode.removeRoad(road);
 
@@ -167,7 +167,7 @@ public class RoadManager : MonoBehaviour
 
     private void createOrAddtoNode(Road road)
     {
-        List<Vector3> roadEnds = new List<Vector3> { road.curve.at(0f), road.curve.at(1f) };
+        List<Vector3> roadEnds = new List<Vector3> { road.curve.At(0f), road.curve.At(1f) };
         foreach (Vector3 roadEnd in roadEnds)
         {
             
@@ -235,7 +235,7 @@ public class RoadManager : MonoBehaviour
                         {
                             if (Algebra.toVector2(point - p).magnitude <= ApproxLimit)
                             {
-                                return bestMatch.curve.at((float)bestMatch.curve.paramOf(point));
+                                return bestMatch.curve.At((float)bestMatch.curve.paramOf(point));
                             }
                         }
                     }
@@ -281,8 +281,8 @@ public class RoadManager : MonoBehaviour
     public void deleteRoad(Road r){
         removeRoad(r);
         Node nstart, nend;
-        findNodeAt(r.curve.at(0f), out nstart);
-        findNodeAt(r.curve.at(1f), out nend);
+        findNodeAt(r.curve.At(0f), out nstart);
+        findNodeAt(r.curve.At(1f), out nend);
 
         Node[] affectedNides = { nstart, nend };
         foreach (Node n in affectedNides.ToList()){
@@ -326,26 +326,26 @@ public class RoadManager : MonoBehaviour
         List<Node> possibleEndNodes = new List<Node>();
         if (r1.directionalLaneCount(false) > 0){
             Node r10;
-            findNodeAt(r1.curve.at(0f), out r10);
+            findNodeAt(r1.curve.At(0f), out r10);
             possibleStartNodes.Add(r10);
         }
 
         if (r1.directionalLaneCount(true) > 0){
             Node r11;
-            findNodeAt(r1.curve.at(1f), out r11);
+            findNodeAt(r1.curve.At(1f), out r11);
             possibleStartNodes.Add(r11);
         }
 
         if (r2.directionalLaneCount(true) > 0){
             Node r20;
-            findNodeAt(r2.curve.at(0f), out r20);
+            findNodeAt(r2.curve.At(0f), out r20);
             possibleEndNodes.Add(r20);
         }
 
         if (r2.directionalLaneCount(false) > 0)
         {
             Node r21;
-            findNodeAt(r2.curve.at(1f), out r21);
+            findNodeAt(r2.curve.At(1f), out r21);
             possibleEndNodes.Add(r21);
         }
 
@@ -389,13 +389,13 @@ public class RoadManager : MonoBehaviour
 
             foreach(Road r1 in closestNode.connection){
                 Node neighbor = null;
-                if (Algebra.isclose(r1.curve.at(0f), closestNode.position) && r1.directionalLaneCount(true) > 0){
-                    findNodeAt(r1.curve.at(1f), out neighbor);
+                if (Algebra.isclose(r1.curve.At(0f), closestNode.position) && r1.directionalLaneCount(true) > 0){
+                    findNodeAt(r1.curve.At(1f), out neighbor);
                 }
                 else{
-                    if (Algebra.isclose(r1.curve.at(1f), closestNode.position) && r1.directionalLaneCount(false) > 0)
+                    if (Algebra.isclose(r1.curve.At(1f), closestNode.position) && r1.directionalLaneCount(false) > 0)
                     {
-                        findNodeAt(r1.curve.at(0f), out neighbor);
+                        findNodeAt(r1.curve.At(0f), out neighbor);
                     }
                 }
                 float w1 = r1.SPWeight;
