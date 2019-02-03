@@ -11,17 +11,22 @@ public abstract class Curve
     public float t_start, t_end;
 
     /*=======================================================*/
-    const float bufferResolution = 0.05f;
+    const float bufferResolution = 0.2f;
+
+    /* Time-consuming function
+     * must be explicitly called before using buffers*/
+    private int bufferLength{
+        get{
+            return Mathf.CeilToInt(Length / bufferResolution) + 1;
+        }
+    }
 
     public void InitAllBuffers()
     {
-        int bufferLength = Mathf.CeilToInt(length / bufferResolution) + 1;
-
         upNormalBuffer = new Vector3[bufferLength];
         rightNormalBuffer = new Vector3[bufferLength];
         frontNormalBuffer = new Vector3[bufferLength];
         atBuffer = new Vector3[bufferLength];
-        at2dBuffer = new Vector2[bufferLength];
         angle2dBuffer = new float[bufferLength];
         lengthByParamBuffer = new float[bufferLength];
         paramByLengthBuffer = new float[bufferLength];
@@ -35,7 +40,6 @@ public abstract class Curve
             rightNormalBuffer[i] = rightNormal(param);
             frontNormalBuffer[i] = frontNormal(param);
             atBuffer[i] = at(param);
-            at2dBuffer[i] = at_2d(param);
             angle2dBuffer[i] = angle_2d(param);
             lengthByParamBuffer[i] = lengthByParam(param);
             paramByLengthBuffer[i] = paramByLength(pointLength);
@@ -43,10 +47,16 @@ public abstract class Curve
     }
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+
     public Vector3 UpNormal(float t, bool usebuff = false){
         if (usebuff && 0 <= t && t <= 1)
         {
-            return upNormalBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            //return upNormalBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            int a = Mathf.FloorToInt(t * Length / bufferResolution);
+            int b = a + 1;
+            float aParam = a * 1f / (bufferLength - 1);
+            float bParam = b * 1f / (bufferLength - 1);
+            return Algebra.unitVecInterpolator(upNormalBuffer[a], upNormalBuffer[b], t - aParam, bParam - t);
         }
         else{
             return upNormal(t);
@@ -58,7 +68,12 @@ public abstract class Curve
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
     public Vector3 RightNormal(float t, bool usebuff = false){
         if (usebuff && 0 <= t && t <= 1){
-            return rightNormalBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            //return rightNormalBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            int a = Mathf.FloorToInt(t * Length / bufferResolution);
+            int b = a + 1;
+            float aParam = a * 1f / (bufferLength - 1);
+            float bParam = b * 1f / (bufferLength - 1);
+            return Algebra.unitVecInterpolator(rightNormalBuffer[a], rightNormalBuffer[b], t - aParam, bParam - t);
         }
         else{
             return rightNormal(t);
@@ -70,7 +85,12 @@ public abstract class Curve
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
     public Vector3 FrontNormal(float t, bool usebuff = false){
         if (usebuff && 0 <= t && t <= 1){
-            return frontNormalBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            //return frontNormalBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            int a = Mathf.FloorToInt(t * Length / bufferResolution);
+            int b = a + 1;
+            float aParam = a * 1f / (bufferLength - 1);
+            float bParam = b * 1f / (bufferLength - 1);
+            return Algebra.unitVecInterpolator(frontNormalBuffer[a], frontNormalBuffer[b], t - aParam, bParam - t);
         }
         else{
             return frontNormal(t);
@@ -82,10 +102,12 @@ public abstract class Curve
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
     public Vector3 At(float t, bool usebuff = false){
         if (usebuff && 0 <= t && t <= 1){
-            if (atBuffer == null){
-                Debug.Log(this);
-            }
-            return atBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            //return atBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            int a = Mathf.FloorToInt(t * Length / bufferResolution);
+            int b = a + 1;
+            float aParam = a * 1f / (bufferLength - 1);
+            float bParam = b * 1f / (bufferLength - 1);
+            return Algebra.genericVectIntepolator(atBuffer[a], atBuffer[b], t - aParam, bParam - t);
         }
         else{
             return at(t);
@@ -95,21 +117,14 @@ public abstract class Curve
     protected Vector3[] atBuffer;
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-    public Vector2 At_2d(float t, bool usebuff = false){
-        if (usebuff && 0 <= t && t <= 1){
-            return at2dBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
-        }
-        else{
-            return at_2d(t);
-        }
-    }
-    protected abstract Vector2 at_2d(float t);
-    protected Vector2[] at2dBuffer;
-
-    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
     public float Angle_2d(float t, bool usebuff = false){
         if (usebuff && 0 <= t && t <= 1){
-            return angle2dBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            //return angle2dBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            int a = Mathf.FloorToInt(t * Length / bufferResolution);
+            int b = a + 1;
+            float aParam = a * 1f / (bufferLength - 1);
+            float bParam = b * 1f / (bufferLength - 1);
+            return Algebra.genericScalarIntepolator(angle2dBuffer[a], angle2dBuffer[b], t - aParam, bParam - t);
         }
         else{
             return angle_2d(t);
@@ -122,7 +137,12 @@ public abstract class Curve
     /*curve's length from param 0 to param t*/
     public float LengthByParam(float t, bool usebuff = false){
         if (usebuff && 0 <= t && t <= 1){
-            return lengthByParamBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            //return lengthByParamBuffer[Mathf.CeilToInt(t * length / bufferResolution)];
+            int a = Mathf.FloorToInt(t * Length / bufferResolution);
+            int b = a + 1;
+            float aParam = a * 1f / (bufferLength - 1);
+            float bParam = b * 1f / (bufferLength - 1);
+            return Algebra.genericScalarIntepolator(lengthByParamBuffer[a], lengthByParamBuffer[b], t - aParam, bParam - t);
         }
         else{
             return lengthByParam(t);
@@ -136,9 +156,15 @@ public abstract class Curve
     public float ParamByLength(float l, bool usebuff = false){
         if (usebuff)
         {
-            return paramByLengthBuffer[Mathf.CeilToInt(l / bufferResolution)];
+            //return paramByLengthBuffer[Mathf.CeilToInt(l / bufferResolution)];
+            int a = Mathf.FloorToInt(l / bufferResolution);
+            int b = a + 1;
+            float aLength = a * Length / (bufferLength - 1);
+            float bLength = b * Length / (bufferLength - 1);
+            return Algebra.genericScalarIntepolator(paramByLengthBuffer[a], paramByLengthBuffer[b], l - aLength, bLength - l);
         }
-        else{
+        else
+        {
             return paramByLength(l);
         }
     }
@@ -147,7 +173,23 @@ public abstract class Curve
         return l / length;
     }
     protected float[] paramByLengthBuffer;
+
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    public float Length
+    {
+        get
+        {
+            if (_length < 0)
+            {
+                _length = length;
+            }
+            return _length;
+        }
+    }
+    float _length = -1;
     /*=======================================================*/
+
+    protected abstract Vector2 at_2d(float t);
 
     public abstract float? paramOf(Vector2 point);
 
@@ -164,8 +206,9 @@ public abstract class Curve
         //Debug.Log(distToTravel);
         float currentLength = LengthByParam(currentParam, usebuff);
         float targetLength = zeroToOne ? currentLength + distToTravel : currentLength - distToTravel;
-        targetLength = Mathf.Clamp(targetLength, 0f, length);
+        targetLength = Mathf.Clamp(targetLength, 0f, Length);
         float newParam = ParamByLength(targetLength, usebuff);
+        //Debug.Log(currentParam + " " + currentLength + " ; " + newParam + " " + targetLength);
         return Algebra.approximateTo01(newParam, 1f);
     }
 

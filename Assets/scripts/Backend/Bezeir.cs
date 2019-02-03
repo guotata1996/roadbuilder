@@ -130,7 +130,7 @@ public class Bezeir : Curve
     }
 
     protected override float paramByLength(float l){
-        return Algebra.newTown(this.lengthByParam, lengthGradient, l, 0f);
+        return Algebra.newTown(this.lengthByParam, lengthGradient, l, l / length);
     }
 
     private float lengthGradient(float t)

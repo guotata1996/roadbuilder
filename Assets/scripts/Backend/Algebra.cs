@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using System;
 
-public class Algebra {
+public static class Algebra {
     /* real root for a0+a1x+a2x2+a3x3+a4x4=0
      * https://baike.baidu.com/pic/%E4%B8%80%E5%85%83%E5%9B%9B%E6%AC%A1%E6%96%B9%E7%A8%8B%E6%B1%82%E6%A0%B9%E5%85%AC%E5%BC%8F/10721996/0/5d6034a85edf8db1672fae9b0223dd54574e74c8?fr=lemma&ct=single#aid=0&pic=5d6034a85edf8db1672fae9b0223dd54574e74c8
      */
@@ -317,13 +317,14 @@ public class Algebra {
     public static float newTown(Del function, Del gradient, float targetValue, float startValue = 1f)
     {
         float ans = startValue;
-        for(int i = 0; i != 20; ++i)
+        for(int i = 0; i != 50; ++i)
         {
             ans = ans - (function(ans) - targetValue) / gradient(ans);
             if (isclose(function(ans), targetValue)){
                 break;
             }
         }
+
         return ans;
     }
 
@@ -404,5 +405,20 @@ public class Algebra {
 
     public static float Lerp(float a, float b, float t){
         return t * b + (1 - t) * a;
+    }
+
+    public static Vector3 unitVecInterpolator(Vector3 a, Vector3 b, float s, float t)
+    {
+        return ((a * t + b * s) / (s + t)).normalized;
+    }
+
+    public static Vector3 genericVectIntepolator(Vector3 a, Vector3 b, float s, float t)
+    {
+        return (a * t + b * s) / (s + t);
+    }
+
+    public static float genericScalarIntepolator(float a, float b, float s, float t)
+    {
+        return ((a * t + b * s)) / (s + t);
     }
 }
