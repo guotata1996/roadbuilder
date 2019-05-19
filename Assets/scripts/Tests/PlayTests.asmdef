@@ -1,18 +1,17 @@
 {
-    "name": "Tests",
+    "name": "PlayTests",
     "references": [
-        "MainAssembly"
+        "GUID:3e47f3b5e856646fda576c26ec95dfd6"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": []
 }

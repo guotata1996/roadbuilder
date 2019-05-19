@@ -1,230 +1,103 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
-[Serializable]
 public class Line : Curve
 {
-    public Vector2 start, end;
-
-    public static Curve TryInit(Vector2 _start, Vector2 _end, float _z_start = 0f, float _z_end = 0f){
-        Line candidate = new Line(_start, _end, _z_start, _z_end);
-        if (Algebra.isclose(candidate.length, 0f)){
-            Debug.LogWarning("try creating Line of zero length!");
-            return null;
-        }
-        else{
-            return candidate;
-        }
-    }
-
-    public static Curve TryInit(Vector3 _start, Vector3 _end){
-        Line candidate = new Line(_start, _end);
-        if (Algebra.isclose(candidate.length, 0f)){
-            Debug.LogWarning("try creating Line of zero length!");
-            return null;
-        }
-        else{
-            return candidate;
-        }
-    }
-
-    private Line(Vector2 _start, Vector2 _end, float _z_start = 0f, float _z_end = 0f)
+    public Vector2 Start
     {
-        start = _start;
-        end = _end;
-        z_start = _z_start;
-        z_offset = _z_end - _z_start;
+        get;
+        private set;
+    }
+
+    public Vector2 End
+    {
+        get;
+        private set;
+    }
+
+    public static Curve TryInit(Vector2 _Start, Vector2 _End)
+    {
+        if (Algebra.isclose(_Start, _End)){
+            Debug.LogWarning("Try creating Line whose Length = 0");
+            return null;
+        }
+        return new Line(_Start, _End);
+    }
+
+    Line(Vector2 _Start, Vector2 _End)
+    {
+        Start = _Start;
+        End = _End;
         t_start = 0f;
         t_end = 1f;
     }
 
-    private Line(Vector3 _start, Vector3 _end)
+    protected override Vector2 _GetTwodPos(float unscaled_t)
     {
-        start = Algebra.toVector2(_start);
-        end = Algebra.toVector2(_end);
-        z_start = _start.y;
-        z_offset = _end.y - _start.y;
-        t_start = 0f;
-        t_end = 1f;
+        return Vector2.Lerp(Start, End, unscaled_t);
     }
 
-    protected override Vector3 at(float t)
+    protected override float _ToParamt(float unscaled_t)
     {
-        t = toGlobalParam(t);
-        float _x = start.x * (1 - t) + end.x * t;
-        float _y = z_start + z_offset * t;
-        float _z = start.y * (1 - t) + end.y * t;
-        return new Vector3(_x, _y, _z);
+        return unscaled_t;
     }
 
-    protected override Vector2 at_2d(float t)
+    protected override float _ToUnscaledt(float t)
     {
-        t = toGlobalParam(t);
-        return start * (1 - t) + end * t;
+        return t;
     }
 
-    public override float maximumCurvature
+
+    protected override Vector2 _GetFrontDir(float t)
     {
-        get
-        {
-            return 1 / Algebra.InfLength;
-        }
+        return (End - Start).normalized;
     }
 
-    protected override float angle_2d(float t)
-    {
-        if (Algebra.isclose(at_2d(0f).x, at_2d(1f).x))
-        {
-            if (at_2d(1f).y > at_2d(0f).y)
-                return Mathf.PI / 2;
-            else
-                return Mathf.PI * 1.5f;
-        }
-        else
-        {
-            float candidate = Mathf.Atan((at_2d(0f).y - at_2d(1f).y) / (at_2d(0f).x - at_2d(1f).x));
-            if (at_2d(0f).x > at_2d(1f).x)
-            {
-                candidate += Mathf.PI;
-            }
-            else
-            {
-                if (candidate < 0)
-                    candidate += Mathf.PI * 2;
-            }
-            Debug.Assert(0 <= candidate && candidate < Mathf.PI * 2);
-            return candidate;
-        }
-    }
-
-    protected override Vector3 upNormal(float t)
-    {
-        Vector2 tangentdir = (at_2d(1f) - at_2d(0f)).normalized;
-        float tanGradient = z_offset / this.length;
-        return new Vector3(tangentdir.x * tanGradient, 1f, tangentdir.y * tanGradient);
-    }
-
-    protected override Vector3 frontNormal(float t){
-        Vector2 tangentdir = (at_2d(1f) - at_2d(0f)).normalized;
-        float tanGradient = z_offset / this.length;
-        return new Vector3(tangentdir.x, tanGradient, tangentdir.y);
-    }
-
-    protected override Vector3 rightNormal(float t)
-    {
-        Vector2 tangentdir = (at_2d(1f) - at_2d(0f)).normalized;
-        return new Vector3(tangentdir.y, 0f, -tangentdir.x);
-    }
-
-    protected override float lengthByParam(float t)
-    {
-        return (at_2d(t) - start).magnitude;
-    }
-
-    public override List<Curve> segmentation(float maxlen)
-    {
-        Debug.Assert(maxlen != 0f);
-        int segCount = Mathf.CeilToInt(this.length / maxlen);
-        List<Curve> result = new List<Curve>();
-        for (int i = 0; i != segCount; ++i)
-        {
-            float start_frac = i * maxlen / this.length;
-            float end_frac = Mathf.Min((i + 1) * maxlen / this.length, 1f);
-            start_frac = toGlobalParam(start_frac);
-            end_frac = toGlobalParam(end_frac);
-            if (!Algebra.isclose(start_frac * (end - start) + start, end_frac * (end - start) + start))
-            {
-                Curve l2 = Line.TryInit(start_frac * (end - start) + start, end_frac * (end - start) + start, z_start + start_frac * z_offset, z_start + end_frac * z_offset);
-                result.Add(l2);
-            }
-        }
-        return result;
-    }
-
-    /*
-    public override float TravelAlong(float currentParam, float distToTravel, bool zeroToOne){
-        if (zeroToOne){
-            return Mathf.Min(1f, currentParam + distToTravel / length);
-        }
-        else{
-            return Mathf.Max(0f, currentParam - distToTravel / length);
-        }
-    }
-    */
-
-    public override float? paramOf(Vector2 point)
+    protected override float? _ParamOf(Vector2 point)
     {
         float p;
 
-        if (!Geometry.Parallel(point - start, end - start))
+        if (!Algebra.Parallel(point - Start, End - Start))
         {
             return null;
         }
 
-        if (Algebra.isclose(end.x, start.x))
+        if (Algebra.isclose(End.x, Start.x))
         {
-
-            p = (point.y - start.y) / (end.y - start.y);
+            p = (point.y - Start.y) / (End.y - Start.y);
         }
         else
         {
-            p = (point.x - start.x) / (end.x - start.x);
+            p = (point.x - Start.x) / (End.x - Start.x);
         }
-        return Algebra.approximateTo01(toLocalParam(p), length);
+        return Algebra.approximateTo01(p, Length);
+    }
 
+    protected override float _GetLength()
+    {
+        return (Start - End).magnitude;
     }
 
     public override string ToString()
     {
-        return string.Format("Line: Start = {0} ; End = {1}, zStart = {2}, zOffset = {3}", at_2d(0f), at_2d(1f), z_start, z_offset);
+        return "Line from " + Start + " to " + End;
     }
 
+    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+    /*Extension Methods */
 
-    public override Vector3 AttouchPoint(Vector3 p)
+    public override void Crop(float unscaled_t_start, float unscaled_t_end)
     {
-        Vector2 twod_p = new Vector2(p.x, p.z);
-        float candidate_t = -((end.x - start.x) * (start.x - p.x) + (end.y - start.y) * (start.y - p.z))
-            / (Mathf.Pow(end.x - start.x, 2) + Mathf.Pow(end.y - start.y, 2));
-        candidate_t = toLocalParam(candidate_t);
-        if (0 < candidate_t && candidate_t < 1)
-        {
-            return this.at(candidate_t);
-        }
-        else
-        {
-            if ((twod_p - this.at_2d(0)).magnitude < (twod_p - this.at_2d(1)).magnitude)
-            {
-                return this.at(0);
-            }
-            else
-            {
-                return this.at(1);
-            }
-        }
+        var new_start = Vector2.Lerp(Start, End, unscaled_t_start);
+        var new_end = Vector2.Lerp(Start, End, unscaled_t_end);
+        Start = new_start;
+        End = new_end;
+        _CommitChanges();
     }
 
-    public override Curve concat(Curve b)
+    public override Curve DeepCopy()
     {
-        Debug.Assert(b is Line);
-        if (Algebra.isclose(at_ending_2d(true), b.at_ending_2d(true)))
-        {
-            return Line.TryInit(at_ending_2d(false), b.at_ending_2d(false), at(1f).y, b.At(1f).y - At(1f).y);
-        }
-        if (Algebra.isclose(at_ending_2d(true), b.at_ending_2d(false)))
-        {
-            return Line.TryInit(at_ending_2d(false), b.at_ending_2d(true), At(0f).y, b.At(1f).y - At(0f).y);
-        }
-        if (Algebra.isclose(at_ending_2d(false), b.at_ending_2d(true)))
-        {
-            return Line.TryInit(at_ending_2d(true), b.at_ending_2d(false), At(1f).y, b.At(0f).y - At(1f).y);
-        }
-        if (Algebra.isclose(at_ending_2d(false), b.at_ending_2d(false)))
-        {
-            return Line.TryInit(at_ending_2d(true), b.at_ending_2d(true), At(0f).y, b.At(0f).y - At(0f).y);
-        }
-        Debug.Assert(false);
-        return null;
+        return new Line(Start, End);
     }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+using Old;
+
 public class MouseInteraction : MonoBehaviour {
 
     public float zoomStep = 0.02f;

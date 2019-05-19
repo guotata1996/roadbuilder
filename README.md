@@ -1,7 +1,7 @@
 # roadbuilder
 Build road just like in a simcity game.
 
-<img src="https://github.com/guotata1996/guotata1996.github.io/raw/master/img/post3/0113.gif" width="500" hegiht="322" align=center />
+<img src="https://github.com/guotata1996/guotata1996.github.io/raw/master/img/post3/0113.gif" width="500" height="322" align=center />
 
 ## Building tools
 - Create/delete roads of 3 curve types: straight line / arc / bezeir curve
@@ -14,9 +14,11 @@ Build road just like in a simcity game.
 - Navigation from source to sink with auto lane selection
 - Longitudinal and lane-changing behavior based on IDM and BOMIL models
 
-## Major Todos
-- Optimize vehicle simulation efficiency
-- Configuration panel for each road and crossroads
+## Plans
+- Refactor backend codes for better maintainability & speedup. 
+    - Create Unit tests for complicated classes.
+    - Mainscene would still be working with old scipts kept in `Old/` Folders.
+- Integrate Unity ECS into traffic system.
 - Handle lane-changing deadlocks
 
 ## Demo

@@ -24,3 +24,15 @@ DrawLineExample\.sln
 Assets/FbxExporters/
 
 Assets/Imported/
+
+macbuild_release\.app/
+
+Assets/TextMesh Pro/
+
+\.idea/
+
+Assets/Unity Recorder/
+
+Assets/UnityVS/
+
+Logs/

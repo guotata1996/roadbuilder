@@ -13,86 +13,6 @@ public static class Algebra {
     public static float InfLength = 999f;
 
     public static float Infinity = 999999f;
-    
-    public static List<float> functionSolver(float a0, float a1, float a2, float a3 = 0, float a4 =0)
-    {
-        List<float> ans = new List<float>();
-        if (a4 != 0)
-        {
-            _a0 = a0;
-            _a1 = a1;
-            _a2 = a2;
-            _a3 = a3;
-            _a4 = a4;
-            float step = 0.01f;
-            for (float p = 0;  p <= 1f - step;  p += step)
-            {
-                if (quadFunc(p) * quadFunc(p + step) <= 0)
-                {
-                    if (!ans.Contains(p))
-                        ans.Add(newTown(quadFunc, quadGradient, 0f, startValue:p));
-                }
-
-            }
-
-
-            /*
-            double delta1 = a2 * a2 - 3 * a3 * a1 + 12 * a4 * a0;
-            double delta2 = 2 * a2 * a2 * a2 - 9 * a3 * a2 * a1 + 27 * a4 * a1 * a1 + 27 * a3 * a3 * a0 - 72 * a4 * a2 * a0;
-            double delta_down = Math.Pow(delta2 + Math.Sqrt(-4 * Math.Pow(delta1, 3) + Math.Pow(delta2, 2)), 1f / 3);
-            double delta = Math.Pow(2f, 1f / 3) * delta1 / (3 * a4 * delta_down) + delta_down / (3 * Math.Pow(2f, 1f / 3) * a4);
-            double extend_delta_first = Math.Pow(a3, 2) / (4 * Math.Pow(a4, 2)) - (2 * a2) / (3 * a4) + delta;
-            Debug.Log(extend_delta_first);
-
-            double extended_delta_second_right_up = -Math.Pow((a3 / a4), 3) + 4 * a3 * a2 / (a4 * a4) - 8 * a1 / a4;
-            double extended_delta_second_1;
-            double extended_delta_second_2;
-            if (extend_delta_first > 0)
-            {
-                extend_delta_first = Math.Sqrt(extend_delta_first);
-                extended_delta_second_1 = Math.Pow(a3, 2f) / (2 * Math.Pow(a4, 2f)) - (4 * a2) / (3 * a4) - delta - extended_delta_second_right_up / (4 * extend_delta_first);
-                extended_delta_second_2 = Math.Pow(a3, 2f) / (2 * Math.Pow(a4, 2f)) - (4 * a2) / (3 * a4) - delta + extended_delta_second_right_up / (4 * extend_delta_first);
-            }
-            else
-            {
-                extend_delta_first = 0f;
-                extended_delta_second_1 = extended_delta_second_2 = Math.Pow(a3, 2f) / (2 * Math.Pow(a4, 2f)) - (4 * a2) / (3 * a4) - delta;
-                Debug.Log(extended_delta_second_1);
-            }
-                
-
-            if (isclose(extended_delta_second_1, 0))
-            {
-                ans.Add((float)(-a3 / (4 * a4) - extend_delta_first / 2));
-            }
-            else
-            if (extended_delta_second_1 > 0)
-            {
-                ans.Add((float)(-a3 / (4 * a4) - extend_delta_first / 2 - Math.Sqrt(extended_delta_second_1) / 2));
-                ans.Add((float)(-a3 / (4 * a4) - extend_delta_first / 2 + Math.Sqrt(extended_delta_second_1) / 2));
-            }
-
-            if (isclose(extended_delta_second_2, 0))
-            {
-                ans.Add((float)(-a3 / (4 * a4) + extend_delta_first / 2));
-            }
-            else
-            if (extended_delta_second_2 > 0)
-            {
-                ans.Add((float)(-a3 / (4 * a4) + extend_delta_first / 2 - Math.Sqrt(extended_delta_second_2) / 2));
-                ans.Add((float)(-a3 / (4 * a4) + extend_delta_first / 2 + Math.Sqrt(extended_delta_second_2) / 2));
-            }
-            */
-        }
-
-        else
-        {
-            Debug.Assert(a3 == 0);
-            return secondLevelfunctionSolver((float)a0, (float)a1, (float)a2);
-        }
-        return ans;
-        
-    }
 
     public static float quadFunc(float t)
     {
@@ -104,30 +24,16 @@ public static class Algebra {
         return 4 * _a4 * Mathf.Pow(t, 3) + 3 * _a3 * Mathf.Pow(t, 2) + 2 * _a2 * t + _a1;
     }
 
-    private static List<float> secondLevelfunctionSolver(float a0, float a1, float a2)
+    /* Solve function for \Sum{Ai*x^i = 0}*/
+    public static float[] functionSolver(float A0, float A1, float A2, float A3 = 0f, float A4 = 0f)
     {
-        List<float> ans = new List<float>();
-        if (a2 != 0)
-        {
-            float delta = a1 * a1 - 4 * a0 * a2;
-            if (delta > 0)
-            {
-                ans.Add((-a1 + Mathf.Sqrt(delta)) / (2 * a2));
-                ans.Add((-a1 - Mathf.Sqrt(delta)) / (2 * a2));
-            }
-            if (delta == 0)
-            {
-                ans.Add(-a1 / (2 * a2));
-            }
-        }
-        else
-        {
-            if (a1 != 0)
-            {
-                ans.Add(-a0 / a1);
-            }
-        }
-        return ans;
+        double[] a = new double[5] { A0, A1, A2, A3, A4 };
+        int order = A4 != 0 ? 4 : (A3 != 0 ? 3 : (A2 != 0 ? 2 : 1));
+        alglib.polynomialsolve(a, order, out alglib.complex[] res, out alglib.polynomialsolverreport rpt);
+        var reals = from resitem in res
+                    where resitem.y == 0
+                    select (float)resitem.x;
+        return reals.ToArray();
     }
 
     /*b & c*
@@ -143,7 +49,7 @@ public static class Algebra {
         float A2 = a1.x * a1.x + a1.y * a1.y + 2 * a2.x * (a0.x - center.x) + 2 * a2.y * (a0.y - center.y);
         float A1 = 2 * a1.x * (a0.x - center.x) + 2 * a1.y * (a0.y - center.y);
         float A0 = (a0.x - center.x) * (a0.x - center.x) + (a0.y - center.y) * (a0.y - center.y) - radius * radius;
-        List<float> func_1_params = functionSolver(A0, A1, A2, A3, A4);
+        var func_1_params = functionSolver(A0, A1, A2, A3, A4);
         var valid_points = from func_1_param in func_1_params
                            where 0 <= func_1_param && func_1_param <= 1
                            select a2 * func_1_param * func_1_param + a1 * func_1_param + a0;
@@ -160,7 +66,7 @@ public static class Algebra {
         float A2 = b1.y * a2.x - a2.y * b1.x;
         float A1 = a1.x * b1.y - a1.y * b1.x;
         float A0 = b1.y * (a0.x - b0.x) - b1.x * (a0.y - b0.y);
-        List<float> func_1_params = functionSolver(A0, A1, A2);
+        var func_1_params = functionSolver(A0, A1, A2);
 
         //return func_1_params.Where(u => 0 <= u && u <= 1).ToList();
         var valid_points = from func_1_param in func_1_params
@@ -168,7 +74,7 @@ public static class Algebra {
         return valid_points.ToList();
     }
 
-    internal static float approximateTo01(float p, float baseline)
+    public static float approximateTo01(float p, float baseline = 1f)
     {
         if (isclose(p * baseline, 0f))
             return 0f;
@@ -205,7 +111,7 @@ public static class Algebra {
             A1 = 2 * D * E * b2.x + D * F * b1.x - F * F * a1.x;
             A0 = E * E * b2.x + E * F * b1.x + F * F * b0.x - F * F * a0.x;
         }
-        List<float> func_params = functionSolver(A0, A1, A2, A3, A4);
+        var func_params = functionSolver(A0, A1, A2, A3, A4);
 
         IEnumerable<Vector2> valid_points;
         if (Mathf.Approximately(b2.x, 0f))
@@ -229,7 +135,7 @@ public static class Algebra {
         float A2 = a1.x * a1.x + a1.y * a1.y;
         float A1 = 2 * a1.x * (a0.x - center.x) + 2 * a1.y * (a0.y - center.y);
         float A0 = (a0.x - center.x) * (a0.x - center.x) + (a0.y - center.y) * (a0.y - center.y) - radius * radius;
-        List<float> func_1_params = functionSolver(A0, A1, A2);
+        var func_1_params = functionSolver(A0, A1, A2);
         var points = from func_1_param in func_1_params
                      select a0 + a1 * func_1_param;
         return points.ToList();
@@ -248,7 +154,7 @@ public static class Algebra {
         float C1 = (Mathf.Pow(radius2, 2f) - A - Mathf.Pow(radius1, 2)) / (2 * radius1);
         float B = -2 * C1 * (center1.y - center2.y);
         float C = Mathf.Pow(C1, 2f) - Mathf.Pow(center1.x - center2.x, 2f);
-        List<float> func_1_params_sined = functionSolver(C, B, A);
+        var func_1_params_sined = functionSolver(C, B, A);
         var points = from func_1_param_sined in func_1_params_sined
                      let func_1_params_cosed = new List<float> { Mathf.Sqrt(1 - func_1_param_sined * func_1_param_sined),  -Mathf.Sqrt(1 - func_1_param_sined * func_1_param_sined) }
                         from func_1_param_cosed in func_1_params_cosed
@@ -272,15 +178,15 @@ public static class Algebra {
             return new List<Vector2>();
         }
         float A0 = - (a0.x * b1.y - a0.y * b1.x + b0.y * b1.x - b0.x * b1.y);
-        List<float> func_1_params = functionSolver(A0, A1, 0f);
+        var func_1_params = functionSolver(A0, A1, 0f);
         var points = from func_1_param in func_1_params
                      select a0 + a1 * func_1_param;
         return points.ToList();
     }
 
-    public static bool isclose(float a, float b)
+    public static bool isclose(float a, float b, float baseline = 1)
     {
-        return Mathf.Abs(a - b) < 1e-3;
+        return Mathf.Abs(a - b) * baseline < 1e-3;
     }
 
     public static bool isclose(double a, double b)
@@ -311,16 +217,23 @@ public static class Algebra {
         return Mathf.Abs((a - b).magnitude) < 0.1f;
     }
 
+    public static bool approximatelySmaller(float a, float b)
+    {
+        return a < b + 1e-4;
+    }
+
     public delegate float Del(float x);
 
     /*sove function: f(x) = targetValue, f' = gradient*/
     public static float newTown(Del function, Del gradient, float targetValue, float startValue = 1f)
     {
         float ans = startValue;
+        float error_baseLine = Mathf.Max(function(0f), function(1f), targetValue, function(startValue));
+
         for(int i = 0; i != 50; ++i)
         {
             ans = ans - (function(ans) - targetValue) / gradient(ans);
-            if (isclose(function(ans), targetValue)){
+            if (isclose(function(ans), targetValue, error_baseLine)){
                 break;
             }
         }
@@ -420,5 +333,19 @@ public static class Algebra {
     public static float genericScalarIntepolator(float a, float b, float s, float t)
     {
         return ((a * t + b * s)) / (s + t);
+    }
+
+    public static Vector2 RotatedY(Vector2 input, float theta)
+    {
+        float x = Mathf.Cos(theta) * input.x - Mathf.Sin(theta) * input.y;
+        float y = Mathf.Sin(theta) * input.x + Mathf.Cos(theta) * input.y;
+        return new Vector2(x, y);
+    }
+
+    public static bool Parallel(Vector2 line1, Vector2 line2)
+    {
+        return (Algebra.isclose(line1.x, 0) && Algebra.isclose(line2.x, 0))
+            || Algebra.isclose(line1, Vector2.zero) || Algebra.isclose(line2, Vector2.zero) ||
+                    Algebra.isclose(line1.y / line1.x, line2.y / line2.x);
     }
 }
