@@ -8,11 +8,10 @@ namespace Tests
 {
     public class CurvePlayTest
     {
-        // A Test behaves as an ordinary method
         Dictionary<Vector2, Color> POI;
 
         Vector2[] roadPoints;
-        Curve c, b, l;
+        Curve c, b, l, l2;
         GameObject lightGameObject;
 
         [SetUp]
@@ -21,13 +20,14 @@ namespace Tests
             roadPoints = new Vector2[]{
                 new Vector2(0f, 0f),
                 new Vector2(0f, 20f),
-                new Vector2(-30f, 0f)
+                new Vector2(-30f, 0f),
+                new Vector2(-20f, 20f)
             };
             POI = new Dictionary<Vector2, Color>();
 
             c = Arc.TryInit(roadPoints[1], roadPoints[0], -Mathf.PI / 2);
             b = Bezeir.TryInit(roadPoints[2], roadPoints[0], roadPoints[1]);
-            l = Line.TryInit(roadPoints[2], roadPoints[1]);
+            l = Line.TryInit(roadPoints[0], roadPoints[3]);
 
 
             if (lightGameObject == null)
@@ -57,6 +57,7 @@ namespace Tests
             for (float i = 0; i < 0.9f; i += 0.1f)
             {
                 Curve bi = b.DeepCopy();
+                bi.Crop(1.0f, 0.0f); //Inverse
                 bi.Crop(i, i + 0.1f);
                 Debug.Log(bi + "\n" + bi.GetTwodPos(i));
                 POI.Add(bi.GetTwodPos(0.5f), Color.white);
@@ -68,6 +69,15 @@ namespace Tests
                 ci.Crop(i, i + 0.1f);
                 Debug.Log(ci + "\n" + ci.GetTwodPos(i));
                 POI.Add(ci.GetTwodPos(0.5f), Color.white);
+            }
+
+            Debug.Log("Line Test...");
+            for (float i = 0; i < 0.9f; i += 0.1f)
+            {
+                Curve li = l.DeepCopy();
+                li.Crop(i, i + 0.1f);
+                Debug.Log(li + "\n" + li.GetTwodPos(i));
+                POI.Add(li.GetTwodPos(0.5f), Color.white);
             }
         }
 
@@ -81,12 +91,20 @@ namespace Tests
                 POI.Add(i, Color.yellow);
             }
 
+            Debug.Log("l & c...");
+            inter = l._IntersectWith(c);
+            foreach (var i in inter)
+            {
+                POI.Add(i, Color.yellow);
+            }
+
             Debug.Log("l & b...");
             inter = l._IntersectWith(b);
             foreach (var i in inter)
             {
                 POI.Add(i, Color.yellow);
             }
+
         }
 
         [TearDown]
