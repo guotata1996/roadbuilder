@@ -10,7 +10,6 @@ namespace Tests
     {
         Dictionary<Vector2, Color> POI;
 
-
         Vector2[] roadPoints;
         Curve c, b, l, l2;
         Function f;
@@ -27,9 +26,9 @@ namespace Tests
             };
             POI = new Dictionary<Vector2, Color>();
 
-            c = Arc.TryInit(roadPoints[1], roadPoints[0], -Mathf.PI / 2);
-            b = Bezeir.TryInit(roadPoints[2], roadPoints[0], roadPoints[1]);
-            l = Line.TryInit(roadPoints[0], roadPoints[3]);
+            c = new Arc(roadPoints[1], roadPoints[0], -Mathf.PI / 2);
+            b = new Bezier(roadPoints[2], roadPoints[0], roadPoints[1]);
+            l = new Line(roadPoints[0], roadPoints[3]);
             f = new LinearFunction(0.0f, 4.0f);
 
             if (lightGameObject == null)
@@ -48,12 +47,7 @@ namespace Tests
         [Test]
         public void RenderTest()
         {
-            Curve3DSampler curve3d = new Curve3DSampler(b, f, 0.5f);
-            var sprite = Resources.Load<Sprite>("Tests/1");
-            SpriteVerticeSampler sb = new SpriteVerticeSampler(sprite, 1.0f, 0.1f);
-
-            GameObject obj = SolidCurve.Generate(curve3d, sb);
-            GameObject.Instantiate(obj);
+            Lane l = new Lane(c, f);
         }
 
 

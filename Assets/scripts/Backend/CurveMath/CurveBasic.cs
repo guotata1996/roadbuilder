@@ -5,9 +5,28 @@ using UnityEngine;
 public abstract partial class Curve : ITwodPosAvailable
 {
     protected float t_start, t_end;
+    protected Vector2[] controlPoints;
+
+    public event System.EventHandler<int> OnShapeChanged;
+
+    /// <summary>
+    /// Gets a copy of control points.
+    /// </summary>
+    public abstract List<Vector2> ControlPoints { get; set; }
+
+    /// <summary>
+    /// Call this function when all control points are set
+    /// </summary>
+    protected void NotifyShapeChanged()
+    {
+        _length = null;
+        OnShapeChanged(this, 0);
+    }
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
     /*Basic Methods */
+    public abstract bool IsValid { get; }
+
     public Vector2 GetTwodPos(float unscaled_t){
         return _GetTwodPos(_ToParamt(unscaled_t));
     }
@@ -26,6 +45,8 @@ public abstract partial class Curve : ITwodPosAvailable
     public Vector2 GetRightDir(float unscaled_t){
         return _GetRightDir(_ToParamt(unscaled_t));
     }
+
+    public abstract float GetMaximumCurvature { get; }
 
     /// <summary>
     ///   <para>Could return unscaled params outside (0,1). 
@@ -109,4 +130,6 @@ public abstract partial class Curve : ITwodPosAvailable
     {
         _length = null;
     }
+
+
 }

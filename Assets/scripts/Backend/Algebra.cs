@@ -307,8 +307,8 @@ public static class Algebra {
         return new Vector2(Mathf.Cos(angle) * a.x - Mathf.Sin(angle) * a.y, Mathf.Sin(angle) * a.x + Mathf.Cos(angle) * a.y);
     }
 
-    public static Vector3 toVector3(Vector2 a){
-        return new Vector3(a.x, 0f, a.y);
+    public static Vector3 toVector3(Vector2 a, float y = 0f){
+        return new Vector3(a.x, y, a.y);
     }
 
     public static Vector2 toVector2(Vector3 a)
@@ -347,5 +347,14 @@ public static class Algebra {
         return (Algebra.isclose(line1.x, 0) && Algebra.isclose(line2.x, 0))
             || Algebra.isclose(line1, Vector2.zero) || Algebra.isclose(line2, Vector2.zero) ||
                     Algebra.isclose(line1.y / line1.x, line2.y / line2.x);
+    }
+
+    /// <summary>
+    /// Projects point on ray
+    /// </summary>
+    /// <param name="rayDir">Ray dir. Must be normalized</param>
+    public static Vector2 ProjectOn(Vector2 point, Vector2 rayPoint, Vector2 rayDir)
+    {
+        return rayPoint + Vector2.Dot(point - rayPoint, rayDir) * rayDir;
     }
 }

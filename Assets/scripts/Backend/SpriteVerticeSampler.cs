@@ -37,4 +37,5 @@ public class SpriteVerticeSampler : IEnumerable
     {
         return sampledVertice.GetEnumerator();
     }
+
 }

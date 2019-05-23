@@ -13,21 +13,21 @@ public abstract partial class Curve : ITwodPosAvailable
         List<Vector2> specialcase = new List<Vector2>();
         List<Vector2> commoncase = new List<Vector2>();
 
-        if (c1 is Bezeir)
+        if (c1 is Bezier)
         {
-            if (c2 is Bezeir)
+            if (c2 is Bezier)
             {
-                commoncase = intersect(c1 as Bezeir, c2 as Bezeir);
+                commoncase = intersect(c1 as Bezier, c2 as Bezier);
             }
             else
             {
                 if (c2 is Arc)
                 {
-                    commoncase = intersect(c1 as Bezeir, c2 as Arc);
+                    commoncase = intersect(c1 as Bezier, c2 as Arc);
                 }
                 else
                 {
-                    commoncase = intersect(c1 as Bezeir, c2 as Line);
+                    commoncase = intersect(c1 as Bezier, c2 as Line);
                 }
             }
         }
@@ -35,9 +35,9 @@ public abstract partial class Curve : ITwodPosAvailable
         {
             if (c1 is Arc)
             {
-                if (c2 is Bezeir)
+                if (c2 is Bezier)
                 {
-                    commoncase = intersect(c1 as Arc, c2 as Bezeir);
+                    commoncase = intersect(c1 as Arc, c2 as Bezier);
                 }
                 else
                 {
@@ -54,9 +54,9 @@ public abstract partial class Curve : ITwodPosAvailable
 
             else
             {
-                if (c2 is Bezeir)
+                if (c2 is Bezier)
                 {
-                    commoncase = intersect(c1 as Line, c2 as Bezeir);
+                    commoncase = intersect(c1 as Line, c2 as Bezier);
                 }
                 else
                 {
@@ -90,7 +90,7 @@ public abstract partial class Curve : ITwodPosAvailable
         return commoncase;
     }
 
-        private static List<Vector2> intersect(Bezeir b1, Bezeir b2)
+        private static List<Vector2> intersect(Bezier b1, Bezier b2)
         {
             Vector2 A2 = b1.P0 - 2 * b1.P1 + b1.P2;
             Vector2 A1 = -2 * b1.P0 + 2 * b1.P1;
@@ -102,7 +102,7 @@ public abstract partial class Curve : ITwodPosAvailable
             return filter(Algebra.parametricFunctionSolver(A0, A1, A2, B0, B1, B2), b1, b2);
         }
 
-        private static List<Vector2> intersect(Bezeir b1, Arc b2)
+        private static List<Vector2> intersect(Bezier b1, Arc b2)
         {
             Vector2 A2 = b1.P0 - 2 * b1.P1 + b1.P2;
             Vector2 A1 = -2 * b1.P0 + 2 * b1.P1;
@@ -111,12 +111,12 @@ public abstract partial class Curve : ITwodPosAvailable
             return filter(candidatePoints, b1, b2);
         }
 
-        private static List<Vector2> intersect(Arc b1, Bezeir b2)
+        private static List<Vector2> intersect(Arc b1, Bezier b2)
         {
             return intersect(b2, b1);
         }
 
-        private static List<Vector2> intersect(Bezeir b1, Line b2)
+        private static List<Vector2> intersect(Bezier b1, Line b2)
         {
             Vector2 A2 = b1.P0 - 2 * b1.P1 + b1.P2;
             Vector2 A1 = -2 * b1.P0 + 2 * b1.P1;
@@ -126,7 +126,7 @@ public abstract partial class Curve : ITwodPosAvailable
             return filter(candidatePoints, b1, b2);
         }
 
-        private static List<Vector2> intersect(Line b1, Bezeir b2)
+        private static List<Vector2> intersect(Line b1, Bezier b2)
         {
 
             return intersect(b2, b1);
@@ -211,11 +211,11 @@ public abstract partial class Curve : ITwodPosAvailable
                 return false;
             }
         }
-        if (c1 is Bezeir){
-            if (c2 is Bezeir){
-                return Algebra.isclose(((((Bezeir)c1).P0) - ((Bezeir)c2).P0).magnitude, 0f)
-                            && Algebra.isclose(((((Bezeir)c1).P1) - ((Bezeir)c2).P1).magnitude, 0f)
-                            && Algebra.isclose(((((Bezeir)c1).P2) - ((Bezeir)c2).P2).magnitude, 0f);
+        if (c1 is Bezier){
+            if (c2 is Bezier){
+                return Algebra.isclose(((((Bezier)c1).P0) - ((Bezier)c2).P0).magnitude, 0f)
+                            && Algebra.isclose(((((Bezier)c1).P1) - ((Bezier)c2).P1).magnitude, 0f)
+                            && Algebra.isclose(((((Bezier)c1).P2) - ((Bezier)c2).P2).magnitude, 0f);
             }
             return false;
         }

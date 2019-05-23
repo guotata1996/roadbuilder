@@ -6,7 +6,7 @@ public class SpriteBoundary : IEnumerable
 {
     const float alpha_thres = 1.0f;
     Dictionary<int, Vector2Int> distance2Pos;
-    //HashSet<Vector2Int> dbg_b = new HashSet<Vector2Int>();
+    bool counterClockwise;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="T:Section"/> class.
@@ -66,7 +66,6 @@ public class SpriteBoundary : IEnumerable
                 if (isCountour(i, j))
                 {
                     shape_cpy.SetPixel(i, j, Color.white);
-                    //dbg_b.Add(new Vector2Int(i, j));
                 }
                 else
                 {
@@ -160,17 +159,37 @@ public class SpriteBoundary : IEnumerable
             int d = distance[pos];
             distance2Pos[d] = pos;
         }
+
+        // check if counterClockwise
+        int area = 0;
+        for (int d = 0; d != distance2Pos.Count; ++d)
+        {
+            Vector2Int self = distance2Pos[d];
+            Vector2Int next = distance2Pos[(d + 1) % distance2Pos.Count];
+            area += (next.x - self.x) * (next.y + self.y);
+        }
+        counterClockwise = area < 0;
     }
 
 
     public IEnumerator GetEnumerator()
     {
-
-        for (int d = 0; d != distance2Pos.Count; ++d)
+        if (counterClockwise)
         {
-            yield return distance2Pos[d];
+            for (int d = 0; d != distance2Pos.Count; ++d)
+            {
+                yield return distance2Pos[d];
+            }
         }
-
+        else
+        {
+            for (int d = distance2Pos.Count - 1; d != -1; --d)
+            {
+                yield return distance2Pos[d];
+            }
+        }
     }
 
+     
 }
+

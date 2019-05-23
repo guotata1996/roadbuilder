@@ -10,7 +10,9 @@ public static class SolidCurve
         var line_pos_samples = new List<Vector3>();
         var line_up_samples = new List<Vector3>();
         var line_right_samples = new List<Vector3>();
-        while(line.MoveNext())
+
+        line.Reset();   //Reset must be manually called
+        while (line.MoveNext())
         {
             Vector3 pos, right, front;
             (pos, right, front) = ((Vector3, Vector3, Vector3))line.Current;
@@ -18,16 +20,15 @@ public static class SolidCurve
             line_right_samples.Add(right);
             line_up_samples.Add(Vector3.Cross(right, front));
         }
-
-        Debug.Log("frag count " + line_up_samples.Count);
-
+        
         List<Vector2> sector_vertices = new List<Vector2>();
+        
         foreach(Vector2 p in sector)
         {
             sector_vertices.Add(p);
         }
 
-        Debug.Log("sec count " + sector_vertices.Count);
+        Debug.Log("#Line= " + line_pos_samples.Count + " #SecV= " + sector_vertices.Count);
 
         int line_seg_count = line_pos_samples.Count - 1;
         int base_vcount = (line_seg_count + 1) * sector_vertices.Count;
@@ -49,7 +50,7 @@ public static class SolidCurve
             }
         }
 
-        for (int i = 0, triangle = 0; i != line_seg_count; ++i)
+        for (int i = 0, triangle = 0; i < line_seg_count; ++i)
         {
             for (int j = 0; j != sector_vertices.Count; ++j, triangle += 6)
             {
@@ -68,7 +69,6 @@ public static class SolidCurve
         gameObject.GetComponent<MeshFilter>().sharedMesh = new Mesh();
         gameObject.GetComponent<MeshFilter>().sharedMesh.SetVertices(linear_vertices.ToList());
         gameObject.GetComponent<MeshFilter>().sharedMesh.SetTriangles(linear_triangles.ToList(), 0);
-        //Debug.Log("v_count= " + linear_vertices.Length + " t_count= " + linear_triangles.Length);
 
         return gameObject;
     }

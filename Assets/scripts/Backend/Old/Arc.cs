@@ -17,37 +17,39 @@ namespace Old{
         /* t_start is in range[-Pi, Pi]
         * t_end < 2 * PI + t_start*/
 
-        public static Curve TryInit(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_end = 0f){
+        public static Curve TryInit(Vector2 _center, Vector2 start, float angle, float _z_start = 0f, float _z_end = 0f) {
             Arc candidate = new Arc(_center, start, angle, _z_start, _z_end);
-            if (Algebra.isclose(candidate.length, 0f)){
+            if (Algebra.isclose(candidate.length, 0f)) {
                 Debug.LogWarning("try creating Arc of zero length!");
                 return null;
             }
-            else{
+            else {
                 return candidate;
             }
         }
 
-        public static Curve TryInit(Vector3 _center, Vector3 _start, float angle){
+        public static Curve TryInit(Vector3 _center, Vector3 _start, float angle) {
             Arc candidate = new Arc(_center, _start, angle);
-            if (Algebra.isclose(candidate.length, 0f)){
+            if (Algebra.isclose(candidate.length, 0f)) {
                 Debug.LogWarning("try creating Arc of zero length!");
                 return null;
             }
-            else{
+            else {
                 return candidate;
             }
         }
 
-        public static Curve TryInit(Vector2 _start, float angle, Vector2 _end, float _z_start = 0f, float _z_end = 0f){
+        public static Curve TryInit(Vector2 _start, float angle, Vector2 _end, float _z_start = 0f, float _z_end = 0f) {
             Arc candidate = new Arc(_start, angle, _end, _z_start, _z_end);
-            if (Algebra.isclose(candidate.length, 0f)){
+            if (Algebra.isclose(candidate.length, 0f)) {
                 return null;
             }
-            else{
+            else {
                 return candidate;
             }
         }
+
+        Arc() {}
 
         /*If angle>0, 
         *angle is in radius 
@@ -106,8 +108,6 @@ namespace Old{
             z_start = _z_start;
             z_offset = _z_end - _z_start;
         }
-
-        private Arc() { }
 
         private Arc deepCopy()
         {

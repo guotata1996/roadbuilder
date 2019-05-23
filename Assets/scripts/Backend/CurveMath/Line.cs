@@ -1,36 +1,61 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class Line : Curve
 {
+
     public Vector2 Start
     {
-        get;
-        private set;
+        get => controlPoints[0];
+        private set => controlPoints[0] = value;
     }
 
     public Vector2 End
     {
-        get;
-        private set;
+        get => controlPoints[1];
+        private set => controlPoints[1] = value;
     }
 
-    public static Curve TryInit(Vector2 _Start, Vector2 _End)
+    public override bool IsValid => !float.IsInfinity(Start.x) && !float.IsInfinity(End.x) 
+    && !Algebra.isclose(Start, End);
+    
+    public static Curve GetDefault()
     {
-        if (Algebra.isclose(_Start, _End)){
-            Debug.LogWarning("Try creating Line whose Length = 0");
-            return null;
-        }
-        return new Line(_Start, _End);
+        return new Line(Vector2.negativeInfinity, Vector2.negativeInfinity);
     }
 
-    Line(Vector2 _Start, Vector2 _End)
+    public Line(Vector2 _Start, Vector2 _End)
     {
+        controlPoints = new Vector2[2];
         Start = _Start;
         End = _End;
         t_start = 0f;
         t_end = 1f;
+    }
+
+    public override List<Vector2> ControlPoints
+    {
+        get
+        {
+            return controlPoints.ToList();
+        }
+        set
+        {
+            if (Algebra.isclose(value[0], value[1]))
+            {
+                Debug.LogWarning("Line ctrl points too close");
+                return;
+            }
+            Start = value[0];
+            End = value[1];
+
+            if (!float.IsInfinity(Start.x) && !float.IsInfinity(End.x))
+            {
+                NotifyShapeChanged();
+            }
+        }
     }
 
     protected override Vector2 _GetTwodPos(float unscaled_t)
@@ -83,6 +108,8 @@ public class Line : Curve
     {
         return "Line from " + Start + " to " + End;
     }
+
+    public override float GetMaximumCurvature => 1 / Algebra.InfLength;
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
     /*Extension Methods */

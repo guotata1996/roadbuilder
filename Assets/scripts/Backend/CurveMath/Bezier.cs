@@ -1,47 +1,70 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 /// <summary>
 ///   <para>P0 P1 P2 should not be on the same line</para>
 /// </summary>
-public class Bezeir : Curve
+public class Bezier : Curve
 {
     public Vector2 P0
     {
-        get;
-        private set;
+        get => controlPoints[0];
+        private set => controlPoints[0] = value;
     }
        
     public Vector2 P1
     {
-        get;
-        private set;
+        get => controlPoints[1];
+        private set => controlPoints[1] = value;
     }
 
     public Vector2 P2
     {
-        get;
-        private set;
+        get => controlPoints[2];
+        private set => controlPoints[2] = value;
     }
 
-    public static Curve TryInit(Vector2 _P0, Vector2 _P1, Vector2 _P2)
+    public override bool IsValid => !Algebra.Parallel(P1 - P0, P2 - P1) && !Algebra.isclose(P0, P2);
+
+    public static Curve GetDefault()
     {
-        if (Algebra.Parallel(_P1 - _P0, _P2 - _P1) || Algebra.isclose(_P0, _P2))
-        {
-            Debug.LogWarning("Bezeir Ctrl Point Parallel!");
-            return Line.TryInit(_P0, _P2);
-        }
-        return new Bezeir(_P0, _P1, _P2);
+        return new Bezier(Vector2.negativeInfinity, Vector2.negativeInfinity, Vector2.negativeInfinity);
     }
 
-    private Bezeir(Vector2 _P0, Vector2 _P1, Vector2 _P2)
+    public Bezier(Vector2 _P0, Vector2 _P1, Vector2 _P2)
     {
+        controlPoints = new Vector2[3];
         P0 = _P0;
         P1 = _P1;
         P2 = _P2;
         t_start = 0f;
         t_end = 1f;
+    }
+
+    public override List<Vector2> ControlPoints
+    {
+        get
+        {
+            return controlPoints.ToList();
+        }
+        set
+        {
+            P0 = value[0];
+            P1 = value[1];
+            P2 = value[2];
+
+            if (!float.IsInfinity(P0.x) && !float.IsInfinity(P2.x) && !Algebra.isclose(P0, P2))
+            {
+                // auto adjust invalid middle control point
+                if (float.IsInfinity(P1.x) || Algebra.Parallel(P2 - P1, P1 - P0))
+                {
+                    P1 = (P2 + P0) / 2 + Algebra.RotatedY((P2 - P0) / 2, -Mathf.PI / 2);
+                }
+                NotifyShapeChanged();
+            }
+        }
     }
 
     protected override float _GetLength()
@@ -125,9 +148,11 @@ public class Bezeir : Curve
         return dxy_dt.magnitude / Mathf.Abs(t_end - t_start);
     }
 
+    public override float GetMaximumCurvature => (P2 + P0 - 2 * P1).magnitude / Mathf.Abs((P1.x - P0.x) * (P2.y - P1.y) - (P1.y - P0.y) * (P2.x - P1.x));
+
     public override Curve DeepCopy()
     {
-        Bezeir copy = new Bezeir(P0, P1, P2);
+        Bezier copy = new Bezier(P0, P1, P2);
         copy.t_start = t_start;
         copy.t_end = t_end;
         return copy;

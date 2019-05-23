@@ -14,6 +14,7 @@ namespace Old{
         /*=======================================================*/
         const float bufferResolution = 0.2f;
 
+
         /* Time-consuming function
         * must be explicitly called before using buffers*/
         private int bufferLength{

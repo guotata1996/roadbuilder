@@ -25,9 +25,9 @@ namespace Tests
             };
             POI = new Dictionary<Vector2, Color>();
 
-            c = Arc.TryInit(roadPoints[1], roadPoints[0], -Mathf.PI / 2);
-            b = Bezeir.TryInit(roadPoints[2], roadPoints[0], roadPoints[1]);
-            l = Line.TryInit(roadPoints[0], roadPoints[3]);
+            c = new Arc(roadPoints[1], roadPoints[0], -Mathf.PI / 2);
+            b = new Bezier(roadPoints[2], roadPoints[0], roadPoints[1]);
+            l = new Line(roadPoints[0], roadPoints[3]);
 
 
             if (lightGameObject == null)
