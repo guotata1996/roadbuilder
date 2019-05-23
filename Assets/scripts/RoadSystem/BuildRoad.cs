@@ -12,15 +12,15 @@ public class BuildRoad : MonoBehaviour
 
     Type spawnType = typeof(Line);
 
-    Function currentFunc = null;
-    Curve currentCurve = null;
     Lane currentLane;
 
     private void Start()
     {
+        // Init behavior
         inputHandler.OnClick += delegate (object sender, Vector3 position) {
-            if (currentCurve == null)
+            if (currentLane == null)
             {
+                Curve currentCurve = null;
                 if (spawnType == typeof(Line))
                 {
                     currentCurve = Line.GetDefault();
@@ -34,13 +34,26 @@ public class BuildRoad : MonoBehaviour
                     currentCurve = Bezier.GetDefault();
                 }
 
-                currentFunc = new LinearFunction(); // TODO: Create more
+                Function currentFunc = new LinearFunction(); // TODO: Create more
                 currentLane = new Lane(currentCurve, currentFunc);
             }
 
-            new PlaceEndingCommand(position).Execute(new object[] { currentCurve, currentFunc });
+            new PlaceEndingCommand(position).Execute(currentLane);
         };
 
+        // Adjust behavior
+        inputHandler.OnDragStart += delegate (object sender, Vector3 position)
+        {
+            FollowMouseCommand followMouse = (FollowMouseCommand)gameObject.AddComponent(typeof(FollowMouseCommand));
+            followMouse.input = inputHandler;
+            followMouse.Execute(currentLane);
+        };
+
+        inputHandler.OnDragEnd += delegate (object sender, Vector3 position)
+        {
+            Destroy(GetComponent<FollowMouseCommand>());
+        };
+           
 
     }
 
@@ -66,7 +79,7 @@ public class BuildRoad : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.Q))
         {
             Debug.Log("Quit");
-            currentCurve = null;
+            currentLane = null;
         }
     }
 }

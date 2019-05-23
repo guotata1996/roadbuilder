@@ -46,7 +46,6 @@ public class Lane : Curve3DSampler
     {
         SpriteVerticeSampler spriteSampler = new SpriteVerticeSampler(Resources.Load<Sprite>("Sectors/SimpleRoad"), 1f, 0.1f);
 
-
         if (this.IsValid)
         {
             laneObject = SolidCurve.Generate(this, spriteSampler);

@@ -26,7 +26,9 @@ public class Bezier : Curve
         private set => controlPoints[2] = value;
     }
 
-    public override bool IsValid => !Algebra.Parallel(P1 - P0, P2 - P1) && !Algebra.isclose(P0, P2);
+    public override bool IsValid => 
+    !float.IsInfinity(P0.x) && !float.IsInfinity(P1.x) && !float.IsInfinity(P2.x) && 
+        !Algebra.Parallel(P1 - P0, P2 - P1) && !Algebra.isclose(P0, P2);
 
     public static Curve GetDefault()
     {

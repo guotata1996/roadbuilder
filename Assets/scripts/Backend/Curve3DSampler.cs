@@ -86,22 +86,22 @@ public class Curve3DSampler : IEnumerator
         get
         {
             var xz_ctrl = xz_curve.ControlPoints;
-            var rtn = new List<Vector3>(xz_ctrl.Count);
-            for (int i = 0; i != rtn.Count; ++i)
+            var rtn = new List<Vector3>();
+            for (int i = 0; i != xz_ctrl.Count; ++i)
             {
                 if (i == 0)
                 {
-                    rtn[i] = Algebra.toVector3(xz_ctrl[i], y_func.ControlPoints[0]);
+                    rtn.Add(Algebra.toVector3(xz_ctrl[i], y_func.ControlPoints[0]));
                 }
                 else
                 {
                     if (i == rtn.Count - 1)
                     {
-                        rtn[i] = Algebra.toVector3(xz_ctrl[i], y_func.ControlPoints[1]);
+                        rtn.Add(Algebra.toVector3(xz_ctrl[i], y_func.ControlPoints[1]));
                     }
                     else
                     {
-                        rtn[i] = Algebra.toVector3(xz_ctrl[i]);
+                        rtn.Add(Algebra.toVector3(xz_ctrl[i]));
                     }
                 }
             }

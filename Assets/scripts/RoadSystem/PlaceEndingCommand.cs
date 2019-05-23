@@ -10,65 +10,25 @@ public class PlaceEndingCommand : Command
         position = mousePosition;
     }
 
-    public override void Execute(object obj)
+    public void Execute(object obj)
     {
-        object[] obj_arr = (object[])obj;
-        Curve c = (Curve)obj_arr[0];
-        Function f = (Function)obj_arr[1];
+        Curve3DSampler c = (Lane)obj;
         
-        List<Vector2> ctrl = c.ControlPoints;
-        if (c is Line)
+        List<Vector3> ctrl = c.ControlPoints;
+        if (float.IsInfinity(ctrl[0].x))
         {
-            if (float.IsInfinity(ctrl[0].x))
-            {
-                ctrl[0] = Algebra.toVector2(position);
-            }
-            else
-            {
-                ctrl[1] = Algebra.toVector2(position);
-            }
+            ctrl[0] = position;
         }
-        if (c is Arc)
+        else
         {
-            if (float.IsInfinity(ctrl[0].x))
-            {
-                ctrl[0] = Algebra.toVector2(position);
-            }
-            else
-            {
-                ctrl[2] = Algebra.toVector2(position);
-            }
-        }
-        if (c is Bezier)
-        {
-            if (float.IsInfinity(ctrl[0].x))
-            {
-                ctrl[0] = Algebra.toVector2(position);
-            }
-            else
-            {
-                ctrl[2] = Algebra.toVector2(position);
-            }
-
-        }
-
-        if (f is LinearFunction)
-        {
-            if (float.IsInfinity(((LinearFunction)f).y0))
-            {
-                ((LinearFunction)f).y0 = position.y;
-            }
-            else
-            {
-                ((LinearFunction)f).y1 = position.y;
-            }
+            ctrl[ctrl.Count - 1] = position;
         }
 
         c.ControlPoints = ctrl;
 
     }
 
-    public override void Undo()
+    public void Undo()
     {
 
     }
