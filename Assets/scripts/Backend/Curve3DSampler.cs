@@ -73,11 +73,12 @@ public class Curve3DSampler : IEnumerator
         cursor = Mathf.NegativeInfinity;
     }
 
-    protected bool IsValid
+    public bool IsValid
     {
         get
         {
-            return xz_curve.IsValid && y_func.IsValid;
+            return xz_curve.IsValid && y_func.IsValid 
+            && !float.IsInfinity(StepSize) && StepSize != 0f;
         }
     }
 

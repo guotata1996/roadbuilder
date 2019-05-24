@@ -60,10 +60,12 @@ public class Bezier : Curve
             if (!float.IsInfinity(P0.x) && !float.IsInfinity(P2.x) && !Algebra.isclose(P0, P2))
             {
                 // auto adjust invalid middle control point
-                if (float.IsInfinity(P1.x) || Algebra.Parallel(P2 - P1, P1 - P0))
+                if (float.IsInfinity(P1.x) || Algebra.isRoadNodeClose(P0, P1)
+                || Algebra.isRoadNodeClose(P2, P1) || Algebra.Parallel(P2 - P1, P1 - P0))
                 {
                     P1 = (P2 + P0) / 2 + Algebra.RotatedY((P2 - P0) / 2, -Mathf.PI / 2);
                 }
+
                 NotifyShapeChanged();
             }
         }
@@ -130,8 +132,7 @@ public class Bezier : Curve
         float C = A0 * A0 + B0 * B0;
         if (Algebra.isclose(A, 0f))
         {
-            Vector2 param_t_coordinate = GetTwodPos(world_t);
-            return (param_t_coordinate - P0).magnitude;
+            return (P2 - P0).magnitude;
         }
         else
         {

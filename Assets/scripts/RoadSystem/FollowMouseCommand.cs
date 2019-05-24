@@ -4,9 +4,13 @@ using UnityEngine;
 using System.Linq;
 using MoreLinq;
 
+/// <summary>
+/// Controls the last possible (1.unset or 2.close) ControlPoint (in natural order)
+/// </summary>
 public class FollowMouseCommand : MonoBehaviour, Command
 {
-    public InputHandler input;
+    [SerializeField]
+    InputHandler input;
 
     Curve3DSampler curvesampler;
     int ctrlPointIndex;
@@ -21,8 +25,8 @@ public class FollowMouseCommand : MonoBehaviour, Command
         else
         {
             curvesampler = (Lane)data;
-            Vector3 closestCtrlPoint = curvesampler.ControlPoints.MinBy((Vector3 arg) => (input.MousePosition - arg).sqrMagnitude);
-            ctrlPointIndex = curvesampler.ControlPoints.IndexOf(closestCtrlPoint);
+            Vector3 closestCtrlPoint = curvesampler.ControlPoints.MinBy((Vector3 arg) => float.IsInfinity(arg.x) ? -1 : (input.MousePosition - arg).sqrMagnitude);
+            ctrlPointIndex = curvesampler.ControlPoints.LastIndexOf(closestCtrlPoint);
 
             lastFrameMousePosition = input.MousePosition;
         }
@@ -39,11 +43,19 @@ public class FollowMouseCommand : MonoBehaviour, Command
         var deltaMousePosition = thisFrameMousePosition - lastFrameMousePosition;
 
         var ctrl = curvesampler.ControlPoints;
-        ctrl[ctrlPointIndex] += deltaMousePosition;
+
+        if (!float.IsInfinity(ctrl[ctrlPointIndex].x))
+        {
+            ctrl[ctrlPointIndex] += deltaMousePosition;
+        }
+        else
+        {
+            ctrl[ctrlPointIndex] = thisFrameMousePosition;
+        }
+
         curvesampler.ControlPoints = ctrl;
 
-
-        lastFrameMousePosition = input.MousePosition;
+        lastFrameMousePosition = thisFrameMousePosition;
     }
 
     public void Undo()

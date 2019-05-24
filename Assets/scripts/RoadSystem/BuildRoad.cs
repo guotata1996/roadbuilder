@@ -14,6 +14,8 @@ public class BuildRoad : MonoBehaviour
 
     Lane currentLane;
 
+    float highlightRadius = 2f;
+
     private void Start()
     {
         // Init behavior
@@ -39,21 +41,41 @@ public class BuildRoad : MonoBehaviour
             }
 
             new PlaceEndingCommand(position).Execute(currentLane);
+
+            if (currentLane.IsValid)
+            {
+                // Quit Init
+                GetComponent<FollowMouseCommand>().enabled = false;
+                RoadQueryByPosition.AddLane(currentLane);
+                currentLane = null;
+                GetComponent<HighLightCtrlPointBehavior>().radius = highlightRadius;
+            }
+            else
+            {
+                // Pending
+                GetComponent<FollowMouseCommand>().enabled = true;
+                GetComponent<FollowMouseCommand>().Execute(currentLane);
+                GetComponent<HighLightCtrlPointBehavior>().radius = 0f;
+            }
+
         };
 
         // Adjust behavior
         inputHandler.OnDragStart += delegate (object sender, Vector3 position)
         {
-            FollowMouseCommand followMouse = (FollowMouseCommand)gameObject.AddComponent(typeof(FollowMouseCommand));
-            followMouse.input = inputHandler;
-            followMouse.Execute(currentLane);
+            GetComponent<FollowMouseCommand>().enabled = true;
+            GetComponent<FollowMouseCommand>().Execute(RoadQueryByPosition.QueryClosest(inputHandler.MousePosition));
+
+            GetComponent<HighLightCtrlPointBehavior>().radius = 0f;
         };
 
         inputHandler.OnDragEnd += delegate (object sender, Vector3 position)
         {
-            Destroy(GetComponent<FollowMouseCommand>());
+            GetComponent<FollowMouseCommand>().enabled = false;
+
+            GetComponent<HighLightCtrlPointBehavior>().radius = highlightRadius;
         };
-           
+
 
     }
 
@@ -81,5 +103,7 @@ public class BuildRoad : MonoBehaviour
             Debug.Log("Quit");
             currentLane = null;
         }
+
+
     }
 }

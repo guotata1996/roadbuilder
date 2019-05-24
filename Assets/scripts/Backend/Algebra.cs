@@ -194,8 +194,8 @@ public static class Algebra {
         return Math.Abs(a - b) < 1e-3;
     }
 
-    public static bool isclose(Vector2 a, Vector2 b){
-        return isclose((a - b).magnitude, 0f);
+    public static bool isclose(Vector2 a, Vector2 b, float baseline = 1f){
+        return isclose((a - b).magnitude, 0f, baseline);
     }
 
     public static bool isclose(Vector3 a, Vector3 b)

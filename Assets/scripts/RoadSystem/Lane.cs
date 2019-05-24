@@ -51,18 +51,18 @@ public class Lane : Curve3DSampler
             laneObject = SolidCurve.Generate(this, spriteSampler);
         }
 
-        void OnShapePrValueChanged(object sender, int e)
+        void OnShapeOrValueChanged(object sender, int e)
         {
             GameObject.Destroy(laneObject);
             if (this.IsValid)
             {
-                Debug.Log("repaint: " + xz_source + " " + y_source + " @step=" + StepSize);
+                //Debug.Log("repaint: " + xz_source + " " + y_source + " @step=" + StepSize);
                 laneObject = SolidCurve.Generate(this, spriteSampler);
             }
         }
 
-        xz_source.OnShapeChanged += OnShapePrValueChanged;
-        y_source.OnValueChanged += OnShapePrValueChanged;
+        xz_source.OnShapeChanged += OnShapeOrValueChanged;
+        y_source.OnValueChanged += OnShapeOrValueChanged;
 
         PrimaryLane = this;
     }

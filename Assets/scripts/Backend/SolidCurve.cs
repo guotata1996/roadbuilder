@@ -28,7 +28,7 @@ public static class SolidCurve
             sector_vertices.Add(p);
         }
 
-        Debug.Log("#Line= " + line_pos_samples.Count + " #SecV= " + sector_vertices.Count);
+        //Debug.Log("#Line= " + line_pos_samples.Count + " #SecV= " + sector_vertices.Count);
 
         int line_seg_count = line_pos_samples.Count - 1;
         int base_vcount = (line_seg_count + 1) * sector_vertices.Count;

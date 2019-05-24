@@ -115,38 +115,39 @@ public class Arc : Curve
             if (value[1] != Center && !float.IsInfinity(Start.x) && !float.IsInfinity(End.x))
             {
                 // Only move center: keep endings. Projects control point to vertical split line.
-                Center = Algebra.ProjectOn(value[0], (Start + End) / 2, 
+                Center = Algebra.ProjectOn(value[1], (Start + End) / 2, 
                 Algebra.RotatedY((End - Start).normalized, Mathf.PI / 2));
 
                 var startRadialDir = Start - Center;
                 var endRadialDir = End - Center;
+                Radius = startRadialDir.magnitude;
                 float new_t_start = Mathf.Atan2(startRadialDir.y, startRadialDir.x);
                 float new_t_end = Mathf.Atan2(endRadialDir.y, endRadialDir.x);
-                // keep clockwise property
+                // preserve clockwise property
+
                 if (t_start < t_end && new_t_start < new_t_end
                 || t_start > t_end && new_t_start > new_t_end)
                 {
-                    new_t_start = t_start;
-                    new_t_end = t_end;
+                    // already preserved
                 }
                 else
                 {
                     if (t_start < t_end && new_t_start > new_t_end)
                     {
-                        new_t_start = t_start;
-                        new_t_end = t_end + 2 * Mathf.PI;
+                        new_t_end = new_t_end + 2 * Mathf.PI;
                     }
                     else
                     {
-                        new_t_start = t_start;
-                        new_t_end = t_end - 2 * Mathf.PI;
+                        new_t_end = new_t_end - 2 * Mathf.PI;
                     }
                 }
+
                 t_start = new_t_start;
                 t_end = new_t_end;
                 NotifyShapeChanged();
             }
             else
+            if (Start != value[0] || End != value[2])
             {
                 // move ending, make default (angle=90). Notify only when all valid
                 Start = value[0];
