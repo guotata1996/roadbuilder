@@ -113,8 +113,8 @@ namespace Tests
             b.Crop(0f, 0.3f);
             for (float t = 0f; t <= 1f; t += 0.05f)
             {
-                Debug.Log(b.ParamOf(b.GetTwodPos(t)));
-                Debug.Log(b._ToParamt(b._ToUnscaledt(t)));
+                //Debug.Log(b.ParamOf(b.GetTwodPos(t)));
+                //Debug.Log(b._ToParamt(b._ToUnscaledt(t)));
             }
         }
 

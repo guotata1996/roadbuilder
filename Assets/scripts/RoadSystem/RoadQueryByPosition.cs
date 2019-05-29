@@ -20,14 +20,14 @@ public static partial class RoadPositionRecords
         });
     }
 
-    public static Curve3DSampler QueryClosestCPs3DCurve(Vector3 position, float tolerance = 3f)
+    public static Lane QueryClosestCPs3DCurve(Vector3 position, float tolerance = 3f)
     {
         if (allLanes.Count == 0)
         {
             return null;
         }
 
-        Curve3DSampler candidate = allLanes.MinBy(delegate (Curve3DSampler input)
+        Lane candidate = allLanes.MinBy(delegate (Lane input)
         {
             return input.ControlPoints.Min(cp => (cp - position).sqrMagnitude);
         });

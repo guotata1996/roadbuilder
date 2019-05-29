@@ -122,7 +122,6 @@ public class Curve3DSampler : LinearFragmentable<Curve3DSampler>, IEnumerator
             // exceed radius
             return p;
         }
-        Debug.Log(xz_curve);
         float y = y_func.ValueAt(xz_curve.ParamOf(attracted_p_2d).Value);
         Vector3 candidate = Algebra.toVector3(attracted_p_2d, y);
         if ((candidate - p).sqrMagnitude <= attract_radius * attract_radius)

@@ -108,12 +108,12 @@ public class Bezier : Curve
         return Algebra.approximateTo01(realParam, Length);
     }
 
-    public override float _ToParamt(float unscaled_t)
+    protected override float _ToParamt(float unscaled_t)
     {
         return Algebra.NewTown(t => _ToUnscaledt(t) * Length, lengthGradient, unscaled_t * Length, 1);
     }
 
-    public override float _ToUnscaledt(float t)
+    protected override float _ToUnscaledt(float t)
     {
         float world_start_t = toGlobalParam(0);
         float world_end_t = toGlobalParam(t);

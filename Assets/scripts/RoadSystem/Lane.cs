@@ -23,15 +23,22 @@ public class Lane : Curve3DSampler
     Lane _left;
 
     GameObject laneObject;
+    private bool _laneObjectVisibleStatus = true;
+    
     public void SetGameobjVisible(bool visible)
     {
+        _laneObjectVisibleStatus = visible;
         if (!visible)
         {
+            Debug.Assert(laneObject != null);
             GameObject.Destroy(laneObject);
         }
         else
         {
-            laneObject = SolidCurve.Generate(this, spriteSampler);
+            if (laneObject == null)
+            {
+                laneObject = SolidCurve.Generate(this, spriteSampler);
+            }
         }
     }
 
@@ -59,7 +66,7 @@ public class Lane : Curve3DSampler
         private set;
     }
 
-    public Lane(Curve xz_source, Function y_source):base(xz_source, y_source, maxAngleDiff)
+    public Lane(Curve xz_source, Function y_source):base(xz_source.Clone(), y_source.Clone(), maxAngleDiff)
     {
         spriteSampler = new SpriteVerticeSampler(Resources.Load<Sprite>("Sectors/SimpleRoad"), 1f, 0.1f);
         
@@ -71,7 +78,7 @@ public class Lane : Curve3DSampler
         void OnShapeOrValueChanged(object sender, int e)
         {
             GameObject.Destroy(laneObject);
-            if (this.IsValid)
+            if (this.IsValid && _laneObjectVisibleStatus == true)
             {
                 //Debug.Log("repaint: " + xz_source + " " + y_source + " @step=" + StepSize);
                 laneObject = SolidCurve.Generate(this, spriteSampler);
@@ -84,11 +91,10 @@ public class Lane : Curve3DSampler
         PrimaryLane = this;
     }
 
-    public Lane (Curve3DSampler sampler):base(sampler.xz_curve, sampler.y_func, maxAngleDiff)
+    public Lane (Curve3DSampler sampler):base(sampler.xz_curve.Clone(), sampler.y_func.Clone(), maxAngleDiff)
     {
         spriteSampler = new SpriteVerticeSampler(Resources.Load<Sprite>("Sectors/SimpleRoad"), 1f, 0.1f);
 
-        Debug.Log("valid? " + sampler.xz_curve);
         if (this.IsValid)
         {
             laneObject = SolidCurve.Generate(this, spriteSampler);
@@ -97,7 +103,7 @@ public class Lane : Curve3DSampler
         void OnShapeOrValueChanged(object sender, int e)
         {
             GameObject.Destroy(laneObject);
-            if (this.IsValid)
+            if (this.IsValid && _laneObjectVisibleStatus == true)
             {
                 //Debug.Log("repaint: " + xz_source + " " + y_source + " @step=" + StepSize);
                 laneObject = SolidCurve.Generate(this, spriteSampler);

@@ -94,9 +94,9 @@ public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailab
     }
 
 
-    public abstract float _ToParamt(float unscaled_t);
+    protected abstract float _ToParamt(float unscaled_t);
     /*Should also handle negative case */
-    public abstract float _ToUnscaledt(float t);
+    protected abstract float _ToUnscaledt(float t);
     protected abstract Vector2 _GetTwodPos(float t);
     protected abstract Vector2 _GetFrontDir(float t);
     protected Vector2 _GetRightDir(float t)

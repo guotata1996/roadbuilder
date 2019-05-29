@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using MoreLinq;
+using UnityEditor;
 
 /// <summary>
 /// Controls the last possible (1.unset or 2.close) ControlPoint (in natural order)
 /// </summary>
-public class FollowMouseCommand : MonoBehaviour, Command
+public class FollowMouseBehavior : MonoBehaviour
 {
     [SerializeField]
     InputHandler input;
@@ -16,7 +17,7 @@ public class FollowMouseCommand : MonoBehaviour, Command
     int ctrlPointIndex;
     Vector3 lastFrameMousePosition = Vector3.zero;
 
-    public void Execute(object data)
+    public void SetTarget(object data)
     {
         if (data == null)
         {
@@ -25,6 +26,7 @@ public class FollowMouseCommand : MonoBehaviour, Command
         else
         {
             curvesampler = (Lane)data;
+            
             Vector3 closestCtrlPoint = curvesampler.ControlPoints.MinBy((Vector3 arg) => float.IsInfinity(arg.x) ? -1 : (input.MagnetMousePosition - arg).sqrMagnitude);
             ctrlPointIndex = curvesampler.ControlPoints.LastIndexOf(closestCtrlPoint);
 
@@ -62,4 +64,5 @@ public class FollowMouseCommand : MonoBehaviour, Command
     {
         throw new System.NotImplementedException();
     }
+
 }

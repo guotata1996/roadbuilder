@@ -22,6 +22,8 @@ public class BuildRoad : MonoBehaviour
     {
         // Init behavior
         inputHandler.OnClick += delegate (object sender, Vector3 position) {
+            Debug.Log("Onclick");
+            
             if (currentLane == null)
             {
                 Curve currentCurve = null;
@@ -47,7 +49,7 @@ public class BuildRoad : MonoBehaviour
             if (currentLane.IsValid)
             {
                 // Quit Init
-                GetComponent<FollowMouseCommand>().enabled = false;
+                GetComponent<FollowMouseBehavior>().enabled = false;
                 var placeCmd = new PlaceLaneCommand();
                 commandSequence.Push(placeCmd);
                 placeCmd.Execute(currentLane);
@@ -58,8 +60,8 @@ public class BuildRoad : MonoBehaviour
             else
             {
                 // Pending
-                GetComponent<FollowMouseCommand>().enabled = true;
-                GetComponent<FollowMouseCommand>().Execute(currentLane);
+                GetComponent<FollowMouseBehavior>().enabled = true;
+                GetComponent<FollowMouseBehavior>().SetTarget(currentLane);
                 GetComponent<HighLightCtrlPointBehavior>().radius = 0f;
             }
 
@@ -68,17 +70,38 @@ public class BuildRoad : MonoBehaviour
         // Adjust behavior
         inputHandler.OnDragStart += delegate (object sender, Vector3 position)
         {
-            GetComponent<FollowMouseCommand>().enabled = true;
-            GetComponent<FollowMouseCommand>().Execute(RoadPositionRecords.QueryClosestCPs3DCurve(position));
-
-            GetComponent<HighLightCtrlPointBehavior>().radius = 0f;
+            Lane targetLane = RoadPositionRecords.QueryClosestCPs3DCurve(position);
+            if (targetLane != null)
+            {
+                GetComponent<FollowMouseBehavior>().enabled = true;
+                currentLane = new Lane(targetLane);
+                GetComponent<FollowMouseBehavior>().SetTarget(currentLane);
+                
+                //replace targetLane with a temporary object (currentLane)
+                var removeCmd = new RemoveLaneCommand();
+                commandSequence.Push(removeCmd);
+                removeCmd.Execute(targetLane);
+                
+                GetComponent<HighLightCtrlPointBehavior>().radius = 0f;
+            }
+            
         };
 
         inputHandler.OnDragEnd += delegate (object sender, Vector3 position)
         {
-            GetComponent<FollowMouseCommand>().enabled = false;
+            if (currentLane != null)
+            {
+                GetComponent<FollowMouseBehavior>().enabled = false;
+                GetComponent<HighLightCtrlPointBehavior>().radius = highlightRadius;
 
-            GetComponent<HighLightCtrlPointBehavior>().radius = highlightRadius;
+                // add actual lane to network
+                var placeCmd = new PlaceLaneCommand();
+                commandSequence.Push(placeCmd);
+                placeCmd.Execute(currentLane);
+
+                currentLane.SetGameobjVisible(false);
+                currentLane = null;
+            }
         };
 
         inputHandler.OnUndoPressed += delegate {

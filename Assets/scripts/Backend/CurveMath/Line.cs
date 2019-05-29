@@ -90,12 +90,12 @@ public class Line : Curve
         return Vector2.Lerp(Start, End, unscaled_t);
     }
 
-    public override float _ToParamt(float unscaled_t)
+    protected override float _ToParamt(float unscaled_t)
     {
         return unscaled_t;
     }
 
-    public override float _ToUnscaledt(float t)
+    protected override float _ToUnscaledt(float t)
     {
         return t;
     }

@@ -207,12 +207,12 @@ public class Arc : Curve
         return null;
     }
 
-    public override float _ToParamt(float unscaled_t)
+    protected override float _ToParamt(float unscaled_t)
     {
         return unscaled_t;
     }
 
-    public override float _ToUnscaledt(float t)
+    protected override float _ToUnscaledt(float t)
     {
         return t;
     }
@@ -261,6 +261,8 @@ public class Arc : Curve
         copy.Radius = Radius;
         copy.t_start = t_start;
         copy.t_end = t_end;
+        copy.Start = Start;
+        copy.End = End;
         return copy;
     }
 

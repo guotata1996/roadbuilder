@@ -54,6 +54,7 @@ public static partial class RoadPositionRecords
     public static void DeleteLanes(List<Lane> tobedeleted)
     {
         tobedeleted.ForEach(lane => { lane.SetGameobjVisible(false); allLanes.Remove(lane); });
+        Debug.Log(tobedeleted.Count + " deleted");
     }
 
     public static void RestoreLanes(List<Lane> toberestored)
