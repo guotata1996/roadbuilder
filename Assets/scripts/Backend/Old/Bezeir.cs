@@ -131,7 +131,7 @@ namespace Old{
         }
 
         protected override float paramByLength(float l){
-            return Algebra.newTown(this.lengthByParam, lengthGradient, l, l / length);
+            return Algebra.NewTown(this.lengthByParam, lengthGradient, l, l / length);
         }
 
         private float lengthGradient(float t)
@@ -176,7 +176,7 @@ namespace Old{
             for (int multipler = 0; multipler < fragCount; multipler++)
             {
                 float thisEnd;
-                thisEnd = Algebra.newTown(this.lengthByParam, this.lengthGradient, Mathf.Min(this.length, (float)(multipler + 1) * maxlen), Mathf.Min(1f, maxlen / this.length * (multipler + 1)));
+                thisEnd = Algebra.NewTown(this.lengthByParam, this.lengthGradient, Mathf.Min(this.length, (float)(multipler + 1) * maxlen), Mathf.Min(1f, maxlen / this.length * (multipler + 1)));
 
                 Curve fragment = Bezeir.TryInit(this.P0, this.P1, this.P2, this.z_start + this.z_offset * lastEnd, this.z_start + this.z_offset * thisEnd);
                 fragment.t_start = toGlobalParam(lastEnd);
@@ -260,8 +260,8 @@ namespace Old{
                 return 4 * 3 * Mathf.Pow(t, 2) * distParams[4] + 3 * 2 * t * distParams[3] + 2 * distParams[2];
             };
 
-            float t1 = Algebra.newTown(deriveOfDistance, deriveOfDeriveOfDistance, 0f, t_start);
-            float t2 = Algebra.newTown(deriveOfDistance, deriveOfDeriveOfDistance, 0f, t_end);
+            float t1 = Algebra.NewTown(deriveOfDistance, deriveOfDeriveOfDistance, 0f, t_start);
+            float t2 = Algebra.NewTown(deriveOfDistance, deriveOfDeriveOfDistance, 0f, t_end);
             t1 = toLocalParam(t1);
             t2 = toLocalParam(t2);
             List<float> candidateParams = new List<float>();

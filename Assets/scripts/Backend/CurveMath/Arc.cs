@@ -207,19 +207,54 @@ public class Arc : Curve
         return null;
     }
 
-    protected override float _ToParamt(float unscaled_t)
+    public override float _ToParamt(float unscaled_t)
     {
         return unscaled_t;
     }
 
-    protected override float _ToUnscaledt(float t)
+    public override float _ToUnscaledt(float t)
     {
         return t;
     }
 
     public override float GetMaximumCurvature => 1f / Radius;
 
-    public override Curve DeepCopy()
+    public override Vector2 GetAttractedPoint(Vector2 p, float attract_radius)
+    {
+        if ((p - Center).magnitude > attract_radius + Radius)
+        {
+            return p;
+        }
+        if (Algebra.isclose(Center, p) && attract_radius <= Radius)
+        {
+            return Center;
+        }
+
+        // ray (center -> p) intersects with arc
+        Vector2 projected_p = Center + (p - Center).normalized * Radius;
+        Vector2 closest_p;
+        if (Contains(projected_p))
+        {
+            closest_p = projected_p;
+        }
+        else
+        {
+            closest_p = (p - Start).sqrMagnitude < (p - End).sqrMagnitude ?
+                Start : End;
+        }
+
+        if ((closest_p - p).sqrMagnitude <= attract_radius * attract_radius)
+        {
+            return closest_p;
+        }
+        else
+        {
+            return p;
+        }
+
+    }
+
+    public override Curve Clone()
     {
         Arc copy = new Arc();
         copy.Center = Center;
@@ -231,6 +266,13 @@ public class Arc : Curve
 
     public override string ToString()
     {
-        return "Arc centered at " + Center + " with t_start = " + t_start + " ,t_end = " + t_end;
+        return "Arc centered at " + Center + " Start = " + Start + " ,End =  " + End;
+    }
+
+    protected override void NotifyShapeChanged()
+    {
+        Start = GetTwodPos(0f);
+        End = GetTwodPos(1f);
+        base.NotifyShapeChanged();
     }
 }

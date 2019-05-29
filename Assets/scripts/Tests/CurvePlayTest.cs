@@ -56,7 +56,7 @@ namespace Tests
             Debug.Log("Bezeir Test...");
             for (float i = 0; i < 0.9f; i += 0.1f)
             {
-                Curve bi = b.DeepCopy();
+                Curve bi = b.Clone();
                 bi.Crop(1.0f, 0.0f); //Inverse
                 bi.Crop(i, i + 0.1f);
                 Debug.Log(bi + "\n" + bi.GetTwodPos(i));
@@ -65,7 +65,7 @@ namespace Tests
             Debug.Log("Arc Test...");
             for (float i = 0; i < 0.9f; i += 0.1f)
             {
-                Curve ci = c.DeepCopy();
+                Curve ci = c.Clone();
                 ci.Crop(i, i + 0.1f);
                 Debug.Log(ci + "\n" + ci.GetTwodPos(i));
                 POI.Add(ci.GetTwodPos(0.5f), Color.white);
@@ -74,7 +74,7 @@ namespace Tests
             Debug.Log("Line Test...");
             for (float i = 0; i < 0.9f; i += 0.1f)
             {
-                Curve li = l.DeepCopy();
+                Curve li = l.Clone();
                 li.Crop(i, i + 0.1f);
                 Debug.Log(li + "\n" + li.GetTwodPos(i));
                 POI.Add(li.GetTwodPos(0.5f), Color.white);
@@ -85,26 +85,37 @@ namespace Tests
         public void IntersectionTest()
         {
             Debug.Log("c & b...");
-            var inter = c._IntersectWith(b);
+            var inter = c.IntersectWith(b);
             foreach (var i in inter)
             {
                 POI.Add(i, Color.yellow);
             }
 
             Debug.Log("l & c...");
-            inter = l._IntersectWith(c);
+            inter = l.IntersectWith(c);
             foreach (var i in inter)
             {
                 POI.Add(i, Color.yellow);
             }
 
             Debug.Log("l & b...");
-            inter = l._IntersectWith(b);
+            inter = l.IntersectWith(b);
             foreach (var i in inter)
             {
                 POI.Add(i, Color.yellow);
             }
 
+        }
+
+        [Test]
+        public void CropTest()
+        {
+            b.Crop(0f, 0.3f);
+            for (float t = 0f; t <= 1f; t += 0.05f)
+            {
+                Debug.Log(b.ParamOf(b.GetTwodPos(t)));
+                Debug.Log(b._ToParamt(b._ToUnscaledt(t)));
+            }
         }
 
         [TearDown]

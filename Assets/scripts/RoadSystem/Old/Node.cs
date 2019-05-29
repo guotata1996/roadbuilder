@@ -408,11 +408,11 @@ namespace Old{
             int loopCount = 0;
 
             while (loopCount < 20){
-                float c1_new_offset = Algebra.minArg(C1sidepointToC2Sidepoint, c1_offset);
+                float c1_new_offset = Algebra.MinArg(C1sidepointToC2Sidepoint, c1_offset);
                 float c1_diff = Mathf.Abs(c1_offset - c1_new_offset);
                 c1_offset = c1_new_offset;
 
-                float c2_new_offset = Algebra.minArg(C2sidepointToC1Sidepoint, c2_offset);
+                float c2_new_offset = Algebra.MinArg(C2sidepointToC1Sidepoint, c2_offset);
                 float c2_diff = Mathf.Abs(c2_offset - c2_new_offset);
                 c2_offset = c2_new_offset;
                 if (c1_diff + c2_diff < 1e-3)

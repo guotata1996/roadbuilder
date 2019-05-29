@@ -7,6 +7,8 @@ public class InputHandler : MonoBehaviour
     public event System.EventHandler<Vector3> OnClick;
     public event System.EventHandler<Vector3> OnDragStart;
     public event System.EventHandler<Vector3> OnDragEnd;
+
+    public event System.EventHandler OnUndoPressed;
     
     float pressingTime;
     bool dragging = false;
@@ -25,7 +27,7 @@ public class InputHandler : MonoBehaviour
         if (pressingTime > 0.8f && !dragging)
         {
             dragging = true;
-            OnDragStart(this, MousePosition);
+            OnDragStart(this, MagnetMousePosition);
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -33,11 +35,11 @@ public class InputHandler : MonoBehaviour
             if (dragging)
             {
                 dragging = false;
-                OnDragEnd(this, MousePosition);
+                OnDragEnd(this, MagnetMousePosition);
             }
             else
             {
-                OnClick(this, MousePosition);
+                OnClick(this, MagnetMousePosition);
             }
         }
 
@@ -48,6 +50,11 @@ public class InputHandler : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.PageDown))
         {
             y = y - 1.0f;
+        }
+
+        if (Input.GetKey(KeyCode.LeftApple) && Input.GetKeyDown(KeyCode.Z))
+        {
+            OnUndoPressed(this, null);
         }
     }
 
@@ -62,11 +69,20 @@ public class InputHandler : MonoBehaviour
         }
     }
 
+    public Vector3 MagnetMousePosition
+    {
+        get
+        {
+            RoadPositionRecords.QueryNodeOr3DCurve(MousePosition, out Vector3 position);
+            return position;
+        }
+    }
+
     public void SwitchDragListenerTo(System.EventHandler<Vector3> handler)
     {
         if (dragging)
         {
-            OnDragEnd(this, MousePosition);
+            OnDragEnd(this, MagnetMousePosition);
             pressingTime = 0f;
             dragging = false;
         }

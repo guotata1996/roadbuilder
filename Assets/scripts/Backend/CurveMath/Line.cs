@@ -20,7 +20,34 @@ public class Line : Curve
 
     public override bool IsValid => !float.IsInfinity(Start.x) && !float.IsInfinity(End.x) 
     && !Algebra.isclose(Start, End);
-    
+
+    public override Vector2 GetAttractedPoint(Vector2 p, float attract_radius)
+    {
+        // p's projection on line
+        Vector2 normalized_direction = (End - Start).normalized;
+        Vector2 projected_p = Start + Vector2.Dot(p - Start, normalized_direction) * normalized_direction;
+        Vector2 closest_p;
+        if (Contains(projected_p))
+        {
+            closest_p = projected_p;
+        }
+        else
+        {
+            closest_p = (p - Start).sqrMagnitude < (p - End).sqrMagnitude ?
+                Start : End;
+        }
+
+        if ((p - closest_p).sqrMagnitude <= attract_radius * attract_radius)
+        {
+            return closest_p;
+        }
+        else
+        {
+            return p;
+        }
+    }
+
+
     public static Curve GetDefault()
     {
         return new Line(Vector2.negativeInfinity, Vector2.negativeInfinity);
@@ -63,12 +90,12 @@ public class Line : Curve
         return Vector2.Lerp(Start, End, unscaled_t);
     }
 
-    protected override float _ToParamt(float unscaled_t)
+    public override float _ToParamt(float unscaled_t)
     {
         return unscaled_t;
     }
 
-    protected override float _ToUnscaledt(float t)
+    public override float _ToUnscaledt(float t)
     {
         return t;
     }
@@ -120,10 +147,10 @@ public class Line : Curve
         var new_end = Vector2.Lerp(Start, End, unscaled_t_end);
         Start = new_start;
         End = new_end;
-        _CommitChanges();
+        NotifyShapeChanged();
     }
 
-    public override Curve DeepCopy()
+    public override Curve Clone()
     {
         return new Line(Start, End);
     }

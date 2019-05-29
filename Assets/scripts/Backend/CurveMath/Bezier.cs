@@ -60,8 +60,8 @@ public class Bezier : Curve
             if (!float.IsInfinity(P0.x) && !float.IsInfinity(P2.x) && !Algebra.isclose(P0, P2))
             {
                 // auto adjust invalid middle control point
-                if (float.IsInfinity(P1.x) || Algebra.isRoadNodeClose(P0, P1)
-                || Algebra.isRoadNodeClose(P2, P1) || Algebra.Parallel(P2 - P1, P1 - P0))
+                if (float.IsInfinity(P1.x) || Algebra.Parallel(P2 - P1, P1 - P0) ||
+                (P2 - P1).magnitude / (P1 - P0).magnitude > 3 || (P2 - P1).magnitude / (P1 - P0).magnitude < 1f / 3)
                 {
                     P1 = (P2 + P0) / 2 + Algebra.RotatedY((P2 - P0) / 2, -Mathf.PI / 2);
                 }
@@ -108,12 +108,12 @@ public class Bezier : Curve
         return Algebra.approximateTo01(realParam, Length);
     }
 
-    protected override float _ToParamt(float unscaled_t)
+    public override float _ToParamt(float unscaled_t)
     {
-        return Algebra.newTown(t => _ToUnscaledt(t) * Length, lengthGradient, unscaled_t * Length, 1);
+        return Algebra.NewTown(t => _ToUnscaledt(t) * Length, lengthGradient, unscaled_t * Length, 1);
     }
 
-    protected override float _ToUnscaledt(float t)
+    public override float _ToUnscaledt(float t)
     {
         float world_start_t = toGlobalParam(0);
         float world_end_t = toGlobalParam(t);
@@ -148,12 +148,13 @@ public class Bezier : Curve
     {
         local_t = toGlobalParam(local_t);
         Vector2 dxy_dt = 2 * (local_t - 1) * P0 + (2 - 4 * local_t) * P1 + 2 * local_t * P2;
-        return dxy_dt.magnitude / Mathf.Abs(t_end - t_start);
+        return dxy_dt.magnitude * Mathf.Abs(t_end - t_start);
     }
 
     public override float GetMaximumCurvature => (P2 + P0 - 2 * P1).magnitude / Mathf.Abs((P1.x - P0.x) * (P2.y - P1.y) - (P1.y - P0.y) * (P2.x - P1.x));
 
-    public override Curve DeepCopy()
+
+    public override Curve Clone()
     {
         Bezier copy = new Bezier(P0, P1, P2);
         copy.t_start = t_start;

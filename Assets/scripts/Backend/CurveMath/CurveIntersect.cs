@@ -6,7 +6,7 @@ using System.Linq;
 
 public abstract partial class Curve : ITwodPosAvailable
 {
-    public List<Vector2> _IntersectWith(Curve another){
+    public List<Vector2> IntersectWith(Curve another){
         Curve c1 = this;
         Curve c2 = another;
         

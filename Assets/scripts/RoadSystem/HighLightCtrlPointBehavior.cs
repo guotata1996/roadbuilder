@@ -24,7 +24,7 @@ public class HighLightCtrlPointBehavior : MonoBehaviour
 
         if (radius == 0f)
         {
-            Lane l = RoadQueryByPosition.QueryClosest(input.MousePosition);
+            var l = RoadPositionRecords.QueryClosestCPs3DCurve(input.MousePosition);
             if (l == null)
             {
                 return;
@@ -38,17 +38,19 @@ public class HighLightCtrlPointBehavior : MonoBehaviour
         }
         else
         {
-            var ls = RoadQueryByPosition.Query(input.MousePosition, radius);
-            foreach(Lane l in ls)
+            var l = RoadPositionRecords.QueryNodeOr3DCurve(input.MousePosition, out Vector3 out_pos, radius);
+            if (l == null)
             {
-                foreach(var cp in l.ControlPoints)
-                {
-                    var indi = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    indi.transform.position = cp;
-                    indi.transform.localScale = Vector3.one * 0.3f;
-                    indi.tag = "Road/curveIndicator";
-                }
+                return;
             }
+            foreach (var cp in l.ControlPoints)
+            {
+                var indi = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                indi.transform.position = cp;
+                indi.transform.localScale = Vector3.one * 0.3f;
+                indi.tag = "Road/curveIndicator";
+            }
+            
         }
 
     }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract partial class Curve : ITwodPosAvailable
+public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailable
 {
     protected float t_start, t_end;
     protected Vector2[] controlPoints;
@@ -15,12 +15,13 @@ public abstract partial class Curve : ITwodPosAvailable
     public abstract List<Vector2> ControlPoints { get; set; }
 
     /// <summary>
-    /// Call this function when all control points are set
+    /// 1. Update internal buffered values
+    /// 2. Notify holding objects to repaint
     /// </summary>
-    protected void NotifyShapeChanged()
+    protected virtual void NotifyShapeChanged()
     {
         _length = null;
-        OnShapeChanged(this, 0);
+        OnShapeChanged?.Invoke(this, 0);
     }
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
@@ -49,6 +50,25 @@ public abstract partial class Curve : ITwodPosAvailable
     public abstract float GetMaximumCurvature { get; }
 
     /// <summary>
+    /// Attracts the p to curve. Default implementation uses a binary search
+    /// </summary>
+    /// <returns>If the curve is not in radius distance, then just return p</returns>
+    public virtual Vector2 GetAttractedPoint(Vector2 p, float attract_radius)
+    {
+        Algebra.Del _Distance = (t) => (_GetTwodPos(t) - p).sqrMagnitude;
+        float close_scaled_t = Algebra.MinArg(_Distance, 0.5f, 0f, 1f);
+        Vector2 closest_p = _GetTwodPos(close_scaled_t);
+        if ((closest_p - p).sqrMagnitude <= attract_radius * attract_radius)
+        {
+            return closest_p;
+        }
+        else
+        {
+            return p;
+        }
+    }
+
+    /// <summary>
     ///   <para>Could return unscaled params outside (0,1). 
     ///   But approx to 0/1 if possible</para>
     /// </summary>
@@ -74,9 +94,9 @@ public abstract partial class Curve : ITwodPosAvailable
     }
 
 
-    protected abstract float _ToParamt(float unscaled_t);
+    public abstract float _ToParamt(float unscaled_t);
     /*Should also handle negative case */
-    protected abstract float _ToUnscaledt(float t);
+    public abstract float _ToUnscaledt(float t);
     protected abstract Vector2 _GetTwodPos(float t);
     protected abstract Vector2 _GetFrontDir(float t);
     protected Vector2 _GetRightDir(float t)
@@ -111,8 +131,9 @@ public abstract partial class Curve : ITwodPosAvailable
     }
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-    /*Extension Methods */
-    public virtual void Crop(float unscaled_t_start, float unscaled_t_end)
+
+    /*Common override methods */
+    public override void Crop(float unscaled_t_start, float unscaled_t_end)
     {
         float scaled_t_start = _ToParamt(unscaled_t_start);
         float scaled_t_end = _ToParamt(unscaled_t_end);
@@ -121,15 +142,7 @@ public abstract partial class Curve : ITwodPosAvailable
         t_start = new_t_start;
         t_end = new_t_end;
 
-        _CommitChanges();
+        NotifyShapeChanged();
     }
-
-    public abstract Curve DeepCopy();
-
-    protected void _CommitChanges()
-    {
-        _length = null;
-    }
-
 
 }

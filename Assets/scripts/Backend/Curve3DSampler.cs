@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class Curve3DSampler : IEnumerator
+public class Curve3DSampler : LinearFragmentable<Curve3DSampler>, IEnumerator
 {
     public float StepSize
     {
@@ -25,17 +25,50 @@ public class Curve3DSampler : IEnumerator
     float _designatedStepSize = -0.1f; // Fixed. Only used if value >= 0
     float _preferredSampleRealResolution = 0f; // real world length; StepSize changes with curve Length
 
-    Curve xz_curve;
-    Function y_func;
+    public Curve xz_curve
+    {
+        get; private set;
+    }
+    public Function y_func
+    {
+        get; private set;
+    }
 
     public Curve3DSampler(Curve xz_source, Function y_source, float sampleRealResolution = 0f)
     {
         _preferredSampleRealResolution = sampleRealResolution;
         xz_curve = xz_source;
         y_func = y_source;
+
+        Reset();
     }
 
     float cursor;
+
+    public Vector3 GetThreedPos(float t)
+    {
+        Vector2 pos_xz = xz_curve.GetTwodPos(t);
+        float pos_y = y_func.ValueAt(t);
+        return new Vector3(pos_xz.x, pos_y, pos_xz.y);
+    }
+
+    public Vector3 GetThreedPos(Vector2 twodPos)
+    {
+        var t = xz_curve.ParamOf(twodPos).Value;
+        return Algebra.toVector3(twodPos, y_func.ValueAt(t));
+    }
+
+    /// <summary>
+    /// If difference in Y is less than 2, we consider 
+    /// </summary>
+    public List<Vector3> IntersectWith(Curve3DSampler another)
+    {
+        var two_d_candidates = xz_curve.IntersectWith(another.xz_curve);
+        return two_d_candidates.FindAll
+        (twodPos =>
+            (this.GetThreedPos(twodPos) - another.GetThreedPos(twodPos)).sqrMagnitude < 2 * 2
+        ).ConvertAll(GetThreedPos);
+    }
 
     /// <summary>
     /// Tuple (pos, right, front)
@@ -44,9 +77,7 @@ public class Curve3DSampler : IEnumerator
     {
         get
         {
-            Vector2 pos_xz = xz_curve.GetTwodPos(cursor);
-            float pos_y = y_func.ValueAt(cursor);
-            var pos = new Vector3(pos_xz.x, pos_y, pos_xz.y);
+            Vector3 pos = GetThreedPos(cursor);
 
             Vector2 right_xz = xz_curve.GetRightDir(cursor);
             var right = Algebra.toVector3(right_xz);
@@ -80,6 +111,42 @@ public class Curve3DSampler : IEnumerator
             return xz_curve.IsValid && y_func.IsValid 
             && !float.IsInfinity(StepSize) && StepSize != 0f;
         }
+    }
+
+    public Vector3 GetAttractedPoint(Vector3 p, float attract_radius)
+    {
+        Vector2 p_2d = Algebra.toVector2(p);
+        Vector2 attracted_p_2d = xz_curve.GetAttractedPoint(p_2d, attract_radius);
+        if (attracted_p_2d == p_2d)
+        {
+            // exceed radius
+            return p;
+        }
+        Debug.Log(xz_curve);
+        float y = y_func.ValueAt(xz_curve.ParamOf(attracted_p_2d).Value);
+        Vector3 candidate = Algebra.toVector3(attracted_p_2d, y);
+        if ((candidate - p).sqrMagnitude <= attract_radius * attract_radius)
+        {
+            return Algebra.toVector3(attracted_p_2d, y);
+        }
+
+        return p;
+    }
+
+    public override Curve3DSampler Clone()
+    {
+        return new Curve3DSampler(xz_curve.Clone(), y_func.Clone(), _preferredSampleRealResolution)
+        {
+            _designatedStepSize = this._designatedStepSize
+        };
+    }
+
+    public override void Crop(float unscaled_t_start, float unscaled_t_end)
+    {
+        xz_curve.Crop(unscaled_t_start, unscaled_t_end);
+        y_func.Crop(unscaled_t_start, unscaled_t_end);
+
+        Reset();
     }
 
     public List<Vector3> ControlPoints
@@ -118,4 +185,6 @@ public class Curve3DSampler : IEnumerator
             }
         }
     }
+
+    
 }

@@ -30,6 +30,20 @@ public class LinearFunction : Function
         return "Linear func y0= " + y0 + " y1= " + y1;
     }
 
+    public override void Crop(float start_t, float end_t)
+    {
+        float y_old_start = ValueAt(start_t);
+        float y_old_end = ValueAt(end_t);
+
+        y0 = y_old_start;
+        y1 = y_old_end;
+    }
+
+    public override Function Clone()
+    {
+        return new LinearFunction(y0, y1);
+    }
+
     public override List<float> ControlPoints
     {
         get

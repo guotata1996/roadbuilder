@@ -225,7 +225,7 @@ public static class Algebra {
     public delegate float Del(float x);
 
     /*sove function: f(x) = targetValue, f' = gradient*/
-    public static float newTown(Del function, Del gradient, float targetValue, float startValue = 1f)
+    public static float NewTown(Del function, Del gradient, float targetValue, float startValue = 1f)
     {
         float ans = startValue;
         float error_baseLine = Mathf.Max(function(0f), function(1f), targetValue, function(startValue));
@@ -234,14 +234,14 @@ public static class Algebra {
         {
             ans = ans - (function(ans) - targetValue) / gradient(ans);
             if (isclose(function(ans), targetValue, error_baseLine)){
-                break;
+                return ans;
             }
         }
 
-        return ans;
+        throw new Exception("Newton method low precesion!");
     }
 
-    public static float approach(Del monoFunction, float targetValue, float startValue = 0f){
+    public static float BinaryApproach(Del monoFunction, float targetValue, float startValue = 0f){
         while (monoFunction(startValue) < targetValue){
             startValue += 0.01f;
         }
@@ -259,7 +259,8 @@ public static class Algebra {
         return mid;
     }
 
-    public static float minArg(Del function, float startValue){
+    public static float MinArg(Del function, float startValue, 
+    float lowerLimit = float.NegativeInfinity, float upperLimit = float.PositiveInfinity){
         float stepBase = 0.1f;
         int stepCnt = 0;
 
@@ -267,7 +268,8 @@ public static class Algebra {
         {
             float step = (function(startValue) < function(startValue + stepBase)) ? -stepBase : stepBase;
 
-            while (function(startValue) > function(startValue + step))
+            while (function(startValue) > function(startValue + step) && 
+            lowerLimit <= startValue + step && startValue + step <= upperLimit)
             {
                 startValue += step;
                 stepCnt++;
@@ -357,4 +359,5 @@ public static class Algebra {
     {
         return rayPoint + Vector2.Dot(point - rayPoint, rayDir) * rayDir;
     }
+    
 }

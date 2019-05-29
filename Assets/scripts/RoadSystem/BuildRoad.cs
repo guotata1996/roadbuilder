@@ -16,6 +16,8 @@ public class BuildRoad : MonoBehaviour
 
     float highlightRadius = 2f;
 
+    Stack<Command> commandSequence = new Stack<Command>();
+
     private void Start()
     {
         // Init behavior
@@ -46,7 +48,10 @@ public class BuildRoad : MonoBehaviour
             {
                 // Quit Init
                 GetComponent<FollowMouseCommand>().enabled = false;
-                RoadQueryByPosition.AddLane(currentLane);
+                var placeCmd = new PlaceLaneCommand();
+                commandSequence.Push(placeCmd);
+                placeCmd.Execute(currentLane);
+                currentLane.SetGameobjVisible(false);
                 currentLane = null;
                 GetComponent<HighLightCtrlPointBehavior>().radius = highlightRadius;
             }
@@ -64,7 +69,7 @@ public class BuildRoad : MonoBehaviour
         inputHandler.OnDragStart += delegate (object sender, Vector3 position)
         {
             GetComponent<FollowMouseCommand>().enabled = true;
-            GetComponent<FollowMouseCommand>().Execute(RoadQueryByPosition.QueryClosest(inputHandler.MousePosition));
+            GetComponent<FollowMouseCommand>().Execute(RoadPositionRecords.QueryClosestCPs3DCurve(position));
 
             GetComponent<HighLightCtrlPointBehavior>().radius = 0f;
         };
@@ -76,6 +81,10 @@ public class BuildRoad : MonoBehaviour
             GetComponent<HighLightCtrlPointBehavior>().radius = highlightRadius;
         };
 
+        inputHandler.OnUndoPressed += delegate {
+            var latestCmd = commandSequence.Pop();
+            latestCmd.Undo();
+        };
 
     }
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Function
+public abstract class Function : LinearFragmentable<Function>
 {
     public abstract float ValueAt(float t);
 
