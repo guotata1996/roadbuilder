@@ -10,17 +10,9 @@ public class Lane : Curve3DSampler
 {
     const float maxAngleDiff = 0.1f;
 
-    public Lane PrimaryLane
-    {
-        get;
-        private set;
-    }
-
     SpriteVerticeSampler spriteSampler;
 
-    Lane[] next;
-
-    Lane _left;
+    public LaneGroup laneGroup;
 
     GameObject laneObject;
     private bool _laneObjectVisibleStatus = true;
@@ -42,78 +34,33 @@ public class Lane : Curve3DSampler
         }
     }
 
-    public Lane Left
-    {
-        set
-        {
-            _left = value;
-            for (Lane current = this; current != null; current = current.Right)
-            {
-                current.PrimaryLane = value.PrimaryLane;
-            }
-
-            value.Right = this;
-        }
-        get
-        {
-            return _left;
-        }
-    }
-
-    public Lane Right
-    {
-        get;
-        private set;
-    }
 
     public Lane(Curve xz_source, Function y_source):base(xz_source.Clone(), y_source.Clone(), maxAngleDiff)
     {
         spriteSampler = new SpriteVerticeSampler(Resources.Load<Sprite>("Sectors/SimpleRoad"), 1f, 0.1f);
-        
-        if (this.IsValid)
-        {
-            laneObject = SolidCurve.Generate(this, spriteSampler);
-        }
 
-        void OnShapeOrValueChanged(object sender, int e)
-        {
-            GameObject.Destroy(laneObject);
-            if (this.IsValid && _laneObjectVisibleStatus == true)
-            {
-                //Debug.Log("repaint: " + xz_source + " " + y_source + " @step=" + StepSize);
-                laneObject = SolidCurve.Generate(this, spriteSampler);
-            }
-        }
+        Repaint();
 
-        xz_curve.OnShapeChanged += OnShapeOrValueChanged;
-        y_func.OnValueChanged += OnShapeOrValueChanged;
-
-        PrimaryLane = this;
+        OnShapeChanged += (arg1, arg2) => Repaint();
     }
 
     public Lane (Curve3DSampler sampler):base(sampler.xz_curve.Clone(), sampler.y_func.Clone(), maxAngleDiff)
     {
         spriteSampler = new SpriteVerticeSampler(Resources.Load<Sprite>("Sectors/SimpleRoad"), 1f, 0.1f);
 
-        if (this.IsValid)
-        {
+        Repaint();
+
+        OnShapeChanged += (arg1, arg2) => Repaint();
+    }
+
+    public void Repaint()
+    {
+        if (laneObject != null) {
+            GameObject.Destroy(laneObject); 
+        }
+
+        if (this.IsValid && _laneObjectVisibleStatus == true)
             laneObject = SolidCurve.Generate(this, spriteSampler);
-        }
-
-        void OnShapeOrValueChanged(object sender, int e)
-        {
-            GameObject.Destroy(laneObject);
-            if (this.IsValid && _laneObjectVisibleStatus == true)
-            {
-                //Debug.Log("repaint: " + xz_source + " " + y_source + " @step=" + StepSize);
-                laneObject = SolidCurve.Generate(this, spriteSampler);
-            }
-        }
-
-        xz_curve.OnShapeChanged += OnShapeOrValueChanged;
-        y_func.OnValueChanged += OnShapeOrValueChanged;
-
-        PrimaryLane = this;
     }
 
 }

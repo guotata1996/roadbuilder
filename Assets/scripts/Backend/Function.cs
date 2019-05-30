@@ -12,10 +12,10 @@ public abstract class Function : LinearFragmentable<Function>
 
     public abstract List<float> ControlPoints { get; set; }
 
-    public event System.EventHandler<int> OnValueChanged;
+    public event System.EventHandler OnValueChanged;
 
     protected void NotifyValueChanged()
     {
-        OnValueChanged(this, 0);
+        OnValueChanged(this, null);
     }
 }

@@ -261,14 +261,21 @@ public class Arc : Curve
         copy.Radius = Radius;
         copy.t_start = t_start;
         copy.t_end = t_end;
-        copy.Start = Start;
-        copy.End = End;
+        copy.NotifyShapeChanged();
         return copy;
     }
 
-    public override string ToString()
+    public override void ShiftRight(float distance)
     {
-        return "Arc centered at " + Center + " Start = " + Start + " ,End =  " + End;
+        if (t_end > t_start)
+        {
+            Radius += distance;
+        }
+        else
+        {
+            Radius -= distance;
+        }
+        NotifyShapeChanged();
     }
 
     protected override void NotifyShapeChanged()
@@ -276,5 +283,10 @@ public class Arc : Curve
         Start = GetTwodPos(0f);
         End = GetTwodPos(1f);
         base.NotifyShapeChanged();
+    }
+
+    public override string ToString()
+    {
+        return "Arc centered at " + Center + " Start = " + Start + " ,End =  " + End;
     }
 }

@@ -5,6 +5,8 @@ using System.Linq;
 
 public class Curve3DSampler : LinearFragmentable<Curve3DSampler>, IEnumerator
 {
+    protected event System.EventHandler OnShapeChanged;
+
     public float StepSize
     {
         get
@@ -24,14 +26,54 @@ public class Curve3DSampler : LinearFragmentable<Curve3DSampler>, IEnumerator
     // Ordered by importance!
     float _designatedStepSize = -0.1f; // Fixed. Only used if value >= 0
     float _preferredSampleRealResolution = 0f; // real world length; StepSize changes with curve Length
+    
+    Curve _xz_curve;
+
+    void PassShapeChangedNotice(object sender, System.EventArgs e)
+    {
+        OnShapeChanged?.Invoke(this, null);
+    }
+
 
     public Curve xz_curve
     {
-        get; private set;
+        get
+        {
+            return _xz_curve;
+        }
+        set
+        {
+            // Unsubscribe from old curve
+            if (_xz_curve != null)
+            {
+                _xz_curve.OnShapeChanged -= PassShapeChangedNotice;
+            }
+            _xz_curve = value;
+            _xz_curve.OnShapeChanged += PassShapeChangedNotice;
+            // Invoke immediately
+            OnShapeChanged?.Invoke(this, null);
+        }
     }
+
+    Function _y_func;
     public Function y_func
     {
-        get; private set;
+        get
+        {
+            return _y_func;
+        }
+        set
+        {
+            // Unsubscribe from old func
+            if (_y_func != null)
+            {
+                _y_func.OnValueChanged -= PassShapeChangedNotice;
+            }
+            _y_func = value;
+            _y_func.OnValueChanged += PassShapeChangedNotice;
+            // Invoke immediately
+            OnShapeChanged?.Invoke(this, null);
+        }
     }
 
     public Curve3DSampler(Curve xz_source, Function y_source, float sampleRealResolution = 0f)

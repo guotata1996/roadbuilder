@@ -69,7 +69,6 @@ public static class SolidCurve
         gameObject.GetComponent<MeshFilter>().sharedMesh = new Mesh();
         gameObject.GetComponent<MeshFilter>().sharedMesh.SetVertices(linear_vertices.ToList());
         gameObject.GetComponent<MeshFilter>().sharedMesh.SetTriangles(linear_triangles.ToList(), 0);
-
         return gameObject;
     }
 }

@@ -162,6 +162,25 @@ public class Bezier : Curve
         return copy;
     }
 
+    public override void ShiftRight(float distance)
+    {
+        Line P0_P1_ray = new Line(P0, P0 + GetFrontDir(0f) * Algebra.InfLength);
+        Line P2_P1_ray = new Line(P2, P2 - GetFrontDir(1f) * Algebra.InfLength);
+        P0_P1_ray.ShiftRight(distance);
+        P2_P1_ray.ShiftRight(-distance);
+
+        var Intersection = P0_P1_ray.IntersectWith(P2_P1_ray);
+        if (Intersection.Count == 0)
+        {
+            throw new System.Exception("cannot further shift right!");
+        }
+        P0 = P0_P1_ray.GetTwodPos(0f);
+        P2 = P2_P1_ray.GetTwodPos(0f);
+        P1 = Intersection[0];
+
+        NotifyShapeChanged();
+    }
+
     public override string ToString()
     {
         return "Bezeir P0: " + P0 + " ,P1: " + P1 + " ,P2: " + P2 + 

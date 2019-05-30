@@ -4,11 +4,16 @@ using UnityEngine;
 
 public class InputHandler : MonoBehaviour
 {
+    [SerializeField]
+    GameObject cursor;
+
     public event System.EventHandler<Vector3> OnClick;
     public event System.EventHandler<Vector3> OnDragStart;
     public event System.EventHandler<Vector3> OnDragEnd;
 
     public event System.EventHandler OnUndoPressed;
+    public event System.EventHandler OnIncPressed;
+    public event System.EventHandler OnDecPressed;
     
     float pressingTime;
     bool dragging = false;
@@ -56,6 +61,18 @@ public class InputHandler : MonoBehaviour
         {
             OnUndoPressed(this, null);
         }
+
+        if (Input.GetKeyDown(KeyCode.Equals))
+        {
+            OnIncPressed(this, null);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Minus))
+        {
+            OnDecPressed(this, null);
+        }
+
+        cursor.transform.position = MagnetMousePosition;
     }
 
     public Vector3 MousePosition

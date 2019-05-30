@@ -7,7 +7,7 @@ public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailab
     protected float t_start, t_end;
     protected Vector2[] controlPoints;
 
-    public event System.EventHandler<int> OnShapeChanged;
+    public event System.EventHandler OnShapeChanged;
 
     /// <summary>
     /// Gets a copy of control points.
@@ -21,7 +21,7 @@ public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailab
     protected virtual void NotifyShapeChanged()
     {
         _length = null;
-        OnShapeChanged?.Invoke(this, 0);
+        OnShapeChanged?.Invoke(this, null);
     }
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
@@ -131,7 +131,6 @@ public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailab
     }
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-
     /*Common override methods */
     public override void Crop(float unscaled_t_start, float unscaled_t_end)
     {
@@ -145,4 +144,6 @@ public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailab
         NotifyShapeChanged();
     }
 
+    /* Extension methods*/
+    public abstract void ShiftRight(float distance);
 }

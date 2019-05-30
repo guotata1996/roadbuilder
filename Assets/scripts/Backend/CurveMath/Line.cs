@@ -154,4 +154,14 @@ public class Line : Curve
     {
         return new Line(Start, End);
     }
+
+    public override void ShiftRight(float distance)
+    {
+        var newStart = Start + GetRightDir(0f) * distance;
+        var newEnd = End + GetRightDir(1f) * distance;
+        Start = newStart;
+        End = newEnd;
+
+        NotifyShapeChanged();
+    }
 }
