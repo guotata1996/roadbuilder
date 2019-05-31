@@ -40,5 +40,11 @@ public static partial class RoadPositionRecords
         return null;
     }
 
-
+    public static List<Lane> QueryEndings(Vector3 position)
+    {
+        return allLanes.FindAll(delegate (Lane input)
+        {
+            return Algebra.isclose(input.ControlPoints[0], position) || Algebra.isclose(input.ControlPoints[input.ControlPoints.Count - 1], position);
+        });
+    }
 }

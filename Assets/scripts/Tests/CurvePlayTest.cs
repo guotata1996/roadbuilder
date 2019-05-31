@@ -103,8 +103,20 @@ namespace Tests
         [Test]
         public void ParamofTest()
         {
+            Debug.Log(b.ParamOf(b.GetTwodPos(-0.5f)));
             Debug.Log(b.ParamOf(b.GetTwodPos(1.5f)));
         }
+
+        [Test]
+        public void ShiftTest()
+        {
+            b.Crop(0.1f, 0.5f);
+            var bb = b.Clone();
+            bb.ShiftRight(1f);
+            bb.ShiftRight(-1f);
+            Debug.Log(Curve.sameMotherCurve(bb, b));
+        }
+
 
         [TearDown]
         public void EndTest()
@@ -116,7 +128,6 @@ namespace Tests
                 c.transform.localScale = Vector3.one * 0.5f;
                 c.GetComponent<MeshRenderer>().material.color = POI[loc];
             }
-
         }
 
         [UnityTest]

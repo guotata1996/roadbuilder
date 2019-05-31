@@ -24,7 +24,7 @@ public class StickyMouse {
         _points = points;
     }
 
-    public Curve3DSampler StickTo3DCurve(Vector3 position, out Vector3 out_position, float radius = 1f)
+    public Curve3DSampler StickTo3DCurve(Vector3 position, out Vector3 out_position, float radius = Lane.laneWidth * 0.6f)
     {
         List<Curve3DSampler> curves = new List<Curve3DSampler>();
 

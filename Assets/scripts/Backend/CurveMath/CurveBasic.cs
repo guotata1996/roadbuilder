@@ -146,6 +146,10 @@ public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailab
         NotifyShapeChanged();
     }
 
-    /* Extension methods*/
+    /// <summary>
+    /// Shifts the original curve by distance.
+    /// </summary>
     public abstract void ShiftRight(float distance);
+
+
 }
