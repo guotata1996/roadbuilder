@@ -10,25 +10,38 @@ public class Bezier : Curve
 {
     public Vector2 P0
     {
-        get => controlPoints[0];
-        private set => controlPoints[0] = value;
+        get;
+        private set;
     }
        
     public Vector2 P1
     {
-        get => controlPoints[1];
-        private set => controlPoints[1] = value;
+        get;
+        private set;
     }
 
     public Vector2 P2
     {
-        get => controlPoints[2];
-        private set => controlPoints[2] = value;
+        get;
+        private set;
+    }
+
+    // Non-required control point
+    public Vector2 P3
+    {
+        get
+        {
+            return 0.25f * P0 + 0.5f * P1 + 0.25f * P2;
+        }
     }
 
     public override bool IsValid => 
-    !float.IsInfinity(P0.x) && !float.IsInfinity(P1.x) && !float.IsInfinity(P2.x) && 
-        !Algebra.Parallel(P1 - P0, P2 - P1) && !Algebra.isclose(P0, P2);
+    !float.IsInfinity(P0.x) && !float.IsInfinity(P2.x) && !Algebra.isclose(P0, P2);
+
+    protected override void Invalidate()
+    {
+        P0 = Vector2.negativeInfinity;
+    }
 
     public static Curve GetDefault()
     {
@@ -37,7 +50,6 @@ public class Bezier : Curve
 
     public Bezier(Vector2 _P0, Vector2 _P1, Vector2 _P2)
     {
-        controlPoints = new Vector2[3];
         P0 = _P0;
         P1 = _P1;
         P2 = _P2;
@@ -49,17 +61,37 @@ public class Bezier : Curve
     {
         get
         {
-            return controlPoints.ToList();
+            return new List<Vector2> { P0, P1, P3, P2 };
         }
         set
         {
-            P0 = value[0];
-            P1 = value[1];
-            P2 = value[2];
-
-            if (!float.IsInfinity(P0.x) && !float.IsInfinity(P2.x) && !Algebra.isclose(P0, P2))
+            // At most one value got changed
+            if (P0.x != value[0].x)
             {
-                // auto adjust invalid middle control point
+                P0 = value[0];
+            }
+            else
+            {
+                if (P1.x != value[1].x)
+                {
+                    P1 = value[1];
+                }
+                else
+                {
+                    if (P2.x != value[3].x)
+                    {
+                        P2 = value[3];
+                    }
+                    else
+                    {
+                        P1 = 2 * value[2] - 0.5f * (P0 + P2);
+                    }
+                }
+            }
+
+            if (IsValid)
+            {
+                // Auto adjust invalid P1
                 if (float.IsInfinity(P1.x) || Algebra.Parallel(P2 - P1, P1 - P0) ||
                 (P2 - P1).magnitude / (P1 - P0).magnitude > 3 || (P2 - P1).magnitude / (P1 - P0).magnitude < 1f / 3)
                 {
@@ -100,11 +132,12 @@ public class Bezier : Curve
         float A0 = A01 - A02;
 
         float realParam = toLocalParam(-A0 / A1);
-
+        /*
         if (!Algebra.isclose(GetTwodPos(_ToUnscaledt(realParam)), p))
         {
             return null;
         }
+        */
         return Algebra.approximateTo01(realParam, Length);
     }
 
@@ -164,21 +197,25 @@ public class Bezier : Curve
 
     public override void ShiftRight(float distance)
     {
-        Line P0_P1_ray = new Line(P0, P0 + GetFrontDir(0f) * Algebra.InfLength);
-        Line P2_P1_ray = new Line(P2, P2 - GetFrontDir(1f) * Algebra.InfLength);
+        Line P0_P1_ray = new Line(P0, P0 + _GetFrontDir(toLocalParam(0f)) * Algebra.InfLength);
+        Line P2_P1_ray = new Line(P2, P2 - _GetFrontDir(toLocalParam(1f)) * Algebra.InfLength);
         P0_P1_ray.ShiftRight(distance);
         P2_P1_ray.ShiftRight(-distance);
 
         var Intersection = P0_P1_ray.IntersectWith(P2_P1_ray);
         if (Intersection.Count == 0)
         {
-            throw new System.Exception("cannot further shift right!");
+            Invalidate();
         }
-        P0 = P0_P1_ray.GetTwodPos(0f);
-        P2 = P2_P1_ray.GetTwodPos(0f);
-        P1 = Intersection[0];
+        else
+        {
+            P0 = P0_P1_ray.GetTwodPos(0f);
+            P2 = P2_P1_ray.GetTwodPos(0f);
+            P1 = Intersection[0];
+            NotifyShapeChanged();
+        }
 
-        NotifyShapeChanged();
+
     }
 
     public override string ToString()

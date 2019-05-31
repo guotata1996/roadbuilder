@@ -5,6 +5,8 @@ using System.Linq;
 
 public static partial class RoadPositionRecords
 {
+    public static event System.EventHandler<List<Lane>> OnMapChanged;
+
     public static void AddLane(Curve3DSampler l, 
     out List<Lane> added, out List<Lane> deleted)
     {
@@ -49,16 +51,19 @@ public static partial class RoadPositionRecords
 
         // Update record
         allLanes.AddRange(added);
+
+        OnMapChanged?.Invoke(null, allLanes);
     }
 
     public static void DeleteLanes(List<Lane> tobedeleted)
     {
         tobedeleted.ForEach(lane => { lane.SetGameobjVisible(false); allLanes.Remove(lane); });
-        Debug.Log(tobedeleted.Count + " deleted");
+        OnMapChanged?.Invoke(null, allLanes);
     }
 
     public static void RestoreLanes(List<Lane> toberestored)
     {
         toberestored.ForEach(lane => { lane.SetGameobjVisible(true); allLanes.Add(lane); });
+        OnMapChanged?.Invoke(null, allLanes);
     }
 }

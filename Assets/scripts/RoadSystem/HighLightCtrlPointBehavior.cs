@@ -15,6 +15,17 @@ public class HighLightCtrlPointBehavior : MonoBehaviour
     [HideInInspector]
     public float radius;
 
+    StickyMouse stickyMouseSource;
+
+    private void Start()
+    {
+        stickyMouseSource = new StickyMouse();
+        RoadPositionRecords.OnMapChanged += (object sender, List<Lane> e) =>
+        {
+            stickyMouseSource.SetLane(e);
+        };
+    }
+
     private void Update()
     {
         foreach (var g in GameObject.FindGameObjectsWithTag("Road/curveIndicator"))
@@ -38,7 +49,7 @@ public class HighLightCtrlPointBehavior : MonoBehaviour
         }
         else
         {
-            var l = RoadPositionRecords.QueryNodeOr3DCurve(input.MousePosition, out Vector3 out_pos, radius);
+            var l = stickyMouseSource.StickTo3DCurve(input.MousePosition, out Vector3 out_pos, radius);
             if (l == null)
             {
                 return;

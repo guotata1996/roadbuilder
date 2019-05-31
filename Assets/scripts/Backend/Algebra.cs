@@ -51,7 +51,6 @@ public static class Algebra {
         float A0 = (a0.x - center.x) * (a0.x - center.x) + (a0.y - center.y) * (a0.y - center.y) - radius * radius;
         var func_1_params = functionSolver(A0, A1, A2, A3, A4);
         var valid_points = from func_1_param in func_1_params
-                           where 0 <= func_1_param && func_1_param <= 1
                            select a2 * func_1_param * func_1_param + a1 * func_1_param + a0;
         return valid_points.ToList();
     }
@@ -238,7 +237,8 @@ public static class Algebra {
             }
         }
 
-        throw new Exception("Newton method low precesion!");
+        //throw new Exception("Newton method low precesion!");
+        return float.NegativeInfinity;
     }
 
     public static float BinaryApproach(Del monoFunction, float targetValue, float startValue = 0f){

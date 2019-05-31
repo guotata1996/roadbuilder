@@ -19,6 +19,64 @@ public class InputHandler : MonoBehaviour
     bool dragging = false;
     float y = 0f;
 
+    StickyMouse stickyMouse;
+
+    //For debug: all shifted curves
+    List<Lane> shift_indicators;
+
+    void Start()
+    {
+        stickyMouse = new StickyMouse();
+
+        shift_indicators = new List<Lane>();
+
+        RoadPositionRecords.OnMapChanged += (sender, e) =>
+        {
+            shift_indicators.ForEach(lane => lane.SetGameobjVisible(false));
+            shift_indicators.Clear();
+
+            stickyMouse.SetLane(RoadPositionRecords.allLanes);
+
+            var rightShiftCurves = RoadPositionRecords.allLanes.ConvertAll((input) =>
+            {
+                var cloned_3d_curve = input.Clone();
+                cloned_3d_curve.xz_curve.ShiftRight(Lane.laneWidth);
+                return cloned_3d_curve;
+            }).FindAll(input => input.IsValid);
+
+            var leftShiftCurves = RoadPositionRecords.allLanes.ConvertAll((input) =>
+            {
+                var cloned_3d_curve = input.Clone();
+                cloned_3d_curve.xz_curve.ShiftRight(- Lane.laneWidth);
+                return cloned_3d_curve;
+            }).FindAll(input => input.IsValid);
+
+            leftShiftCurves.AddRange(rightShiftCurves);
+
+            //For debug: show all shifted curves
+            leftShiftCurves.ForEach(input => shift_indicators.Add(new Lane(input, _indicate: true)));
+
+            stickyMouse.SetVirtualCurve(leftShiftCurves);
+
+            // Intersect shiftcurves with allLanes
+            var intersection_points = new Dictionary<Vector3, Lane>();
+            foreach(Curve3DSampler c in leftShiftCurves)
+            {
+                foreach (Lane l in RoadPositionRecords.allLanes)
+                {
+                    foreach (var inter_position in c.IntersectWith(l, filter_self: false, filter_other: true))
+                    {
+                        if (!intersection_points.ContainsKey(inter_position))
+                        {
+                            intersection_points.Add(inter_position, l);
+                        }
+                    }
+                }
+            }
+            stickyMouse.SetPoint(intersection_points);
+        };
+    }
+
     void Update()
     {
         if (Input.GetMouseButton(0))
@@ -90,7 +148,7 @@ public class InputHandler : MonoBehaviour
     {
         get
         {
-            RoadPositionRecords.QueryNodeOr3DCurve(MousePosition, out Vector3 position);
+            stickyMouse.StickTo3DCurve(MousePosition, out Vector3 position);
             return position;
         }
     }

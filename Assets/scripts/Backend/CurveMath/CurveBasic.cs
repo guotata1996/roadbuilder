@@ -5,7 +5,6 @@ using UnityEngine;
 public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailable
 {
     protected float t_start, t_end;
-    protected Vector2[] controlPoints;
 
     public event System.EventHandler OnShapeChanged;
 
@@ -15,6 +14,7 @@ public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailab
     public abstract List<Vector2> ControlPoints { get; set; }
 
     /// <summary>
+    /// Important: Only call this when self is Valid!
     /// 1. Update internal buffered values
     /// 2. Notify holding objects to repaint
     /// </summary>
@@ -27,6 +27,8 @@ public abstract partial class Curve : LinearFragmentable<Curve>, ITwodPosAvailab
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
     /*Basic Methods */
     public abstract bool IsValid { get; }
+
+    protected abstract void Invalidate();
 
     public Vector2 GetTwodPos(float unscaled_t){
         return _GetTwodPos(_ToParamt(unscaled_t));

@@ -103,9 +103,10 @@ public class Curve3DSampler : LinearFragmentable<Curve3DSampler>, IEnumerator
     /// <summary>
     /// If difference in Y is less than 2, we consider 
     /// </summary>
-    public List<Vector3> IntersectWith(Curve3DSampler another)
+    public List<Vector3> IntersectWith(Curve3DSampler another, bool filter_self = true, bool filter_other = true)
     {
-        var two_d_candidates = xz_curve.IntersectWith(another.xz_curve);
+        var two_d_candidates = xz_curve.IntersectWith(another.xz_curve, filter_self, filter_other);
+
         return two_d_candidates.FindAll
         (twodPos =>
             (this.GetThreedPos(twodPos) - another.GetThreedPos(twodPos)).sqrMagnitude < 2 * 2

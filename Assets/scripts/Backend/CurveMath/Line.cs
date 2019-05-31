@@ -8,18 +8,15 @@ public class Line : Curve
 
     public Vector2 Start
     {
-        get => controlPoints[0];
-        private set => controlPoints[0] = value;
+        get;
+        private set;
     }
 
     public Vector2 End
     {
-        get => controlPoints[1];
-        private set => controlPoints[1] = value;
+        get;
+        private set;
     }
-
-    public override bool IsValid => !float.IsInfinity(Start.x) && !float.IsInfinity(End.x) 
-    && !Algebra.isclose(Start, End);
 
     public override Vector2 GetAttractedPoint(Vector2 p, float attract_radius)
     {
@@ -47,6 +44,13 @@ public class Line : Curve
         }
     }
 
+    public override bool IsValid => !float.IsInfinity(Start.x) && !float.IsInfinity(End.x)
+&& !Algebra.isclose(Start, End);
+
+    protected override void Invalidate()
+    {
+        Start = End = Vector2.negativeInfinity;
+    }
 
     public static Curve GetDefault()
     {
@@ -55,7 +59,6 @@ public class Line : Curve
 
     public Line(Vector2 _Start, Vector2 _End)
     {
-        controlPoints = new Vector2[2];
         Start = _Start;
         End = _End;
         t_start = 0f;
@@ -66,19 +69,14 @@ public class Line : Curve
     {
         get
         {
-            return controlPoints.ToList();
+            return new List<Vector2> { Start, End };
         }
         set
         {
-            if (Algebra.isclose(value[0], value[1]))
-            {
-                Debug.LogWarning("Line ctrl points too close");
-                return;
-            }
             Start = value[0];
             End = value[1];
 
-            if (!float.IsInfinity(Start.x) && !float.IsInfinity(End.x))
+            if (IsValid)
             {
                 NotifyShapeChanged();
             }

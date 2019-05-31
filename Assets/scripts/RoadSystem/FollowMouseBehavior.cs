@@ -29,7 +29,6 @@ public class FollowMouseBehavior : MonoBehaviour
             
             Vector3 closestCtrlPoint = curvesampler.ControlPoints.MinBy((Vector3 arg) => float.IsInfinity(arg.x) ? -1 : (input.MagnetMousePosition - arg).sqrMagnitude);
             ctrlPointIndex = curvesampler.ControlPoints.LastIndexOf(closestCtrlPoint);
-
             lastFrameMousePosition = input.MagnetMousePosition;
         }
     }

@@ -9,6 +9,8 @@ using System.Linq;
 /// </summary>
 public class Arc : Curve
 {
+    Vector2[] controlPoints;
+
     public Vector2 Center
     {
         get
@@ -61,10 +63,15 @@ public class Arc : Curve
         }
     }
 
+    protected override void Invalidate()
+    {
+        Center = Start = End = Vector2.negativeInfinity;
+    }
+
     public static Curve GetDefault()
     {
         var rtn = new Arc();
-        rtn.Center = rtn.Start = rtn.End = Vector2.negativeInfinity;
+        rtn.Invalidate();
         return rtn;
     }
 
@@ -204,7 +211,9 @@ public class Arc : Curve
                 return Algebra.approximateTo01(toLocalParam(candidate), Length);
             }
         }
-        return null;
+
+        // out or range: return an arbitary one outside [0,1]
+        return Algebra.approximateTo01(toLocalParam(candidates[1]), Length);
     }
 
     protected override float _ToParamt(float unscaled_t)
@@ -275,7 +284,15 @@ public class Arc : Curve
         {
             Radius -= distance;
         }
-        NotifyShapeChanged();
+
+        if (Radius <= 0)
+        {
+            Invalidate();
+        }
+        else
+        {
+            NotifyShapeChanged();
+        }
     }
 
     protected override void NotifyShapeChanged()

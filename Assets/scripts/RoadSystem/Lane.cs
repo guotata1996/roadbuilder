@@ -10,6 +10,8 @@ public class Lane : Curve3DSampler
 {
     const float maxAngleDiff = 0.1f;
 
+    public const float laneWidth = 1.0f;
+
     SpriteVerticeSampler spriteSampler;
 
     public LaneGroup laneGroup;
@@ -35,18 +37,18 @@ public class Lane : Curve3DSampler
     }
 
 
-    public Lane(Curve xz_source, Function y_source):base(xz_source.Clone(), y_source.Clone(), maxAngleDiff)
+    public Lane(Curve xz_source, Function y_source, bool _indicate = false):base(xz_source.Clone(), y_source.Clone(), maxAngleDiff)
     {
-        spriteSampler = new SpriteVerticeSampler(Resources.Load<Sprite>("Sectors/SimpleRoad"), 1f, 0.1f);
+        spriteSampler = new SpriteVerticeSampler(Resources.Load<Sprite>(_indicate ? "Sectors/Indicator" : "Sectors/SimpleRoad"), 1f, 0.1f);
 
         Repaint();
 
         OnShapeChanged += (arg1, arg2) => Repaint();
     }
 
-    public Lane (Curve3DSampler sampler):base(sampler.xz_curve.Clone(), sampler.y_func.Clone(), maxAngleDiff)
+    public Lane (Curve3DSampler sampler, bool _indicate = false) :base(sampler.xz_curve.Clone(), sampler.y_func.Clone(), maxAngleDiff)
     {
-        spriteSampler = new SpriteVerticeSampler(Resources.Load<Sprite>("Sectors/SimpleRoad"), 1f, 0.1f);
+        spriteSampler = new SpriteVerticeSampler(Resources.Load<Sprite>(_indicate ? "Sectors/Indicator" : "Sectors/SimpleRoad"), 1f, 0.1f);
 
         Repaint();
 
