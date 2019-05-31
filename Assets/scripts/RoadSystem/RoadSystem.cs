@@ -15,7 +15,10 @@ public static partial class RoadPositionRecords
                                  let intersections = lane.IntersectWith(l)
                     where intersections.Count > 0
                     select (lane, intersections);
-
+        if (lane_intersections.ToList().Count > 0)
+        {
+            Debug.Log("From " + allLanes.Count + " found # intersections: " + lane_intersections.ToList()[0].intersections.Count);
+        }
 
         added = new List<Lane>();
         deleted = new List<Lane>();

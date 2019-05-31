@@ -43,13 +43,6 @@ namespace Tests
 
         }
 
-
-        [Test]
-        public void ParamOfTest()
-        {
-            Debug.Log(b.ParamOf(b.GetTwodPos(1.0f)));
-        }
-
         [Test]
         public void SegmentationTest()
         {
@@ -108,14 +101,9 @@ namespace Tests
         }
 
         [Test]
-        public void CropTest()
+        public void ParamofTest()
         {
-            b.Crop(0f, 0.3f);
-            for (float t = 0f; t <= 1f; t += 0.05f)
-            {
-                //Debug.Log(b.ParamOf(b.GetTwodPos(t)));
-                //Debug.Log(b._ToParamt(b._ToUnscaledt(t)));
-            }
+            Debug.Log(b.ParamOf(b.GetTwodPos(1.5f)));
         }
 
         [TearDown]

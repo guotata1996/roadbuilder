@@ -183,10 +183,12 @@ public abstract partial class Curve : ITwodPosAvailable
         private static List<Vector2> filter(List<Vector2> points, Curve c1, Curve c2, bool filter_self, bool filter_other)
         {
 
-            //var valids =
-            //from point in points
-            //where c2.Contains(point) && c1.Contains(point)
-            //select point;
+        //var valids =
+        //from point in points
+        //where c2.Contains(point) && c1.Contains(point)
+        //select point;
+            points = points.FindAll(input => c1.ParamOf(input) != null && c2.ParamOf(input) != null);
+
             if (filter_self)
             {
                 points = points.FindAll(c1.Contains);

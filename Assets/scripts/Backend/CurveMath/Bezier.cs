@@ -132,12 +132,12 @@ public class Bezier : Curve
         float A0 = A01 - A02;
 
         float realParam = toLocalParam(-A0 / A1);
-        /*
+
         if (!Algebra.isclose(GetTwodPos(_ToUnscaledt(realParam)), p))
         {
             return null;
         }
-        */
+
         return Algebra.approximateTo01(realParam, Length);
     }
 
