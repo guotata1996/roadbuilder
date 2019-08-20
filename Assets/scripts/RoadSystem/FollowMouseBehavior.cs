@@ -27,9 +27,9 @@ public class FollowMouseBehavior : MonoBehaviour
         {
             curvesampler = (Lane)data;
             
-            Vector3 closestCtrlPoint = curvesampler.ControlPoints.MinBy((Vector3 arg) => float.IsInfinity(arg.x) ? -1 : (input.MagnetMousePosition - arg).sqrMagnitude);
+            Vector3 closestCtrlPoint = curvesampler.ControlPoints.MinBy((Vector3 arg) => float.IsInfinity(arg.x) ? -1 : (input.MagnetMousePosition.Item1 - arg).sqrMagnitude);
             ctrlPointIndex = curvesampler.ControlPoints.LastIndexOf(closestCtrlPoint);
-            lastFrameMousePosition = input.MagnetMousePosition;
+            lastFrameMousePosition = input.MagnetMousePosition.Item1;
         }
     }
 
@@ -40,7 +40,7 @@ public class FollowMouseBehavior : MonoBehaviour
             return;
         }
 
-        var thisFrameMousePosition = input.MagnetMousePosition;
+        var thisFrameMousePosition = input.MagnetMousePosition.Item1;
         var deltaMousePosition = thisFrameMousePosition - lastFrameMousePosition;
 
         var ctrl = curvesampler.ControlPoints;

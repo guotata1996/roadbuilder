@@ -20,10 +20,10 @@ public class HighLightCtrlPointBehavior : MonoBehaviour
     private void Start()
     {
         stickyMouseSource = new StickyMouse();
-        RoadPositionRecords.OnMapChanged += (object sender, List<Lane> e) =>
-        {
-            stickyMouseSource.SetLane(e);
-        };
+        //RoadPositionRecords.OnMapChanged += (object sender, List<Lane> e) =>
+        //{
+        //    stickyMouseSource.SetLane(e);
+        //};
     }
 
     private void Update()

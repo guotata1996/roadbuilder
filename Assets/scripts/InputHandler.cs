@@ -1,115 +1,79 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 
 public class InputHandler : MonoBehaviour
 {
     [SerializeField]
     GameObject cursor;
 
-    public event System.EventHandler<Vector3> OnClick;
+    [SerializeField]
+    GameObject roadDrawing;
+
+    [SerializeField]
+    Canvas ezDrawingCanvas;
+
+    public event System.EventHandler<(Vector3, Curve3DSampler)> OnClick;
     public event System.EventHandler<Vector3> OnDragStart;
     public event System.EventHandler<Vector3> OnDragEnd;
 
     public event System.EventHandler OnUndoPressed;
     public event System.EventHandler OnIncPressed;
     public event System.EventHandler OnDecPressed;
-    
+
+    public event System.EventHandler OnRightKeyPressed;
+    public event System.EventHandler OnLeftKeyPressed;
+    public event System.EventHandler OnForwardKeyPressed;
+
     float pressingTime;
     bool dragging = false;
     float y = 0f;
 
-    StickyMouse stickyMouse;
+    public StickyMouse stickyMouse;
 
-    //For debug: all shifted curves
-    List<Lane> shift_indicators;
+    public Stack<Command> commandSequence = new Stack<Command>();
 
     void Start()
     {
         stickyMouse = new StickyMouse();
 
-        shift_indicators = new List<Lane>();
-
-        RoadPositionRecords.OnMapChanged += (sender, e) =>
-        {
-            shift_indicators.ForEach(lane => lane.SetGameobjVisible(false));
-            shift_indicators.Clear();
-
-            stickyMouse.SetLane(RoadPositionRecords.allLanes);
-
-            // Intersect shiftcurves with allLanes
-            // ctrl points added at same time as interest
-            var ctrl_points = new Dictionary<Vector3, Lane>();
-
-            var rightShiftCurves = RoadPositionRecords.allLanes.ConvertAll((input) =>
-            {
-                var cloned_3d_curve = input.Clone();
-                cloned_3d_curve.xz_curve.ShiftRight(Lane.laneWidth);
-                foreach(var cp in cloned_3d_curve.ControlPoints)
-                {
-                    if (!ctrl_points.ContainsKey(cp))
-                    {
-                        ctrl_points.Add(cp, input);
-                    }
-                }
-                return cloned_3d_curve;
-            }).FindAll(input => input.IsValid);
-
-            var leftShiftCurves = RoadPositionRecords.allLanes.ConvertAll((input) =>
-            {
-                var cloned_3d_curve = input.Clone();
-                cloned_3d_curve.xz_curve.ShiftRight(- Lane.laneWidth);
-                foreach (var cp in cloned_3d_curve.ControlPoints)
-                {
-                    if (!ctrl_points.ContainsKey(cp))
-                    {
-                        ctrl_points.Add(cp, input);
-                    }
-                }
-                return cloned_3d_curve;
-            }).FindAll(input => input.IsValid);
-
-            leftShiftCurves.AddRange(rightShiftCurves);
-            stickyMouse.SetVirtualCurve(leftShiftCurves);
-
-            //For debug: show all shifted curves
-            //leftShiftCurves.ForEach(input => shift_indicators.Add(new Lane(input, _indicate: true)));
-
-            // Add Intersection points as interest
-            var intersection_points = new Dictionary<Vector3, Lane>();
-            foreach (Curve3DSampler c in leftShiftCurves)
-            {
-                foreach (Lane l in RoadPositionRecords.allLanes)
-                {
-                    foreach (var inter_position in c.IntersectWith(l, filter_self: false, filter_other: true))
-                    {
-                        if (((inter_position - c.GetThreedPos(0)).sqrMagnitude < 40f || (inter_position - c.GetThreedPos(1)).sqrMagnitude < 40f)
-                        && !intersection_points.ContainsKey(inter_position))
-                        {
-                            intersection_points.Add(inter_position, l);
-                        }
-                    }
-                }
-            }
-
-            // Merge ctrl_points with priority lower than inter_points
-            foreach(var cp in ctrl_points)
-            {
-                if (!intersection_points.Keys.ToList().Any(input => (input - cp.Key).sqrMagnitude < Lane.laneWidth * Lane.laneWidth))
-                {
-                    intersection_points.Add(cp.Key, cp.Value);
-                }
-            }
-            stickyMouse.SetPoint(intersection_points);
+        OnUndoPressed += delegate {
+            var latestCmd = commandSequence.Pop();
+            latestCmd.Undo();
+            BuildRoad.UseDefaultStickyMouseForRoad(stickyMouse);
         };
+
+        ezDrawingCanvas.enabled = false;
     }
 
     void Update()
     {
+
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            roadDrawing.GetComponent<EzBuildRoad>().enabled = false;
+            roadDrawing.GetComponent<BuildRoad>().enabled = true;
+            Debug.Log("Build Road Mode");
+            ezDrawingCanvas.enabled = false;
+
+        }
+
+        if (Input.GetKeyDown(KeyCode.F2))
+        {
+            roadDrawing.GetComponent<BuildRoad>().enabled = false;
+            roadDrawing.GetComponent<EzBuildRoad>().enabled = true;
+            Debug.Log("EZ Build Road Mode");
+            ezDrawingCanvas.enabled = true;
+        }
+
+
         if (Input.GetMouseButton(0))
         {
             pressingTime += Time.deltaTime;
+
         }
         else
         {
@@ -118,7 +82,10 @@ public class InputHandler : MonoBehaviour
         if (pressingTime > 0.8f && !dragging)
         {
             dragging = true;
-            OnDragStart(this, MagnetMousePosition);
+            Vector3 pos1;
+            Curve3DSampler curve1;
+            (pos1, curve1) = MagnetMousePosition;
+            OnDragStart(this, pos1);
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -126,10 +93,15 @@ public class InputHandler : MonoBehaviour
             if (dragging)
             {
                 dragging = false;
-                OnDragEnd(this, MagnetMousePosition);
+                Vector3 pos2;
+                Curve3DSampler curve2;
+                (pos2, curve2) = MagnetMousePosition;
+
+                OnDragEnd(this, pos2);
             }
             else
             {
+                //stickyMouse.SetLane(RoadPositionRecords.allLanes);
                 OnClick(this, MagnetMousePosition);
             }
         }
@@ -158,7 +130,25 @@ public class InputHandler : MonoBehaviour
             OnDecPressed(this, null);
         }
 
-        cursor.transform.position = MagnetMousePosition;
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            OnLeftKeyPressed(this, null);
+        }
+
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            OnRightKeyPressed(this, null);
+        }
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            OnForwardKeyPressed(this, null);
+        }
+
+        Vector3 pos;
+        Curve3DSampler curve;
+        (pos, curve) = MagnetMousePosition;
+        cursor.transform.position = pos;
     }
 
     public Vector3 MousePosition
@@ -172,29 +162,32 @@ public class InputHandler : MonoBehaviour
         }
     }
 
-    public Vector3 MagnetMousePosition
+    public (Vector3, Curve3DSampler) MagnetMousePosition
     {
         get
         {
-            stickyMouse.StickTo3DCurve(MousePosition, out Vector3 position);
-            return position;
+            var curve = stickyMouse.StickTo3DCurve(MousePosition, out Vector3 position);
+            return (position, curve);
         }
     }
 
-    public void SwitchDragListenerTo(System.EventHandler<Vector3> handler)
+    public void Reset()
     {
         if (dragging)
         {
-            OnDragEnd(this, MagnetMousePosition);
+            Vector3 pos;
+            Curve3DSampler curve;
+            (pos, curve) = MagnetMousePosition;
+            OnDragEnd(this, pos);
             pressingTime = 0f;
             dragging = false;
         }
-        OnDragStart = handler;
-        OnDragEnd = handler;
-    }
+        OnClick = null;
+        OnDragEnd = null;
+        OnDragStart = null;
+        OnRightKeyPressed = null;
+        OnLeftKeyPressed = null;
+        OnForwardKeyPressed = null;
 
-    public void SwitchClickListenerTo(System.EventHandler<Vector3> handler)
-    {
-        OnClick = handler;
     }
 }

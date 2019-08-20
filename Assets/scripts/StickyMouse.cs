@@ -5,13 +5,19 @@ using System;
 using MoreLinq;
 
 public class StickyMouse {
-    List<Curve3DSampler> _source;
-    List<Lane> _lane_source;
-    Dictionary<Vector3, Lane> _points;
+    /* Priority:
+     * 1. intersects points between lane & lane / vlane
+     * 2. points
+     * 3. points on lane / vlane
+     */
+
+    List<Curve3DSampler> _virtual_source = new List<Curve3DSampler>();
+    List<Lane> _lane_source = new List<Lane>();
+    Dictionary<Vector3, Lane> _points = new Dictionary<Vector3, Lane>();
 
     public void SetVirtualCurve(List<Curve3DSampler> cs)
     {
-        _source = cs;
+        _virtual_source = cs;
     }
 
     public void SetLane(List<Lane> lcs)
@@ -24,12 +30,37 @@ public class StickyMouse {
         _points = points;
     }
 
+    public void AddVirtualCurve(List<Curve3DSampler> cs)
+    {
+        _virtual_source.AddRange(cs);
+    }
+
+    public void AddLane(List<Lane> lcs)
+    {
+        _lane_source.AddRange(lcs);
+    }
+
+    public void AddPoint(Dictionary<Vector3, Lane> points)
+    {
+        foreach (var kv in points)
+        {
+            _points.Add(kv.Key, kv.Value);
+        }
+    }
+
+    public void Reset()
+    {
+        _virtual_source.Clear();
+        _lane_source.Clear();
+        _points.Clear();
+    }
+
     public Curve3DSampler StickTo3DCurve(Vector3 position, out Vector3 out_position, float radius = Lane.laneWidth * 0.6f)
     {
         List<Curve3DSampler> curves = new List<Curve3DSampler>();
 
-        if (_source != null)
-            curves.AddRange(_source);
+        if (_virtual_source != null)
+            curves.AddRange(_virtual_source);
 
         if (_lane_source != null)
         {

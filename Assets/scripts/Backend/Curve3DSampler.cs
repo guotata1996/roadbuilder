@@ -228,7 +228,4 @@ public class Curve3DSampler : LinearFragmentable<Curve3DSampler>, IEnumerator
         }
     }
 
-    // TODO: Add to clone(), and re-calculate in OnShapeChanged()
-    public Curve3DSampler LeftNeighbor { get; private set; }
-    public Curve3DSampler rightNeighbor { get; private set; }
 }

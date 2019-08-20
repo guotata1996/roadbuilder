@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlaceLaneCommand : Command
 {
-    List<Lane> added;
+    public List<Lane> added;
     List<Lane> deleted;
 
     public void Execute(object data)

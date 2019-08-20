@@ -5,7 +5,7 @@ using System.Linq;
 
 public static class SolidCurve
 {
-    public static GameObject Generate(IEnumerator line, IEnumerable sector)
+    public static GameObject Generate(IEnumerator line, IEnumerable sector, Material material = null)
     {
         var line_pos_samples = new List<Vector3>();
         var line_up_samples = new List<Vector3>();
@@ -69,6 +69,10 @@ public static class SolidCurve
         gameObject.GetComponent<MeshFilter>().sharedMesh = new Mesh();
         gameObject.GetComponent<MeshFilter>().sharedMesh.SetVertices(linear_vertices.ToList());
         gameObject.GetComponent<MeshFilter>().sharedMesh.SetTriangles(linear_triangles.ToList(), 0);
+        if (material != null)
+        {
+            gameObject.GetComponent<MeshRenderer>().material = material;
+        }
         return gameObject;
     }
 }
