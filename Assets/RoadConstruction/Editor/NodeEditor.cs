@@ -35,7 +35,7 @@ namespace TrafficNetwork
 
                 int userMin = element.FindPropertyRelative("minLane").intValue;
 
-
+                // TODO: outlanes should not overlap!
                 if (userMin >= 0)
                 {
                     int userMax = element.FindPropertyRelative("maxLane").intValue;
@@ -65,8 +65,8 @@ namespace TrafficNetwork
             {
                 serializedObject.FindProperty("laneCount").intValue = 1;
             }
-            GUILayout.EndVertical();
 
+            GUILayout.EndVertical();
 
 
             serializedObject.ApplyModifiedProperties();

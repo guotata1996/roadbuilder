@@ -46,13 +46,15 @@ namespace TrafficNetwork
                         }
                         else
                         {
-                            start.outLinks.Add(new Link(selectedNode));
+                            start.outLinks.Add(new Link(start, selectedNode));
                         }
                         start = null;
                     }
                 }
+                
 
-                // Display all connections
+
+                /*
                 foreach (Node n in FindObjectsOfType<Node>())
                 {
                     if (n.outLinks != null)
@@ -66,7 +68,14 @@ namespace TrafficNetwork
                     }
 
                 }
+                */
+            }
+
+            if (GUILayout.Button("Generate Longitudinal Info")){
+                Node.LongitudinalInfoInited = false;
             }
         }
+
+
     }
 }
