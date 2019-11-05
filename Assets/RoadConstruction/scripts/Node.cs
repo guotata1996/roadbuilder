@@ -11,18 +11,48 @@ namespace TrafficNetwork
     public class Link
     {
         public Node sourceNode, targetNode;
-        // Relative to its start node
+        // Should not overlap with any other link
         public int minLane, maxLane;
+        public int lateralOffsetMode; // -1,0,1
+        
+        // Used for editor
         public int targetMinLane;
+
+        public float GetLateralOffsetCenter(int lane)
+        {
+            switch (lateralOffsetMode)
+            {
+                case -1:
+                    return -0.75f;
+                case 1:
+                    return 0.75f;
+                default:
+                    if (GetNextLink(lane, out Link nextLink, out int nextLane) && nextLink.lateralOffsetMode != 0)
+                    {
+                        return nextLink.GetLateralOffsetCenter(nextLane);
+                    }
+                    if (GetPreviousLink(lane, out Link prevLink, out int prevLane) && prevLink.lateralOffsetMode != 0)
+                    {
+                        return prevLink.GetLateralOffsetCenter(prevLane);
+                    }
+                    return 0f;
+            }
+            
+        }
+
         // If node position invalid then curve is null
         public Bezier curve;
 
-        public Vector3 GetPosition(float percentage, int lane)
+        public Vector3 GetPosition(float percentage, int lane, float vehicleOffset = 0)
         {
-            float departureLaneRightOffset = lane - ((float)sourceNode.laneCount - 1) / 2;
-            float arrivalLaneRightOffset = targetMinLane + (lane - minLane) - ((float)targetNode.laneCount - 1) / 2;
+            float departureLaneRightOffset = lane - ((float)sourceNode.laneCount - 1) / 2 + GetLateralOffsetCenter(lane);
+
+            float arrivalLaneRightOffset = GetNextLink(lane, out Link nextLink, out int nextLane) ?
+                targetMinLane + (lane - minLane) - ((float)targetNode.laneCount - 1) / 2 + nextLink.GetLateralOffsetCenter(nextLane):
+                targetMinLane + (lane - minLane) - ((float)targetNode.laneCount - 1) / 2 + GetLateralOffsetCenter(lane);
+
             return curve.GetPoint(percentage) +
-                        curve.GetRight(percentage) * Mathf.Lerp(departureLaneRightOffset, arrivalLaneRightOffset, percentage) * Node.laneWidth;
+                        curve.GetRight(percentage) * (Mathf.Lerp(departureLaneRightOffset, arrivalLaneRightOffset, percentage) + vehicleOffset) * Node.laneWidth;
         }
 
         public float GetAncestorInfo(int lane, out Node ancestorNode, out int ancestorLane)
@@ -46,6 +76,7 @@ namespace TrafficNetwork
             // Set initial value to invalid
             minLane = -1;
             maxLane = targetMinLane = 0;
+            lateralOffsetMode = 0;
 
             vehicles = new List<VehicleLaneController>();
         }
@@ -115,7 +146,7 @@ namespace TrafficNetwork
         [HideInInspector]
         public List<KeyValuePair<Node, int>> ancestorNodeAndLane;
         [HideInInspector]
-        public List<Link> inLinks;
+        public List<Link> inLinks = new List<Link>();
 
         public Vector3 direction
         {
@@ -133,6 +164,26 @@ namespace TrafficNetwork
             }
         }
 
+        public float NodeCenterAdjustment
+        {
+            get
+            {
+                float right = 0;
+                foreach(var link in outLinks)
+                {
+                    for (int i = link.minLane; i <= link.maxLane; ++i)
+                    {
+                        if (link.GetLateralOffsetCenter(i) != 0)
+                        {
+                            right += Mathf.Sign(link.GetLateralOffsetCenter(i));
+                        }
+                        
+                    }
+                }
+                return -right / 2;
+            }
+        }
+
         private void Start()
         {
             GenerateCurves();
@@ -145,6 +196,7 @@ namespace TrafficNetwork
         {
             if (!Application.isPlaying)
             {
+                // update laneCount, max/min lane
                 GenerateCurves();
             }
         }
@@ -156,6 +208,7 @@ namespace TrafficNetwork
             {
                 link.curve = Bezier.Create(outRay, link.targetNode.outRay);
             });
+            inLinks = inLinks.Where(lnk => lnk.sourceNode != null).ToList();
         }
 
         // Display out conns for this partucular node
@@ -232,7 +285,6 @@ namespace TrafficNetwork
                     node.lengthSinceOrigin.Add(0);
                     node.ancestorNodeAndLane.Add(new KeyValuePair<Node, int>(node, i));
                 }
-                node.inLinks = new List<Link>();
             }
 
             foreach(var n in allNodes.ToList()){
@@ -246,7 +298,6 @@ namespace TrafficNetwork
                             link.targetNode.lengthSinceOrigin[nextLane] = Mathf.Infinity;
                         }
                     }
-                    link.targetNode.inLinks.Add(link);
                 });
             }
             

@@ -16,7 +16,9 @@ namespace TrafficNetwork
             serializedObject.Update();
 
             Node node = (Node)target;
-            EditorGUIUtility.labelWidth = 50f;
+            EditorGUIUtility.labelWidth = 40f;
+
+            EditorGUI.BeginChangeCheck();
 
             laneConfigureList = new ReorderableList(serializedObject, serializedObject.FindProperty("outLinks"), false, false, false, false);
             laneConfigureList.drawElementBackgroundCallback = (Rect rect, int index, bool isActive, bool isFocused) =>
@@ -27,15 +29,15 @@ namespace TrafficNetwork
                 }
                 var element = laneConfigureList.serializedProperty.GetArrayElementAtIndex(index);
                 
-                EditorGUI.PropertyField(new Rect(rect.x + rect.width / 4, rect.y, rect.width / 4, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("minLane"));
-                EditorGUI.PropertyField(new Rect(rect.x + rect.width / 2, rect.y, rect.width / 4, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("maxLane"));
-                EditorGUI.PropertyField(new Rect(rect.x + rect.width * 0.75f, rect.y, rect.width / 4, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("targetMinLane"));
+                EditorGUI.PropertyField(new Rect(rect.x + rect.width * 0.1f, rect.y, rect.width * 0.15f, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("minLane"));
+                EditorGUI.PropertyField(new Rect(rect.x + rect.width * 0.25f, rect.y, rect.width * 0.15f, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("maxLane"));
+                EditorGUI.PropertyField(new Rect(rect.x + rect.width * 0.4f, rect.y, rect.width * 0.15f, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("targetMinLane"));
+                EditorGUI.IntSlider(new Rect(rect.x + rect.width * 0.55f, rect.y, rect.width * 0.45f, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("lateralOffsetMode"), -1, 1);
 
                 // Adjust to valid value
 
                 int userMin = element.FindPropertyRelative("minLane").intValue;
 
-                // TODO: outlanes should not overlap!
                 if (userMin >= 0)
                 {
                     int userMax = element.FindPropertyRelative("maxLane").intValue;
@@ -68,7 +70,10 @@ namespace TrafficNetwork
 
             GUILayout.EndVertical();
 
-
+            if (EditorGUI.EndChangeCheck())
+            {
+                
+            }
             serializedObject.ApplyModifiedProperties();
 
             base.OnInspectorGUI();
