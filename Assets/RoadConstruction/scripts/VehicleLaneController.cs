@@ -7,7 +7,7 @@ using MoreLinq;
 
 namespace TrafficParticipant
 {
-    public class VehicleLaneController : MonoBehaviour
+    public partial class VehicleLaneController : MonoBehaviour
     {
         VehicleLaneController directFollowing, directFollower;
 
@@ -16,17 +16,23 @@ namespace TrafficParticipant
         {
             set
             {
-                if (!value && _rightFollowing)
+                if (value != _rightFollowing && _rightFollowing != null && _rightFollowing._leftFollower == this)
                 {
                     _rightFollowing._leftFollower = null;
                 }
-                else
+
+                if (value)
                 {
-                    if (value)
+                    if (!value.isRightNeighborOf(this, out _) || !isLeftNeighborOf(value, out _))
                     {
-                        value._leftFollower = this;
+                        // fails validation
+                        _rightFollowing = null;
+                        return;
                     }
+
+                    value._leftFollower = this;
                 }
+                
                 _rightFollowing = value;
             }
             get
@@ -39,17 +45,21 @@ namespace TrafficParticipant
         {
             set
             {
-                if (!value && _leftFollowing)
+                if (value != _leftFollowing && _leftFollowing != null && _leftFollowing._rightFollower == this)
                 {
                     _leftFollowing._rightFollower = null;
                 }
-                else
+                if (value)
                 {
-                    if (value)
+                    if (!value.isLeftNeighborOf(this, out _) || !isRightNeighborOf(value, out _))
                     {
-                        value._rightFollower = this;
+                        _leftFollowing = null;
+                        return;
                     }
+
+                    value._rightFollower = this;
                 }
+                
                 _leftFollowing = value;
             }
             get
@@ -74,9 +84,12 @@ namespace TrafficParticipant
             }
         }
 
+        [HideInInspector]
         public Link linkOn;
+        [HideInInspector]
         public int laneOn;
         public float percentageTravelled;
+        [HideInInspector]
         public float speed;
 
         private void Start()
@@ -187,12 +200,27 @@ namespace TrafficParticipant
                     if (itravelledLinks + percentageTravelled * linkOn.curve.curveLength >
                         rightTravelledLinks + rightFollowing.percentageTravelled * rightFollowing.linkOn.curve.curveLength)
                     {
+                        if (rightFollower != null)
+                        {
+                            rightFollower.leftFollowing = null;
+                        }
                         rightFollowing.leftFollowing = this;
                         if (directFollower && directFollower.rightFollowing == null)
                         {
                             directFollower.rightFollowing = rightFollowing;
                         }
-                        rightFollowing = rightFollowing.directFollowing;
+
+                        if (rightFollowing.directFollowing &&
+                            (!directFollowing ||
+                            rightFollowing.directFollowing.isRightNeighborOf(directFollowing, out bool isBehind) && isBehind))
+                        {
+                            rightFollowing = rightFollowing.directFollowing;
+                        }
+                        else
+                        {
+                            rightFollowing = null;
+                        }
+
                     }
 
                 }
@@ -205,21 +233,86 @@ namespace TrafficParticipant
                     if (itravelledLinks + percentageTravelled * linkOn.curve.curveLength >
                         leftTravelledLinks + leftFollowing.percentageTravelled * leftFollowing.linkOn.curve.curveLength)
                     {
+                        if (leftFollower != null)
+                        {
+                            leftFollower.rightFollowing = null;
+                        }
                         leftFollowing.rightFollowing = this;
                         if (directFollower && directFollower.leftFollowing == null)
                         {
                             directFollower.leftFollowing = leftFollowing;
                         }
-                        leftFollowing = leftFollowing.directFollowing;
+                        if (leftFollowing.directFollowing &&
+                            (!directFollowing ||
+                            leftFollowing.directFollowing.isLeftNeighborOf(directFollowing, out bool isBehind) && isBehind))
+                        {
+                            leftFollowing = leftFollowing.directFollowing;
+                        }
+                        else
+                        {
+                            leftFollowing = null;
+                        }
                     }
 
                 }
 
                 return true;
             }
-
         }
 
+        
+
+        // Logistic: Candidate go to Left/Right Lane -> Validate it's same as the caller's
+        /* e.g.
+         *  A  |  /   /
+         *     | / B / 
+         *     |/   /
+         *          |
+         *     |    |
+         *        D |
+         *  C  |    |
+         *  A.isLeftNeighborOf(D) = True, false
+         *  C.isLeftNeighborOf(B) = False, _
+         *  D.isRightNeighborOf(A) = False, _
+         *  B.isRightNeighbirOf(C) = True, false
+         *  A.isLeftNeighborOf(B) = B.isRightNeighorOf(A) = False, _
+         *  C.isLeftNeighborOf(D) = D.isRightNeighorOf(C) = True, true
+         */
+
+        bool isLeftNeighborOf(VehicleLaneController rightCandiate, out bool isBehind) 
+        {
+            if (rightCandiate.laneOn == rightCandiate.linkOn.minLane)
+            {
+                isBehind = false;
+                return false;
+            }
+            float candiateProjectedLength = rightCandiate.linkOn.GetAncestorInfo(rightCandiate.laneOn - 1, out Node rightLeftOriginNode, out int rightLeftOriginLane);
+            float myLength = linkOn.GetAncestorInfo(laneOn, out Node myOriginNode, out int myOriginLane);
+            isBehind = myLength + linkOn.curve.curveLength * percentageTravelled < candiateProjectedLength + rightCandiate.linkOn.curve.curveLength * rightCandiate.percentageTravelled;
+            return rightLeftOriginNode == myOriginNode && myOriginLane == rightLeftOriginLane;
+        }
+
+        bool isRightNeighborOf(VehicleLaneController leftCandidate, out bool isBehind)
+        {
+            if (leftCandidate.laneOn == leftCandidate.linkOn.maxLane)
+            {
+                isBehind = false;
+                return false;
+            }
+            float candiateProjectedLength = leftCandidate.linkOn.GetAncestorInfo(leftCandidate.laneOn + 1, out Node leftRightOriginNode, out int leftRightOriginLane);
+            float myLength = linkOn.GetAncestorInfo(laneOn, out Node myOriginNode, out int myOriginLane);
+            isBehind = myLength + linkOn.curve.curveLength * percentageTravelled < candiateProjectedLength + leftCandidate.linkOn.curve.curveLength * leftCandidate.percentageTravelled;
+            return leftRightOriginNode == myOriginNode && myOriginLane == leftRightOriginLane;
+        }
+
+        /*
+        bool isBehindNeighbor(VehicleLaneController neighbor)
+        {
+            float neighborTravelled = neighbor.linkOn.GetAncestorInfo(laneOn, out _, out _) + neighbor.linkOn.curve.curveLength * neighbor.percentageTravelled;
+            float iTravelled = linkOn.GetAncestorInfo(laneOn, out _, out _) + linkOn.curve.curveLength * percentageTravelled;
+            return neighborTravelled > iTravelled;
+        }
+        */
 
         // Slow
         // Must be called at t = 0
@@ -266,16 +359,32 @@ namespace TrafficParticipant
         // By the time this function is called, directFollowing & directFollower must already be set
         private VehicleLaneController _GetFollowingForNewNeighborLane(bool right)
         {
-            
-            // Slow
             Link startLink = linkOn;
 
             Link search = linkOn;
             int searchLane = laneOn;
             int searchNeighborLane = right ? laneOn + 1: laneOn - 1;
-            int steps = 0;
-            while (search.vehicles.Count == 0 || search.vehicles.TrueForAll(vh => vh.laneOn != searchNeighborLane))
+            while (true)
             {
+                if (directFollowing != null && search == directFollowing.linkOn)
+                {
+                    var candidates = search.vehicles.Where(vh => vh.laneOn == searchNeighborLane && vh.percentageTravelled < directFollowing.percentageTravelled);
+                    if (candidates.ToList().Count > 0)
+                    {
+                        return candidates.MinBy(cand => cand.percentageTravelled);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                if (search.vehicles.Count > 0 && search.vehicles.Any(vh => vh.laneOn == searchNeighborLane))
+                {
+                    var neighborLaneGroup = search.vehicles.Where(vh => vh.laneOn == searchNeighborLane);
+                    return neighborLaneGroup.MinBy(vh => vh.percentageTravelled);
+                }
+
                 Link tmp = search;
                 if (!tmp.GetNextLink(searchLane, out tmp, out searchLane))
                 {
@@ -293,26 +402,104 @@ namespace TrafficParticipant
                 }
                 search = tmp;
 
-                if (directFollowing != null && search == directFollowing.linkOn)
-                {
-                    //Should not exceed directFollowing
-                    return null;
-                }
-                if (steps > 0 && search == startLink)
+                if (search == startLink)
                 {
                     // loop
                     return null;
                 }
-                steps++;
             }
+        }
 
-            var neighborLaneGroup = search.vehicles.Where(vh => vh.laneOn == searchNeighborLane);
-            if (neighborLaneGroup.ToList().Count == 0)
+        // searchNeighborLane must be aligned with searchLane during throughout the search
+        // If searchLane == searchNeighborLane then alignment is not taken into consideration
+        // Slow
+        private static VehicleLaneController _SearchFollowing(Link startLink, int searchLane, int searchNeighborLane, float percentageTravelled)
+        {
+            Link search = startLink;
+            var trivial = search.vehicles.Where(vh => vh.percentageTravelled > percentageTravelled && vh.laneOn == searchLane);
+            if (trivial.ToList().Count > 0)
             {
-                return null;
+                return trivial.MinBy(vh => vh.percentageTravelled);
             }
-            return neighborLaneGroup.MinBy(vh => vh.percentageTravelled);
-            
+            while (true)
+            {
+                Link tmp = search;
+                if (!tmp.GetNextLink(searchLane, out tmp, out searchLane))
+                {
+                    return null;
+                }
+                Link tmp_neighbor = search;
+                if (!tmp_neighbor.GetNextLink(searchNeighborLane, out tmp_neighbor, out searchNeighborLane))
+                {
+                    return null;
+                }
+                if (tmp != tmp_neighbor)
+                {
+                    // Neighbor lane diverts
+                    return null;
+                }
+                search = tmp;
+
+                if (search == startLink)
+                {
+                    // loop
+                    return null;
+                }
+
+                var candidates = search.vehicles.Where(vh => vh.laneOn == searchLane);
+                {
+                    if (candidates.ToList().Count > 0)
+                    {
+                        return candidates.MinBy(vh => vh.percentageTravelled);
+                    }
+                }
+            }
+        }
+
+        // searchNeighborLane must be aligned with searchLane during throughout the search
+        // If searchLane == searchNeighborLane then alignment is not taken into consideration
+        // Slow
+        private static VehicleLaneController _SearchFollower(Link startLink, int searchLane, int searchNeighborLane, float percentageTravelled)
+        {
+            Link search = startLink;
+            var trivial = search.vehicles.Where(vh => vh.percentageTravelled < percentageTravelled && vh.laneOn == searchLane);
+            if (trivial.ToList().Count > 0)
+            {
+                return trivial.MaxBy(vh => vh.percentageTravelled);
+            }
+            while (true)
+            {
+                Link tmp = search;
+                if (!tmp.GetPreviousLink(searchLane, out tmp, out searchLane))
+                {
+                    return null;
+                }
+                Link tmp_neighbor = search;
+                if (!tmp_neighbor.GetPreviousLink(searchNeighborLane, out tmp_neighbor, out searchNeighborLane))
+                {
+                    return null;
+                }
+                if (tmp != tmp_neighbor)
+                {
+                    // Neighbor lane diverts
+                    return null;
+                }
+                search = tmp;
+
+                if (search == startLink)
+                {
+                    // loop
+                    return null;
+                }
+
+                var candidates = search.vehicles.Where(vh => vh.laneOn == searchLane);
+                {
+                    if (candidates.ToList().Count > 0)
+                    {
+                        return candidates.MaxBy(vh => vh.percentageTravelled);
+                    }
+                }
+            }
         }
 
         void OnDrawGizmosSelected(){

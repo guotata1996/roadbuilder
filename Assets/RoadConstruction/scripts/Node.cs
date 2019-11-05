@@ -75,8 +75,26 @@ namespace TrafficNetwork
             }
         }
 
-        public IEnumerator GetLinksAlongPath(int lane){
-            yield return 3;
+        public bool GetPreviousLink(int lane, out Link prevLink, out int prevLane)
+        {
+            if (lane < minLane || lane > maxLane || targetNode == null)
+            {
+                Debug.LogError("Link Param Error!");
+                prevLink = null;
+                prevLane = 0;
+                return false;
+            }
+            prevLink = sourceNode.inLinks.Find(lnk => lnk.targetMinLane <= lane && lane <= lnk.maxLane - lnk.minLane + lnk.targetMinLane);
+            if (prevLink == null)
+            {
+                prevLane = 0;
+                return false;
+            }
+            else
+            {
+                prevLane = lane - prevLink.targetMinLane + prevLink.minLane;
+                return true;
+            }
         }
 
     }
@@ -91,10 +109,13 @@ namespace TrafficNetwork
         [HideInInspector]
         public List<Link> outLinks = new List<Link>();
 
+        // Generated before runtime
         [HideInInspector]
         public List<float> lengthSinceOrigin;
         [HideInInspector]
         public List<KeyValuePair<Node, int>> ancestorNodeAndLane;
+        [HideInInspector]
+        public List<Link> inLinks;
 
         public Vector3 direction
         {
@@ -211,6 +232,7 @@ namespace TrafficNetwork
                     node.lengthSinceOrigin.Add(0);
                     node.ancestorNodeAndLane.Add(new KeyValuePair<Node, int>(node, i));
                 }
+                node.inLinks = new List<Link>();
             }
 
             foreach(var n in allNodes.ToList()){
@@ -224,6 +246,7 @@ namespace TrafficNetwork
                             link.targetNode.lengthSinceOrigin[nextLane] = Mathf.Infinity;
                         }
                     }
+                    link.targetNode.inLinks.Add(link);
                 });
             }
             
