@@ -18,6 +18,11 @@ namespace TrafficNetwork
         // Used for editor
         public int targetMinLane;
 
+        public override string ToString()
+        {
+            return "from " + sourceNode + " to " + targetNode + " [" + minLane + "," + maxLane + "]";
+        }
+
         public float GetLateralOffsetCenter(int lane)
         {
             switch (lateralOffsetMode)
@@ -37,7 +42,6 @@ namespace TrafficNetwork
                     }
                     return 0f;
             }
-            
         }
 
         // If node position invalid then curve is null
@@ -146,7 +150,7 @@ namespace TrafficNetwork
         [HideInInspector]
         public List<KeyValuePair<Node, int>> ancestorNodeAndLane;
         [HideInInspector]
-        public List<Link> inLinks = new List<Link>();
+        public List<Link> inLinks;
 
         public Vector3 direction
         {
@@ -208,7 +212,6 @@ namespace TrafficNetwork
             {
                 link.curve = Bezier.Create(outRay, link.targetNode.outRay);
             });
-            inLinks = inLinks.Where(lnk => lnk.sourceNode != null).ToList();
         }
 
         // Display out conns for this partucular node
@@ -285,6 +288,7 @@ namespace TrafficNetwork
                     node.lengthSinceOrigin.Add(0);
                     node.ancestorNodeAndLane.Add(new KeyValuePair<Node, int>(node, i));
                 }
+                node.inLinks = new List<Link>();
             }
 
             foreach(var n in allNodes.ToList()){
@@ -298,6 +302,7 @@ namespace TrafficNetwork
                             link.targetNode.lengthSinceOrigin[nextLane] = Mathf.Infinity;
                         }
                     }
+                    link.targetNode.inLinks.Add(link);
                 });
             }
             

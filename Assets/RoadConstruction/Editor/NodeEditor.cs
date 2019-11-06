@@ -69,12 +69,14 @@ namespace TrafficNetwork
             }
 
             GUILayout.EndVertical();
+            serializedObject.ApplyModifiedProperties();
 
             if (EditorGUI.EndChangeCheck())
             {
-                
+                Node.LongitudinalInfoInited = false;
+                Node.InitLongitudinalInfo();
             }
-            serializedObject.ApplyModifiedProperties();
+            
 
             base.OnInspectorGUI();
 

@@ -48,7 +48,6 @@ namespace TrafficNetwork
                         {
                             Link newLink = new Link(start, selectedNode);
                             start.outLinks.Add(newLink);
-                            selectedNode.inLinks.Add(newLink);
                         }
                         start = null;
                     }

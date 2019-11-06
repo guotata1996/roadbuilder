@@ -1,13 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using TrafficNetwork;
-using System.Linq;
-using MoreLinq;
+﻿using UnityEngine;
 
 namespace TrafficParticipant
 {
-	public partial class VehicleLaneController : MonoBehaviour
+    [RequireComponent(typeof(ContinuousLaneController))]
+    public partial class VehicleLaneController : MonoBehaviour
 	{
 		public void RightSwitchLane()
 		{
@@ -25,7 +21,7 @@ namespace TrafficParticipant
 				else
 				{
 					if (leftFollower.directFollowing == null ||
-						directFollowing.isRightNeighborOf(leftFollower.directFollowing, out bool isBehind) && isBehind)
+						directFollowing.isRightNeighborOf(leftFollower.directFollowing, out bool isBehind, out _) && isBehind)
 					{
 						leftFollower.rightFollowing = directFollowing;
 					}
@@ -45,7 +41,7 @@ namespace TrafficParticipant
 			laneOn++;
 			if (rightFollowing && directFollowing)
 			{
-				if (directFollowing.isLeftNeighborOf(rightFollowing, out bool isBehind) && isBehind)
+				if (directFollowing.isLeftNeighborOf(rightFollowing, out bool isBehind, out _) && isBehind)
 				{
 					leftFollowing = directFollowing;
 				}
@@ -132,7 +128,7 @@ namespace TrafficParticipant
 			{
 				if (directFollower.rightFollowing)
 				{
-					if (directFollower.rightFollowing.isRightNeighborOf(this, out bool behind))
+					if (directFollower.rightFollowing.isRightNeighborOf(this, out bool behind, out _))
 					{
 						if (!behind)
 						{
@@ -142,7 +138,7 @@ namespace TrafficParticipant
 						else
 						{
 							var backMost = directFollower.rightFollowing;
-							while (backMost.directFollowing && backMost.directFollowing.isRightNeighborOf(this, out bool behind2) && behind2)
+							while (backMost.directFollowing && backMost.directFollowing.isRightNeighborOf(this, out bool behind2, out _) && behind2)
 							{
 								backMost = backMost.directFollowing;
 							}
@@ -161,7 +157,7 @@ namespace TrafficParticipant
 				else
 				{
 					var candidate = _SearchFollower(linkOn, laneOn + 1, laneOn, percentageTravelled);
-					if (candidate && !candidate.isRightNeighborOf(directFollower, out _))
+					if (candidate && !candidate.isRightNeighborOf(directFollower, out _, out _))
 					{
 						candidate.leftFollowing = this;
 					}
@@ -184,7 +180,7 @@ namespace TrafficParticipant
 			{
 				if (directFollowing.rightFollower)
 				{
-					if (directFollowing.rightFollower.isRightNeighborOf(this, out bool behind))
+					if (directFollowing.rightFollower.isRightNeighborOf(this, out bool behind, out _))
 					{
 						if (behind)
 						{
@@ -194,7 +190,7 @@ namespace TrafficParticipant
 						else
 						{
 							var frontMost = directFollowing.rightFollower;
-							while (frontMost.directFollower && frontMost.directFollower.isRightNeighborOf(this, out bool behind2) && !behind2)
+							while (frontMost.directFollower && frontMost.directFollower.isRightNeighborOf(this, out bool behind2, out _) && !behind2)
 							{
 								frontMost = frontMost.directFollower;
 							}
@@ -209,7 +205,7 @@ namespace TrafficParticipant
 				else
 				{
 					var candidate = _SearchFollowing(linkOn, laneOn + 1, laneOn, percentageTravelled);
-					if (candidate && candidate.isRightNeighborOf(directFollowing, out _))
+					if (candidate && candidate.isRightNeighborOf(directFollowing, out _, out _))
 					{
 						rightFollowing = null;
 					}
@@ -243,7 +239,7 @@ namespace TrafficParticipant
                 else
                 {
                     if (rightFollower.directFollowing == null ||
-                            directFollowing.isLeftNeighborOf(rightFollower.directFollowing, out bool isBehind) && isBehind)
+                            directFollowing.isLeftNeighborOf(rightFollower.directFollowing, out bool isBehind, out _) && isBehind)
                     {
                         rightFollower.leftFollowing = directFollowing;
                     }
@@ -264,7 +260,7 @@ namespace TrafficParticipant
 
             if (leftFollowing && directFollowing)
             {
-                if (directFollowing.isRightNeighborOf(leftFollowing, out bool isBehind) && isBehind)
+                if (directFollowing.isRightNeighborOf(leftFollowing, out bool isBehind, out _) && isBehind)
                 {
                     rightFollowing = directFollowing;
                 }
@@ -351,7 +347,7 @@ namespace TrafficParticipant
             {
                 if (directFollower.leftFollowing)
                 {
-                    if (directFollower.leftFollowing.isLeftNeighborOf(this, out bool behind))
+                    if (directFollower.leftFollowing.isLeftNeighborOf(this, out bool behind, out _))
                     {
                         if (!behind)
                         {
@@ -361,7 +357,7 @@ namespace TrafficParticipant
                         else
                         {
                             var backMost = directFollower.leftFollowing;
-                            while (backMost.directFollowing && backMost.directFollowing.isLeftNeighborOf(this, out bool behind2) && behind2)
+                            while (backMost.directFollowing && backMost.directFollowing.isLeftNeighborOf(this, out bool behind2, out _) && behind2)
                             {
                                 backMost = backMost.directFollowing;
                             }
@@ -380,7 +376,7 @@ namespace TrafficParticipant
                 else
                 {
                     var candidate = _SearchFollower(linkOn, laneOn - 1, laneOn, percentageTravelled);
-                    if (candidate && !candidate.isLeftNeighborOf(directFollower, out _))
+                    if (candidate && !candidate.isLeftNeighborOf(directFollower, out _, out _))
                     {
                         candidate.rightFollowing = this;
                     }
@@ -403,7 +399,7 @@ namespace TrafficParticipant
             {
                 if (directFollowing.leftFollower)
                 {
-                    if (directFollowing.leftFollower.isLeftNeighborOf(this, out bool behind))
+                    if (directFollowing.leftFollower.isLeftNeighborOf(this, out bool behind, out _))
                     {
                         if (behind)
                         {
@@ -413,7 +409,7 @@ namespace TrafficParticipant
                         else
                         {
                             var frontMost = directFollowing.leftFollower;
-                            while (frontMost.directFollower && frontMost.directFollower.isLeftNeighborOf(this, out bool behind2) && !behind2)
+                            while (frontMost.directFollower && frontMost.directFollower.isLeftNeighborOf(this, out bool behind2, out _) && !behind2)
                             {
                                 frontMost = frontMost.directFollower;
                             }
@@ -428,7 +424,7 @@ namespace TrafficParticipant
                 else
                 {
                     var candidate = _SearchFollowing(linkOn, laneOn - 1, laneOn, percentageTravelled);
-                    if (candidate && candidate.isLeftNeighborOf(directFollowing, out _))
+                    if (candidate && candidate.isLeftNeighborOf(directFollowing, out _, out _))
                     {
                         leftFollowing = null;
                     }

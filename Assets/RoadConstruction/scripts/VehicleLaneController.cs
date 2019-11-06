@@ -9,10 +9,10 @@ namespace TrafficParticipant
 {
     public partial class VehicleLaneController : MonoBehaviour
     {
-        VehicleLaneController directFollowing, directFollower;
+        public VehicleLaneController directFollowing, directFollower;
 
         VehicleLaneController _rightFollowing, _leftFollowing, _rightFollower, _leftFollower;
-        VehicleLaneController rightFollowing
+        public VehicleLaneController rightFollowing
         {
             set
             {
@@ -23,7 +23,7 @@ namespace TrafficParticipant
 
                 if (value)
                 {
-                    if (!value.isRightNeighborOf(this, out _) || !isLeftNeighborOf(value, out _))
+                    if (!value.isRightNeighborOf(this, out _, out _) || !isLeftNeighborOf(value, out _, out _))
                     {
                         // fails validation
                         _rightFollowing = null;
@@ -41,7 +41,7 @@ namespace TrafficParticipant
             }
         }
 
-        VehicleLaneController leftFollowing
+        public VehicleLaneController leftFollowing
         {
             set
             {
@@ -51,7 +51,7 @@ namespace TrafficParticipant
                 }
                 if (value)
                 {
-                    if (!value.isLeftNeighborOf(this, out _) || !isRightNeighborOf(value, out _))
+                    if (!value.isLeftNeighborOf(this, out _, out _) || !isRightNeighborOf(value, out _, out _))
                     {
                         _leftFollowing = null;
                         return;
@@ -68,7 +68,7 @@ namespace TrafficParticipant
             }
         }
 
-        VehicleLaneController rightFollower
+        public VehicleLaneController rightFollower
         {
             get
             {
@@ -76,7 +76,7 @@ namespace TrafficParticipant
             }
         }
 
-        VehicleLaneController leftFollower
+        public VehicleLaneController leftFollower
         {
             get
             {
@@ -212,7 +212,7 @@ namespace TrafficParticipant
 
                         if (rightFollowing.directFollowing &&
                             (!directFollowing ||
-                            rightFollowing.directFollowing.isRightNeighborOf(directFollowing, out bool isBehind) && isBehind))
+                            rightFollowing.directFollowing.isRightNeighborOf(directFollowing, out bool isBehind, out _) && isBehind))
                         {
                             rightFollowing = rightFollowing.directFollowing;
                         }
@@ -244,7 +244,7 @@ namespace TrafficParticipant
                         }
                         if (leftFollowing.directFollowing &&
                             (!directFollowing ||
-                            leftFollowing.directFollowing.isLeftNeighborOf(directFollowing, out bool isBehind) && isBehind))
+                            leftFollowing.directFollowing.isLeftNeighborOf(directFollowing, out bool isBehind, out _) && isBehind))
                         {
                             leftFollowing = leftFollowing.directFollowing;
                         }
@@ -260,7 +260,6 @@ namespace TrafficParticipant
             }
         }
 
-        
 
         // Logistic: Candidate go to Left/Right Lane -> Validate it's same as the caller's
         /* e.g.
@@ -279,40 +278,41 @@ namespace TrafficParticipant
          *  C.isLeftNeighborOf(D) = D.isRightNeighorOf(C) = True, true
          */
 
-        bool isLeftNeighborOf(VehicleLaneController rightCandiate, out bool isBehind) 
+        public bool isLeftNeighborOf(VehicleLaneController rightCandiate, out bool isBehind, out float distanceBehind) 
         {
             if (rightCandiate.laneOn == rightCandiate.linkOn.minLane)
             {
                 isBehind = false;
+                distanceBehind = 0;
                 return false;
             }
             float candiateProjectedLength = rightCandiate.linkOn.GetAncestorInfo(rightCandiate.laneOn - 1, out Node rightLeftOriginNode, out int rightLeftOriginLane);
             float myLength = linkOn.GetAncestorInfo(laneOn, out Node myOriginNode, out int myOriginLane);
-            isBehind = myLength + linkOn.curve.curveLength * percentageTravelled < candiateProjectedLength + rightCandiate.linkOn.curve.curveLength * rightCandiate.percentageTravelled;
+            distanceBehind = candiateProjectedLength + rightCandiate.linkOn.curve.curveLength * rightCandiate.percentageTravelled - (myLength + linkOn.curve.curveLength * percentageTravelled);
+            isBehind = distanceBehind > 0;
             return rightLeftOriginNode == myOriginNode && myOriginLane == rightLeftOriginLane;
         }
 
-        bool isRightNeighborOf(VehicleLaneController leftCandidate, out bool isBehind)
+        public bool isRightNeighborOf(VehicleLaneController leftCandidate, out bool isBehind, out float distanceBehind)
         {
             if (leftCandidate.laneOn == leftCandidate.linkOn.maxLane)
             {
                 isBehind = false;
+                distanceBehind = 0;
                 return false;
             }
             float candiateProjectedLength = leftCandidate.linkOn.GetAncestorInfo(leftCandidate.laneOn + 1, out Node leftRightOriginNode, out int leftRightOriginLane);
             float myLength = linkOn.GetAncestorInfo(laneOn, out Node myOriginNode, out int myOriginLane);
-            isBehind = myLength + linkOn.curve.curveLength * percentageTravelled < candiateProjectedLength + leftCandidate.linkOn.curve.curveLength * leftCandidate.percentageTravelled;
+            distanceBehind = candiateProjectedLength + leftCandidate.linkOn.curve.curveLength * leftCandidate.percentageTravelled - (myLength + linkOn.curve.curveLength * percentageTravelled);
+            isBehind = distanceBehind > 0;
             return leftRightOriginNode == myOriginNode && myOriginLane == leftRightOriginLane;
         }
 
-        /*
-        bool isBehindNeighbor(VehicleLaneController neighbor)
+        public float GetDistanceDirectlyBehind(VehicleLaneController direct)
         {
-            float neighborTravelled = neighbor.linkOn.GetAncestorInfo(laneOn, out _, out _) + neighbor.linkOn.curve.curveLength * neighbor.percentageTravelled;
-            float iTravelled = linkOn.GetAncestorInfo(laneOn, out _, out _) + linkOn.curve.curveLength * percentageTravelled;
-            return neighborTravelled > iTravelled;
+            return direct.linkOn.GetAncestorInfo(direct.laneOn, out _, out _) + direct.linkOn.curve.curveLength * direct.percentageTravelled -
+                (linkOn.GetAncestorInfo(laneOn, out _, out _) + linkOn.curve.curveLength * percentageTravelled);
         }
-        */
 
         // Slow
         // Must be called at t = 0
@@ -502,34 +502,21 @@ namespace TrafficParticipant
             }
         }
 
-        void OnDrawGizmosSelected(){
+        void OnDrawGizmos(){
             if (directFollowing != null){
-                Gizmos.color = Color.black * new Vector4(1,1,1,0.5f);
-                Gizmos.DrawSphere(directFollowing.transform.position, 2.5f);
-            }
-            if (directFollower != null){
-                Gizmos.color = Color.white * new Vector4(1,1,1,0.5f);
-                Gizmos.DrawSphere(directFollower.transform.position, 2.5f);
+                Gizmos.color = Color.blue;
+                Gizmos.DrawLine(transform.position, directFollowing.transform.position);
             }
 
             if (rightFollowing != null){
-                Gizmos.color = Color.blue * new Vector4(1,1,1,0.5f);
-                Gizmos.DrawCube(rightFollowing.transform.position, Vector3.one * 5f);
-            }
-            if (rightFollower != null){
-                Gizmos.color = Color.green * new Vector4(1,1,1,0.5f);
-                Gizmos.DrawCube(rightFollower.transform.position, Vector3.one * 5f);
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(transform.position, rightFollowing.transform.position);
             }
 
             if (leftFollowing != null)
             {
-                Gizmos.color = Color.red * new Vector4(1, 1, 1, 0.5f);
-                Gizmos.DrawCube(leftFollowing.transform.position, Vector3.one * 5f);
-            }
-            if (leftFollower != null)
-            {
-                Gizmos.color = Color.yellow * new Vector4(1, 1, 1, 0.5f);
-                Gizmos.DrawCube(leftFollower.transform.position, Vector3.one * 5f);
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(transform.position, leftFollowing.transform.position);
             }
         }
     }

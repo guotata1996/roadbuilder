@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4247311766039875360}
   - component: {fileID: 8869829853725395408}
+  - component: {fileID: -1786689844214376526}
   m_Layer: 0
   m_Name: Vehicle
   m_TagString: Untagged
@@ -45,15 +46,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   linkOn:
+    sourceNode: {fileID: 0}
     targetNode: {fileID: 0}
-    originNode: {fileID: 0}
     minLane: 0
     maxLane: 0
+    lateralOffsetMode: 0
     targetMinLane: 0
+    curve:
+      curveLength: 0
+      paramToRealLength: []
     vehicles: []
   laneOn: 0
   percentageTravelled: 0
   speed: 0
+--- !u!114 &-1786689844214376526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8621518693406695414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e1488c22a2c442a7848e3de3f61b116, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &8645995741854907767
 PrefabInstance:
   m_ObjectHideFlags: 0
