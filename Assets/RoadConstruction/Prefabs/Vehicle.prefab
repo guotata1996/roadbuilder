@@ -45,6 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d82e386927394f05b1b560a2bec7a3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  directFollowing: {fileID: 0}
+  directFollower: {fileID: 0}
   linkOn:
     sourceNode: {fileID: 0}
     targetNode: {fileID: 0}
@@ -125,6 +127,18 @@ PrefabInstance:
     - target: {fileID: 4168634090699424, guid: 815176c3adeb40448ba2fc0d71d454a0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4168634090699424, guid: 815176c3adeb40448ba2fc0d71d454a0, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4168634090699424, guid: 815176c3adeb40448ba2fc0d71d454a0, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4168634090699424, guid: 815176c3adeb40448ba2fc0d71d454a0, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 54959213129792114, guid: 815176c3adeb40448ba2fc0d71d454a0,
         type: 3}

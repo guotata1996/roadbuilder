@@ -47,7 +47,7 @@ namespace TrafficNetwork
         // If node position invalid then curve is null
         public Bezier curve;
 
-        public Vector3 GetPosition(float percentage, int lane, float vehicleOffset = 0)
+        public Vector3 GetPosition(float percentage, int lane, float vehicleOffsetVSCenter = 0)
         {
             float departureLaneRightOffset = lane - ((float)sourceNode.laneCount - 1) / 2 + GetLateralOffsetCenter(lane);
 
@@ -56,7 +56,7 @@ namespace TrafficNetwork
                 targetMinLane + (lane - minLane) - ((float)targetNode.laneCount - 1) / 2 + GetLateralOffsetCenter(lane);
 
             return curve.GetPoint(percentage) +
-                        curve.GetRight(percentage) * (Mathf.Lerp(departureLaneRightOffset, arrivalLaneRightOffset, percentage) + vehicleOffset) * Node.laneWidth;
+                        curve.GetRight(percentage) * (Mathf.Lerp(departureLaneRightOffset, arrivalLaneRightOffset, percentage) + vehicleOffsetVSCenter) * Node.laneWidth;
         }
 
         public float GetAncestorInfo(int lane, out Node ancestorNode, out int ancestorLane)
@@ -151,6 +151,10 @@ namespace TrafficNetwork
         public List<KeyValuePair<Node, int>> ancestorNodeAndLane;
         [HideInInspector]
         public List<Link> inLinks;
+        [HideInInspector]
+        // Used for vehicle
+        // TODO: search for longer limit
+        public float[] vanishingLane;
 
         public Vector3 direction
         {
@@ -305,7 +309,29 @@ namespace TrafficNetwork
                     link.targetNode.inLinks.Add(link);
                 });
             }
-            
+
+            // InLinks initiated
+            // Now initiate vanishing / incoming lane
+            foreach(var n in allNodes.ToList())
+            {
+                Node node = n as Node;
+                node.vanishingLane = new float[node.laneCount];
+                node.outLinks.ForEach(link =>
+                {
+                    for (int i = link.minLane; i <= link.maxLane; ++i)
+                    {
+                        if (link.GetNextLink(i, out _, out _) || link.targetNode.GetComponentInChildren<VehicleRecycler>())
+                        {
+                            node.vanishingLane[i] = float.MaxValue;
+                        }
+                        else
+                        {
+                            node.vanishingLane[i] = link.curve.curveLength;
+                        }
+                    }
+                });
+            }
+
             foreach (var n in allNodes.ToList()){
                 Node node = n as Node;
                 foreach(Link link in node.outLinks){

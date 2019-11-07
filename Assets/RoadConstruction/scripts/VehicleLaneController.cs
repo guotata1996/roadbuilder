@@ -121,14 +121,6 @@ namespace TrafficParticipant
             percentageTravelled = 0;
         }
 
-        private void Update()
-        {
-            if (Step(speed * Time.deltaTime)){
-                transform.position = linkOn.GetPosition(percentageTravelled, laneOn);
-                transform.rotation = Quaternion.LookRotation(linkOn.curve.GetForward(percentageTravelled));
-            }
-        }
-
         // distance is real
         public bool Step(float distance)
         {
@@ -193,9 +185,7 @@ namespace TrafficParticipant
 
                 if (rightFollowing)
                 {
-                    Debug.Assert(rightFollowing.laneOn == laneOn + 1);
-
-                    float rightTravelledLinks = rightFollowing.linkOn.GetAncestorInfo(laneOn, out _, out _);
+                    float rightTravelledLinks = rightFollowing.linkOn.GetAncestorInfo(rightFollowing.laneOn - 1, out _, out _);
 
                     if (itravelledLinks + percentageTravelled * linkOn.curve.curveLength >
                         rightTravelledLinks + rightFollowing.percentageTravelled * rightFollowing.linkOn.curve.curveLength)
@@ -226,9 +216,7 @@ namespace TrafficParticipant
                 }
                 if (leftFollowing)
                 {
-                    Debug.Assert(leftFollowing.laneOn == laneOn - 1);
-
-                    float leftTravelledLinks = leftFollowing.linkOn.GetAncestorInfo(laneOn, out _, out _);
+                    float leftTravelledLinks = leftFollowing.linkOn.GetAncestorInfo(leftFollowing.laneOn + 1, out _, out _);
 
                     if (itravelledLinks + percentageTravelled * linkOn.curve.curveLength >
                         leftTravelledLinks + leftFollowing.percentageTravelled * leftFollowing.linkOn.curve.curveLength)
@@ -502,7 +490,7 @@ namespace TrafficParticipant
             }
         }
 
-        void OnDrawGizmos(){
+        void OnDrawGizmosSelected(){
             if (directFollowing != null){
                 Gizmos.color = Color.blue;
                 Gizmos.DrawLine(transform.position, directFollowing.transform.position);

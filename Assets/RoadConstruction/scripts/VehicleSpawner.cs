@@ -7,13 +7,17 @@ using TrafficNetwork;
 public class VehicleSpawner : MonoBehaviour
 {
     public VehicleLaneController spawnPrefab;
+
     public Node targetNode;
 
     public float interval = 5;
 
     public bool clickToSpawn;
-    public int lane;
 
+    private void Awake()
+    {
+        targetNode = transform.parent.GetComponent<Node>();
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -32,8 +36,10 @@ public class VehicleSpawner : MonoBehaviour
     void Spawn()
     {
         var controller = Instantiate(spawnPrefab.gameObject, GameObject.Find("Vehicles").transform).GetComponent<VehicleLaneController>();
-        controller.linkOn = targetNode.outLinks.Find(lnk => lnk.minLane <= lane && lane <= lnk.maxLane);
-        controller.laneOn = lane;
+        
+        controller.laneOn = Random.Range(0, targetNode.laneCount);
+        controller.linkOn = targetNode.outLinks.Find(lnk => lnk.minLane <= controller.laneOn && controller.laneOn <= lnk.maxLane);
+        controller.gameObject.transform.localScale = Vector3.zero;
     }
 
 
