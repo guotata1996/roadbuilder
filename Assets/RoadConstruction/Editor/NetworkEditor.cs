@@ -52,29 +52,15 @@ namespace TrafficNetwork
                         start = null;
                     }
                 }
-                
-
-
-                /*
-                foreach (Node n in FindObjectsOfType<Node>())
+                if (GUILayout.Button("New Node"))
                 {
-                    if (n.outLinks != null)
-                    {
-                        foreach (Link l in n.outLinks)
-                        {
-                            Vector3 middle = 0.5f * (n.transform.position + l.targetNode.transform.position);
-                            Debug.DrawLine(n.transform.position, middle, Color.white);
-                            Debug.DrawLine(middle, l.targetNode.transform.position, Color.red);
-                        }
-                    }
-
+                    GameObject newNode = Instantiate(selected, selected.transform.position + selected.transform.forward * 30, selected.transform.rotation, GameObject.Find("Nodes").transform);
+                    newNode.GetComponent<Node>().outLinks.Clear();
+                    newNode.GetComponent<Node>().laneCount = selectedNode.laneCount;
                 }
-                */
+
             }
 
-            if (GUILayout.Button("Generate Longitudinal Info")){
-                Node.LongitudinalInfoInited = false;
-            }
         }
 
 

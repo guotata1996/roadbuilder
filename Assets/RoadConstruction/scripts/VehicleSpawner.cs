@@ -6,7 +6,7 @@ using TrafficNetwork;
 
 public class VehicleSpawner : MonoBehaviour
 {
-    public VehicleLaneController spawnPrefab;
+    public VehicleLaneController[] spawnPrefabs;
 
     public Node targetNode;
 
@@ -35,7 +35,8 @@ public class VehicleSpawner : MonoBehaviour
 
     void Spawn()
     {
-        var controller = Instantiate(spawnPrefab.gameObject, GameObject.Find("Vehicles").transform).GetComponent<VehicleLaneController>();
+        int type = Random.Range(0, spawnPrefabs.Length);
+        var controller = Instantiate(spawnPrefabs[type].gameObject, GameObject.Find("Vehicles").transform).GetComponent<VehicleLaneController>();
         
         controller.laneOn = Random.Range(0, targetNode.laneCount);
         controller.linkOn = targetNode.outLinks.Find(lnk => lnk.minLane <= controller.laneOn && controller.laneOn <= lnk.maxLane);

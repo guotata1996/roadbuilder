@@ -37,7 +37,7 @@ public class Math3d
     //The percentage is in range 0 to 1, which starts at the second control point and ends at the second last control point. 
     //The array cPoints should contain all control points. The minimum amount of control points should be 4. 
     //Source: https://forum.unity.com/threads/waypoints-and-constant-variable-speed-problems.32954/#post-213942
-    public static Vector3 GetPointOnSpline(float percentage, Vector3[] cPoints)
+    public static Vector2 GetPointOnSpline(float percentage, Vector2[] cPoints)
     {
 
         //Minimum size is 4
@@ -46,21 +46,21 @@ public class Math3d
 
             //Convert the input range (0 to 1) to range (0 to numSections)
             int numSections = cPoints.Length - 3;
-            int curPoint = Mathf.Min(Mathf.FloorToInt(percentage * (float)numSections), numSections - 1);
+            int curPoint = Mathf.Clamp(Mathf.FloorToInt(percentage * (float)numSections), 0, numSections - 1);
             float t = percentage * (float)numSections - (float)curPoint;
 
             //Get the 4 control points around the location to be sampled.
-            Vector3 p0 = cPoints[curPoint];
-            Vector3 p1 = cPoints[curPoint + 1];
-            Vector3 p2 = cPoints[curPoint + 2];
-            Vector3 p3 = cPoints[curPoint + 3];
+            Vector2 p0 = cPoints[curPoint];
+            Vector2 p1 = cPoints[curPoint + 1];
+            Vector2 p2 = cPoints[curPoint + 2];
+            Vector2 p3 = cPoints[curPoint + 3];
 
             //The Catmull-Rom spline can be written as:
             // 0.5 * (2*P1 + (-P0 + P2) * t + (2*P0 - 5*P1 + 4*P2 - P3) * t^2 + (-P0 + 3*P1 - 3*P2 + P3) * t^3)
             //Variables P0 to P3 are the control points.
             //Variable t is the position on the spline, with a range of 0 to numSections.
             //C# way of writing the function. Note that f means float (to force precision).
-            Vector3 result = .5f * (2f * p1 + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * (t * t) + (-p0 + 3f * p1 - 3f * p2 + p3) * (t * t * t));
+            Vector2 result = .5f * (2f * p1 + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * (t * t) + (-p0 + 3f * p1 - 3f * p2 + p3) * (t * t * t));
 
             return result;
         }
@@ -74,7 +74,7 @@ public class Math3d
             }
             else
             {
-                return Vector3.Lerp(cPoints[0], cPoints[1], percentage);
+                return Vector2.Lerp(cPoints[0], cPoints[1], percentage);
             }
         }
     }

@@ -156,19 +156,11 @@ namespace TrafficNetwork
         // TODO: search for longer limit
         public float[] vanishingLane;
 
-        public Vector3 direction
-        {
-            get
-            {
-                return Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
-            }
-        }
-
         public Ray outRay
         {
             get
             {
-                return new Ray(transform.position, direction);
+                return new Ray(transform.position, transform.forward);
             }
         }
 
@@ -264,7 +256,7 @@ namespace TrafficNetwork
                         Node n;
                         int l;
                         float dist = link.GetAncestorInfo(i, out n, out l);
-                        Handles.Label(link.GetPosition(0, i), dist.ToString() + "\n" + n.name + " " + l);
+                        //Handles.Label(link.GetPosition(0, i), dist.ToString() + "\n" + n.name + " " + l);
                     }
                 }
             }

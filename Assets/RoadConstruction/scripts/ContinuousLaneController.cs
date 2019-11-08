@@ -62,7 +62,7 @@ namespace TrafficParticipant
             {
                 // Update visual
                 transform.position = discreteController.linkOn.GetPosition(percentageTravelled, discreteController.laneOn, laneOffset);
-                transform.rotation = Quaternion.AngleAxis(Mathf.Atan2(lateralSpeed, speed) * Mathf.Rad2Deg, Vector3.up) *
+                transform.rotation = Quaternion.AngleAxis(Mathf.Atan2(lateralSpeed, speed) * Mathf.Rad2Deg, transform.up) *
                     Quaternion.LookRotation(discreteController.linkOn.curve.GetForward(percentageTravelled));
 
                 laneChangeCD -= Time.deltaTime;
@@ -75,7 +75,7 @@ namespace TrafficParticipant
                 {
                     if (laneChangingMove != 0)
                     {
-                        marginedSpaceAhead = freeSpaceAhead;
+                        marginedSpaceAhead = Mathf.Max(freeSpaceAhead - 4f, 0f);
                     }
                     else
                     {
@@ -225,10 +225,12 @@ namespace TrafficParticipant
                     return false;
                 }
 
-                float rightBack = float.MaxValue;
+                
                 if (discreteController.rightFollower)
                 {
-                    discreteController.rightFollower.isRightNeighborOf(discreteController, out _, out rightBack);
+
+                    discreteController.rightFollower.isRightNeighborOf(discreteController, out _, out float rightBack);
+                    return 2 * maxAcceleration * rightBack > Mathf.Pow(discreteController.rightFollower.speed, 2);
                 }
                 else
                 {
@@ -236,13 +238,13 @@ namespace TrafficParticipant
                     discreteController.linkOn.GetPreviousLink(discreteController.laneOn + 1, out Link rightPrevLink, out _);
                     if (myPrevLink != rightPrevLink)
                     {
-                        rightBack = Mathf.Min(rightBack,
-                            discreteController.linkOn.curve.curveLength * discreteController.percentageTravelled);
+                        return discreteController.linkOn.curve.curveLength * discreteController.percentageTravelled > 3f;
+                    }
+                    else
+                    {
+                        return true;
                     }
                 }
-
-                // Simple Judgement
-                return rightBack > 3f;
             }
         }
 
@@ -287,10 +289,10 @@ namespace TrafficParticipant
                     return false;
                 }
 
-                float leftBack = float.MaxValue;
                 if (discreteController.leftFollower)
                 {
-                    discreteController.leftFollower.isLeftNeighborOf(discreteController, out _, out leftBack);
+                    discreteController.leftFollower.isLeftNeighborOf(discreteController, out _, out float leftBack);
+                    return 2 * maxAcceleration * leftBack > Mathf.Pow(discreteController.leftFollower.speed, 2);
                 }
                 else
                 {
@@ -298,13 +300,14 @@ namespace TrafficParticipant
                     discreteController.linkOn.GetPreviousLink(discreteController.laneOn - 1, out Link leftPrevLink, out _);
                     if (myPrevLink != leftPrevLink)
                     {
-                        leftBack = Mathf.Min(leftBack,
-                            discreteController.linkOn.curve.curveLength * discreteController.percentageTravelled);
+   
+                         return discreteController.linkOn.curve.curveLength * discreteController.percentageTravelled > 3f;
+                    }
+                    else
+                    {
+                        return true;
                     }
                 }
-
-                // Simple Judgement
-                return leftBack > 3f;
             }
         }
 
@@ -350,7 +353,6 @@ namespace TrafficParticipant
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.green;
-            Debug.Log((isLeftLaneChangingApplicable ? leftFrontDistance.ToString() : "")  + " : " + freeSpaceAhead + " : " + (isRightLaneChangingApplicable ? rightFrontDistance.ToString() : ""));
         }
 
         void UpdateFreeSpaceAhead()

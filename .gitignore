@@ -9,6 +9,7 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Mm]emoryCaptures/
+/LargeAssets/
 
 # Never ignore Asset meta data
 !/[Aa]ssets/**/*.meta
@@ -57,3 +58,10 @@ sysinfo.txt
 
 # Crashlytics generated file
 crashlytics-build.properties
+Assets/LargeAssets/
+
+Assets/_TerrainAutoUpgrade/
+
+Assets/LargeAssets.meta
+
+Assets/_TerrainAutoUpgrade.meta
