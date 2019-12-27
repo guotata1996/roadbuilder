@@ -54,9 +54,25 @@ namespace TrafficNetwork
                 }
                 if (GUILayout.Button("New Node"))
                 {
-                    GameObject newNode = Instantiate(selected, selected.transform.position + selected.transform.forward * 30, selected.transform.rotation, GameObject.Find("Nodes").transform);
-                    newNode.GetComponent<Node>().outLinks.Clear();
-                    newNode.GetComponent<Node>().laneCount = selectedNode.laneCount;
+                    GameObject newObject = Instantiate(selected, selected.transform.position + selected.transform.forward * 30, selected.transform.rotation, selectedNode.transform.parent);
+                    if (int.TryParse(selected.name, out int i))
+                    {
+                        newObject.name = (i + 1).ToString();
+                    }
+                    else
+                    {
+                        newObject.name = "1";
+                    }
+                    Node newNode = newObject.GetComponent<Node>();
+                    newNode.outLinks.Clear();
+                    newNode.laneCount = selectedNode.laneCount;
+                    if (selectedNode.outLinks.Count == 0)
+                    {
+                        Link defaultLink = new Link(selectedNode, newNode);
+                        defaultLink.minLane = 0;
+                        defaultLink.maxLane = newNode.laneCount - 1;
+                        selectedNode.outLinks.Add(defaultLink);
+                    }
                 }
 
             }

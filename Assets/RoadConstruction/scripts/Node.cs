@@ -82,6 +82,8 @@ namespace TrafficNetwork
             maxLane = targetMinLane = 0;
             lateralOffsetMode = 0;
 
+            curve = Bezier.Create(sourceNode.outRay, targetNode.outRay);
+
             vehicles = new List<VehicleLaneController>();
         }
 
@@ -186,9 +188,9 @@ namespace TrafficNetwork
 
         private void Start()
         {
-            GenerateCurves();
             LongitudinalInfoInited = false;
             InitLongitudinalInfo();
+
         }
 
         // Recalculate out links

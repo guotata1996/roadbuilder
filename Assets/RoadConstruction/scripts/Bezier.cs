@@ -4,9 +4,9 @@ using System;
 [System.Serializable]
 public class Bezier
 {
-    Vector2 p0, p1, p2;
-    Vector2 hp0, hp1, hp2, hp3;
-    bool isStraight;
+    public Vector2 p0, p1, p2;
+    public Vector2 hp0, hp1, hp2, hp3;
+    public bool isStraight;
 
     const int subDiv = 24;
     /*length of projection on XZ plane*/

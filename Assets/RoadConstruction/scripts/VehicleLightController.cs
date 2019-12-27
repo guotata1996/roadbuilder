@@ -16,7 +16,6 @@ public class VehicleLightController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log("setting trigger");
         m_animator.SetInteger("laneChangingMove", lc.laneChangingMove);
     }
 }
